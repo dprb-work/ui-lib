@@ -11,7 +11,7 @@ export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
 };
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border [font:inherit] font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 [&_svg]:shrink-0";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border [font-family:inherit] font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 [&_svg]:shrink-0";
 
 const sizeClasses: Record<ButtonSize, string> = {
   small: "h-7 px-2.5 text-xs [&_svg]:size-3.5",

@@ -1,0 +1,42 @@
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+
+[data-ui-number-input] {
+  appearance: textfield;
+}
+
+[data-ui-number-input]::-webkit-inner-spin-button,
+[data-ui-number-input]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+@source "./components";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --ui-accent: oklch(0.55 0.18 250);
+  --ui-accent-hover: oklch(0.48 0.18 250);
+  --ui-on-accent: white;
+  --ui-danger: oklch(0.58 0.22 27);
+  --ui-danger-hover: oklch(0.51 0.22 27);
+  --ui-on-danger: white;
+}
+
+.dark {
+  --ui-accent: oklch(0.72 0.14 250);
+  --ui-accent-hover: oklch(0.78 0.12 250);
+  --ui-on-accent: oklch(0.16 0.03 250);
+  --ui-danger: oklch(0.7 0.18 27);
+  --ui-danger-hover: oklch(0.76 0.15 27);
+  --ui-on-danger: oklch(0.16 0.03 27);
+}
+
+@theme inline {
+  --color-ui-accent: var(--ui-accent);
+  --color-ui-accent-hover: var(--ui-accent-hover);
+  --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-danger: var(--ui-danger);
+  --color-ui-danger-hover: var(--ui-danger-hover);
+  --color-ui-on-danger: var(--ui-on-danger);
+}

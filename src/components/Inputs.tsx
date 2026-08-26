@@ -37,9 +37,9 @@ export type SelectInputProps = {
 };
 
 const defaultClasses =
-  "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-slate-300 bg-transparent pl-1 pr-0 font-sans text-xs text-slate-900 shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-slate-400 dark:border-slate-700 dark:bg-transparent dark:text-slate-100 dark:disabled:bg-transparent dark:disabled:text-slate-600";
+  "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-slate-300 bg-transparent pl-1 pr-0 [font:inherit] text-xs text-slate-900 shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-slate-400 dark:border-slate-700 dark:bg-transparent dark:text-slate-100 dark:disabled:bg-transparent dark:disabled:text-slate-600";
 const subtleClasses =
-  "mb-px h-7 w-full border-x-0 border-t-0 border-b border-slate-300/70 bg-transparent px-1 font-sans text-xs text-slate-700 outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700/70 dark:text-slate-300 dark:disabled:text-slate-600";
+  "mb-px h-7 w-full border-x-0 border-t-0 border-b border-slate-300/70 bg-transparent px-1 [font:inherit] text-xs text-slate-700 outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700/70 dark:text-slate-300 dark:disabled:text-slate-600";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return classNames(appearance === "subtle" ? subtleClasses : defaultClasses, className);
@@ -125,7 +125,7 @@ export function SelectInput({
                 value={option.value}
                 disabled={option.disabled}
                 className={classNames(
-                  "relative flex h-7 cursor-default select-none items-center px-7 pr-2 font-sans outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-950 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-white",
+                  "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-950 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-white",
                   compact ? "text-[0.625rem]" : "text-xs",
                 )}
               >

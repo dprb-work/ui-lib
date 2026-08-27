@@ -128,6 +128,8 @@ export function MatrixDataTable({
   const rangeStart = filteredCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
   const rangeEnd = Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount);
   const globalFilter = String(table.state.globalFilter ?? "");
+  const pageCount = table.getPageCount();
+  const pageNumber = pageCount === 0 ? 0 : pagination.pageIndex + 1;
 
   return (
     <div className={className} data-ui-matrix-table>
@@ -201,7 +203,7 @@ export function MatrixDataTable({
           <p className={countClassName} aria-live="polite">{labels.count(rangeStart, rangeEnd, filteredCount, rows.length)}</p>
           <div className="flex items-center gap-2">
             <button type="button" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()}>{labels.previous}</button>
-            <span>Page {pagination.pageIndex + 1} of {table.getPageCount()}</span>
+            <span>Page {pageNumber} of {pageCount}</span>
             <button type="button" disabled={!table.getCanNextPage()} onClick={() => table.nextPage()}>{labels.next}</button>
           </div>
         </nav>

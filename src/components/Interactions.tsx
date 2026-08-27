@@ -73,7 +73,7 @@ export function Tabs({
           key={tab.value}
           value={tab.value}
           forceMount={forceMount || undefined}
-          className={cn("outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent", panelClassName)}
+          className={cn("outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent", panelClassName)}
           data-tab-label={typeof tab.label === "string" ? tab.label : undefined}
           tabIndex={0}
         >

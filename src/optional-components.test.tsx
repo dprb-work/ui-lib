@@ -14,9 +14,14 @@ describe("optional components", () => {
     render(<MatrixDataTable caption="Items" headers={["Name", "Score"]} rows={rows} interactive />);
 
     expect(screen.getByText("Showing 1–25 of 30 filtered rows.")).toBeVisible();
-    await userEvent.type(screen.getByRole("searchbox", { name: "Filter rows" }), "Needle");
+    const filter = screen.getByRole("searchbox", { name: "Filter rows" });
+    await userEvent.type(filter, "Needle");
     expect(screen.getByText("Needle")).toBeVisible();
     expect(screen.getByText("Showing 1–1 of 1 filtered rows (30 total).")).toBeVisible();
+    await userEvent.clear(filter);
+    await userEvent.type(filter, "Absent");
+    expect(screen.getByText("No rows match “Absent”.")).toBeVisible();
+    expect(screen.getByText("Page 0 of 0")).toBeVisible();
   });
 
   test("non-canvas distribution views expose an optional accessible name", () => {

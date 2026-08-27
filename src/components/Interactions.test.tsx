@@ -16,6 +16,7 @@ function ControlledTabs() {
       ]}
       value={value}
       onValueChange={setValue}
+      forceMount
     >
       {(tab) => <p>{tab.value} panel</p>}
     </Tabs>
@@ -29,6 +30,10 @@ describe("shared interactions", () => {
     const evidence = screen.getByRole("tab", { name: "Evidence" });
 
     expect(summary).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("summary panel")).toBeVisible();
+    const evidencePanel = screen.getByText("evidence panel").closest("[data-state]");
+    expect(evidencePanel).toHaveAttribute("data-state", "inactive");
+    expect(evidencePanel).toHaveClass("data-[state=inactive]:hidden");
     await userEvent.click(summary);
     await userEvent.keyboard("{ArrowRight}{Enter}");
     expect(evidence).toHaveAttribute("aria-selected", "true");

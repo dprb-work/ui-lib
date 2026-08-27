@@ -25,6 +25,7 @@ function InteractionFixture() {
         tabs={[{ value: "summary", label: "Summary" }, { value: "evidence", label: "Evidence" }]}
         value={tab}
         onValueChange={setTab}
+        forceMount
       >
         {(option) => <p className="p-4">{option.label} content</p>}
       </Tabs>
@@ -53,6 +54,7 @@ export const Behaviors: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("tab", { name: "Evidence" }));
     await expect(canvas.getByText("Evidence content")).toBeVisible();
+    await expect(canvas.getByText("Summary content")).not.toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Dark" }));
     await expect(canvas.getByRole("button", { name: "Dark" })).toHaveAttribute("aria-pressed", "true");
   },

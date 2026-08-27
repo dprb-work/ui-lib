@@ -16,7 +16,7 @@ const baseClasses =
 const sizeClasses: Record<ButtonSize, string> = {
   small: "h-7 px-2.5 text-xs [&_svg]:size-3.5",
   default: "h-8 px-3 text-xs [&_svg]:size-4",
-  icon: "size-8 p-0 text-xs [&_svg]:size-4",
+  icon: "h-8 w-8 p-0 text-xs [&_svg]:size-4",
 };
 
 const variantClasses: Record<ButtonVariant, string> = {

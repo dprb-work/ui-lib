@@ -12,9 +12,9 @@ export type IconButtonProps = Omit<
 };
 
 const sizeClasses = {
-  small: "size-6 [&_svg]:size-3",
-  default: "size-8 [&_svg]:size-4",
-  large: "size-11 [&_svg]:size-5",
+  small: "h-6 w-6 [&_svg]:size-3",
+  default: "h-8 w-8 [&_svg]:size-4",
+  large: "h-11 w-11 [&_svg]:size-5",
 } as const;
 
 export function IconButton({

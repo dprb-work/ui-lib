@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import { Badge } from "./Badge";
 import { Button } from "./Button";
+import { IconButton } from "./IconButton";
 import { Checkbox, Switch } from "./BinaryControls";
 import { StatusPanel } from "./StatusPanel";
 
@@ -18,6 +19,18 @@ describe("shared controls", () => {
     expect(button).not.toHaveClass("h-8", "rounded-md");
     await userEvent.click(button);
     expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  test("icon button accepts independent parent-owned dimensions", () => {
+    render(
+      <IconButton className="h-full w-auto" label="Expand" size="large">
+        X
+      </IconButton>,
+    );
+
+    const button = screen.getByRole("button", { name: "Expand" });
+    expect(button).toHaveClass("h-full", "w-auto");
+    expect(button).not.toHaveClass("h-8", "w-8", "h-11", "w-11");
   });
 
   test("checkbox and switch expose their labels and state", async () => {

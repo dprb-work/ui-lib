@@ -1,6 +1,75 @@
 @import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
 
+@source "./components";
+@source "./*.tsx";
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --ui-background: rgb(248 250 252);
+  --ui-foreground: rgb(15 23 42);
+  --ui-surface: rgb(255 255 255);
+  --ui-surface-foreground: rgb(15 23 42);
+  --ui-muted: rgb(241 245 249);
+  --ui-muted-foreground: rgb(71 85 105);
+  --ui-border: rgb(203 213 225);
+  --ui-accent: rgb(14 116 144);
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
+  --ui-on-accent: rgb(240 253 250);
+  --ui-danger: rgb(190 18 60);
+  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, black);
+  --ui-on-danger: rgb(255 241 242);
+  --ui-chart-accent: var(--ui-accent);
+  --ui-chart-surface: var(--ui-surface);
+  --ui-chart-muted: var(--ui-muted-foreground);
+  --ui-chart-foreground: var(--ui-foreground);
+}
+
+.dark, [data-theme="dark"] {
+  color-scheme: dark;
+  --ui-background: rgb(0 3 16);
+  --ui-foreground: rgb(226 232 240);
+  --ui-surface: rgb(10 17 31);
+  --ui-surface-foreground: rgb(226 232 240);
+  --ui-muted: rgb(30 41 59);
+  --ui-muted-foreground: rgb(148 163 184);
+  --ui-border: rgb(51 65 85);
+  --ui-accent: rgb(45 212 191);
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
+  --ui-on-accent: rgb(15 23 42);
+  --ui-danger: rgb(251 113 133);
+  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, white);
+  --ui-on-danger: rgb(76 5 25);
+}
+
+@theme inline {
+  --color-ui-background: var(--ui-background);
+  --color-ui-foreground: var(--ui-foreground);
+  --color-ui-surface: var(--ui-surface);
+  --color-ui-surface-foreground: var(--ui-surface-foreground);
+  --color-ui-muted: var(--ui-muted);
+  --color-ui-muted-foreground: var(--ui-muted-foreground);
+  --color-ui-border: var(--ui-border);
+  --color-ui-accent: var(--ui-accent);
+  --color-ui-accent-hover: var(--ui-accent-hover);
+  --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-danger: var(--ui-danger);
+  --color-ui-danger-hover: var(--ui-danger-hover);
+  --color-ui-on-danger: var(--ui-on-danger);
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@layer base {
+  body {
+    min-width: 20rem;
+    min-height: 100vh;
+    background-color: var(--ui-background);
+    color: var(--ui-foreground);
+  }
+}
 
 [data-ui-number-input] {
   appearance: textfield;
@@ -10,43 +79,6 @@
 [data-ui-number-input]::-webkit-outer-spin-button {
   margin: 0;
   appearance: none;
-}
-@source "./components";
-@source "./*.tsx";
-@custom-variant dark (&:is(.dark *));
-
-:root {
-  --ui-accent: oklch(0.55 0.18 250);
-  --ui-accent-hover: oklch(0.48 0.18 250);
-  --ui-on-accent: white;
-  --ui-danger: oklch(0.58 0.22 27);
-  --ui-danger-hover: oklch(0.51 0.22 27);
-  --ui-on-danger: white;
-  --ui-chart-accent: var(--ui-accent);
-  --ui-chart-surface: white;
-  --ui-chart-muted: oklch(0.55 0.02 250);
-  --ui-chart-foreground: oklch(0.2 0.03 250);
-}
-
-.dark {
-  --ui-accent: oklch(0.72 0.14 250);
-  --ui-accent-hover: oklch(0.78 0.12 250);
-  --ui-on-accent: oklch(0.16 0.03 250);
-  --ui-danger: oklch(0.7 0.18 27);
-  --ui-danger-hover: oklch(0.76 0.15 27);
-  --ui-on-danger: oklch(0.16 0.03 27);
-  --ui-chart-surface: oklch(0.2 0.03 250);
-  --ui-chart-muted: oklch(0.72 0.02 250);
-  --ui-chart-foreground: oklch(0.96 0.01 250);
-}
-
-@theme inline {
-  --color-ui-accent: var(--ui-accent);
-  --color-ui-accent-hover: var(--ui-accent-hover);
-  --color-ui-on-accent: var(--ui-on-accent);
-  --color-ui-danger: var(--ui-danger);
-  --color-ui-danger-hover: var(--ui-danger-hover);
-  --color-ui-on-danger: var(--ui-on-danger);
 }
 
 [data-ui-distribution-svg] .box-whisker,

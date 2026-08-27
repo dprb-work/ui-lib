@@ -37,9 +37,9 @@ export type SelectInputProps = {
 };
 
 const defaultClasses =
-  "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-slate-300 bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-slate-900 shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-slate-400 dark:border-slate-700 dark:bg-transparent dark:text-slate-100 dark:disabled:bg-transparent dark:disabled:text-slate-600";
+  "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
 const subtleClasses =
-  "mb-px h-7 w-full border-x-0 border-t-0 border-b border-slate-300/70 bg-transparent px-1 [font-family:inherit] text-xs text-slate-700 outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700/70 dark:text-slate-300 dark:disabled:text-slate-600";
+  "mb-px h-7 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
@@ -108,13 +108,13 @@ export function SelectInput({
         className={triggerClasses}
       >
         <Select.Value className="truncate" />
-        <Select.Icon className="shrink-0 text-slate-400">
+        <Select.Icon className="shrink-0 text-ui-muted-foreground">
           <ChevronDown aria-hidden="true" className={compact ? "size-3" : "size-3.5"} strokeWidth={2} />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
         <Select.Content
-          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-slate-300 bg-white text-slate-900 shadow-xl dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-ui-border bg-ui-surface text-ui-surface-foreground shadow-xl"
           position="popper"
           sideOffset={4}
         >
@@ -125,7 +125,7 @@ export function SelectInput({
                 value={option.value}
                 disabled={option.disabled}
                 className={cn(
-                  "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-950 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-white",
+                  "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-muted data-[highlighted]:text-ui-foreground",
                   compact ? "text-[0.625rem]" : "text-xs",
                 )}
               >

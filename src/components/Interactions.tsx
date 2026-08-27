@@ -51,7 +51,7 @@ export function Tabs({
   return (
     <RadixTabs.Root id={id} className={className} value={value} onValueChange={onValueChange}>
       <RadixTabs.List
-        className={cn("flex gap-1 border-b border-slate-200 dark:border-slate-700", listClassName)}
+        className={cn("flex gap-1 border-b border-ui-border", listClassName)}
         aria-label={ariaLabel}
       >
         {tabs.map((tab) => (
@@ -60,7 +60,7 @@ export function Tabs({
             value={tab.value}
             disabled={tab.disabled}
             className={cn(
-              "border-b-2 border-transparent px-3 py-2 text-sm text-slate-600 outline-hidden hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:border-ui-accent data-[state=active]:font-semibold data-[state=active]:text-slate-950 disabled:opacity-50 dark:text-slate-300 dark:data-[state=active]:text-white",
+              "border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted-foreground outline-hidden hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:border-ui-accent data-[state=active]:font-semibold data-[state=active]:text-ui-foreground disabled:opacity-50",
               triggerClassName,
             )}
           >
@@ -108,7 +108,7 @@ export function Tooltip({
         <RadixTooltip.Portal>
           <RadixTooltip.Content
             className={cn(
-              "z-50 max-w-64 rounded-md bg-slate-950 px-2.5 py-1.5 text-xs text-white shadow-lg dark:bg-slate-100 dark:text-slate-950",
+              "z-50 max-w-64 rounded-md bg-ui-foreground px-2.5 py-1.5 text-xs text-ui-background shadow-lg",
               className,
             )}
             side={side}
@@ -117,7 +117,7 @@ export function Tooltip({
           >
             {label}
             <RadixTooltip.Arrow
-              className={cn("fill-slate-950 dark:fill-slate-100", arrowClassName)}
+              className={cn("fill-ui-foreground", arrowClassName)}
               width={10}
               height={5}
             />
@@ -160,7 +160,7 @@ export function Dialog({
         />
         <RadixDialog.Content
           className={cn(
-            !unstyled && "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-white p-5 text-slate-950 shadow-2xl outline-hidden dark:bg-slate-950 dark:text-white",
+            !unstyled && "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-ui-surface p-5 text-ui-surface-foreground shadow-2xl outline-hidden",
             contentClassName,
           )}
           aria-describedby={undefined}
@@ -245,7 +245,7 @@ export function InfoPopover({
         <Popover.Portal>
           <Popover.Content
             className={cn(
-              "z-50 max-w-72 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200",
+              "z-50 max-w-72 rounded-lg border border-ui-border bg-ui-surface p-3 text-sm text-ui-muted-foreground shadow-xl",
               contentClassName,
             )}
             side={side}
@@ -255,9 +255,9 @@ export function InfoPopover({
             onMouseLeave={hideSoon}
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
-            <strong className="block text-slate-950 dark:text-white">{label}</strong>
+            <strong className="block text-ui-surface-foreground">{label}</strong>
             {description && <span>{description}</span>}
-            <Popover.Arrow className={cn("fill-white dark:fill-slate-900", arrowClassName)} width={12} height={6} />
+            <Popover.Arrow className={cn("fill-ui-surface", arrowClassName)} width={12} height={6} />
           </Popover.Content>
         </Popover.Portal>
       </span>
@@ -296,7 +296,7 @@ export function ThemeSelector({
     <div className={cn("grid gap-2", className)}>
       {!hideLabel && <span className="text-sm font-medium">{label}</span>}
       <div
-        className={cn("inline-flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800", groupClassName)}
+        className={cn("inline-flex rounded-lg bg-ui-muted p-1", groupClassName)}
         role="group"
         aria-label={label}
       >
@@ -308,7 +308,7 @@ export function ThemeSelector({
               type="button"
               aria-pressed={mode === option.value}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-slate-600 outline-hidden hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-ui-accent aria-pressed:bg-white aria-pressed:font-semibold aria-pressed:text-slate-950 aria-pressed:shadow-sm dark:text-slate-300 dark:hover:text-white dark:aria-pressed:bg-slate-950 dark:aria-pressed:text-white",
+                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent aria-pressed:bg-ui-surface aria-pressed:font-semibold aria-pressed:text-ui-surface-foreground aria-pressed:shadow-sm",
                 buttonClassName,
               )}
               onClick={() => onChange(option.value)}
@@ -381,7 +381,7 @@ export function CopyButton({
     <button
       type="button"
       className={cn(
-        "inline-flex size-8 items-center justify-center rounded-md text-slate-600 outline-hidden hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-ui-accent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white",
+        "inline-flex size-8 items-center justify-center rounded-md text-ui-muted-foreground outline-hidden hover:bg-ui-muted hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent",
         className,
       )}
       aria-label={accessibleLabel}

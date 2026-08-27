@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { CSSProperties } from "react";
+import { expect, within } from "storybook/test";
 
 import { DistributionChart } from "../charts";
 import { MatrixDataTable } from "../data-table";
@@ -26,6 +27,13 @@ export const DataTable: Story = {
       tableClassName="[&_caption]:sr-only [&_td]:border-b [&_td]:border-slate-200 [&_td]:p-2 [&_th]:border-b [&_th]:border-slate-300 [&_th]:p-2 dark:[&_td]:border-slate-700 dark:[&_th]:border-slate-600"
     />
   ),
+  play: async ({ canvasElement }) => {
+    const previous = within(canvasElement).getByRole("button", { name: "Previous" });
+    const style = getComputedStyle(previous);
+    await expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await expect(style.paddingTop).toBe("0px");
+    await expect(style.borderTopWidth).toBe("0px");
+  },
 };
 
 export const BoxPlot: Story = {

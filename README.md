@@ -24,12 +24,14 @@ their dependencies unless they import those components:
 
 ## Use
 
-Install the package, then import its stylesheet once at the application entry point:
+Install the package, then import its stylesheet once, before product styles, at
+the application entry point:
 
 ```tsx
 import "@dprb-work/ui-lib/styles.css";
 
 import { Button, Checkbox } from "@dprb-work/ui-lib";
+import "./product.css";
 ```
 
 Install the matching peer before importing an optional entry point:
@@ -39,7 +41,17 @@ corepack pnpm add @tanstack/react-table
 corepack pnpm add chart.js
 ```
 
-Consumers may override the semantic CSS variables `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`, `--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger` at their application root. The package does not ship Tailwind Preflight.
+The stylesheet ships Tailwind Preflight, the default light and dark application
+palette, and component utilities. The palette follows the baseline established
+in the OLAF visual builder: slate surfaces, teal actions, and rose destructive
+states. Add `.dark` to an ancestor or set `data-theme="dark"` on one.
+
+Consumers may override these semantic variables at their application root:
+`--ui-background`, `--ui-foreground`, `--ui-surface`,
+`--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
+`--ui-border`, `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`,
+`--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`. Product styles loaded
+after the package remain authoritative.
 
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes

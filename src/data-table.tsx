@@ -138,9 +138,9 @@ export function MatrixDataTable({
           <label className={cn("grid min-w-56 flex-1 gap-1 text-sm", filterClassName)}>
             <span>{labels.filter}</span>
             <span className={cn("relative flex items-center", filterInputClassName)}>
-              <Search className="pointer-events-none absolute left-2.5 size-4 text-slate-500" aria-hidden="true" />
+              <Search className="pointer-events-none absolute left-2.5 size-4 text-ui-muted-foreground" aria-hidden="true" />
               <input
-                className="h-9 w-full rounded-md border border-slate-300 bg-white py-1.5 pl-9 pr-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent dark:border-slate-700 dark:bg-slate-950"
+                className="h-9 w-full rounded-md border border-ui-border bg-ui-surface py-1.5 pl-9 pr-3 text-sm text-ui-surface-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent"
                 type="search"
                 inputMode="search"
                 placeholder={labels.filterPlaceholder}
@@ -152,7 +152,7 @@ export function MatrixDataTable({
           <label className={cn("grid gap-1 text-sm", pageSizeClassName)}>
             <span>{labels.rowsPerPage}</span>
             <select
-              className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent dark:border-slate-700 dark:bg-slate-950"
+              className="h-9 rounded-md border border-ui-border bg-ui-surface px-2 text-sm text-ui-surface-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent"
               value={pagination.pageSize}
               onChange={(event) => table.setPageSize(Number(event.currentTarget.value))}
             >

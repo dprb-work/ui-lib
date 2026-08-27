@@ -31,7 +31,9 @@ export const Buttons: Story = {
   ),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "Save changes" }));
+    const primary = canvas.getByRole("button", { name: "Save changes" });
+    await expect(getComputedStyle(primary).backgroundColor).toBe("rgb(14, 116, 144)");
+    await userEvent.click(primary);
     await expect(args.onClick).toHaveBeenCalledOnce();
     await expect(canvas.getByRole("button", { name: "Delete item" })).toHaveAttribute(
       "title",

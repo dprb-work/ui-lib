@@ -264,6 +264,10 @@ function scaledX(value: number, min: number, max: number) {
   return 5 + ((value - min) / span) * 90;
 }
 
+function formatRange(value: number, unit?: string) {
+  return `${value.toPrecision(4)}${unit ? ` ${unit}` : ""}`;
+}
+
 const BoxPlot = forwardRef<ChartHandle, PlotProps>(function BoxPlot(props, ref) {
   useImperativeHandle(ref, () => ({ resize: () => undefined }));
   const stats = useMemo(() => {
@@ -281,13 +285,13 @@ const BoxPlot = forwardRef<ChartHandle, PlotProps>(function BoxPlot(props, ref) 
   return (
     <div className={props.className} data-ui-chart {...chartA11y(props.ariaLabel)}>
       <svg data-ui-distribution-svg viewBox="0 0 100 40" preserveAspectRatio="none">
-        <line x1={stats.min} y1="20" x2={stats.max} y2="20" />
-        <line x1={stats.min} y1="14" x2={stats.min} y2="26" />
-        <line x1={stats.max} y1="14" x2={stats.max} y2="26" />
-        <rect x={stats.q1} y="9" width={Math.max(0, stats.q3 - stats.q1)} height="22" />
-        <line className="median" x1={stats.median} y1="9" x2={stats.median} y2="31" />
+        <line className="box-whisker" x1={stats.min} y1="20" x2={stats.max} y2="20" />
+        <line className="box-whisker" x1={stats.min} y1="14" x2={stats.min} y2="26" />
+        <line className="box-whisker" x1={stats.max} y1="14" x2={stats.max} y2="26" />
+        <rect className="box-body" x={stats.q1} y="9" width={Math.max(0, stats.q3 - stats.q1)} height="22" />
+        <line className="box-median" x1={stats.median} y1="9" x2={stats.median} y2="31" />
       </svg>
-      {!props.compact && <p>Median {stats.medianValue.toPrecision(4)}{props.unit ? ` ${props.unit}` : ""}</p>}
+      {!props.compact && <p className="distribution-range" data-ui-distribution-range><span>{formatRange(props.min, props.unit)}</span><span>Median {formatRange(stats.medianValue, props.unit)}</span><span>{formatRange(props.max, props.unit)}</span></p>}
     </div>
   );
 });
@@ -303,7 +307,11 @@ const ViolinPlot = forwardRef<ChartHandle, PlotProps>(function ViolinPlot(props,
   }, [props.max, props.min, props.records]);
   return (
     <div className={props.className} data-ui-chart {...chartA11y(props.ariaLabel)}>
-      <svg data-ui-distribution-svg viewBox="0 0 100 40" preserveAspectRatio="none"><polygon points={points} /></svg>
+      <svg data-ui-distribution-svg viewBox="0 0 100 40" preserveAspectRatio="none">
+        <line className="violin-axis" x1="5" y1="20" x2="95" y2="20" />
+        <polygon className="violin-body" points={points} />
+      </svg>
+      {!props.compact && <p className="distribution-range" data-ui-distribution-range><span>{formatRange(props.min, props.unit)}</span><span>{formatRange(props.max, props.unit)}</span></p>}
     </div>
   );
 });

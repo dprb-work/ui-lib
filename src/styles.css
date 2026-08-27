@@ -22,6 +22,10 @@
   --ui-danger: oklch(0.58 0.22 27);
   --ui-danger-hover: oklch(0.51 0.22 27);
   --ui-on-danger: white;
+  --ui-chart-accent: var(--ui-accent);
+  --ui-chart-surface: white;
+  --ui-chart-muted: oklch(0.55 0.02 250);
+  --ui-chart-foreground: oklch(0.2 0.03 250);
 }
 
 .dark {
@@ -31,6 +35,9 @@
   --ui-danger: oklch(0.7 0.18 27);
   --ui-danger-hover: oklch(0.76 0.15 27);
   --ui-on-danger: oklch(0.16 0.03 27);
+  --ui-chart-surface: oklch(0.2 0.03 250);
+  --ui-chart-muted: oklch(0.72 0.02 250);
+  --ui-chart-foreground: oklch(0.96 0.01 250);
 }
 
 @theme inline {
@@ -40,4 +47,33 @@
   --color-ui-danger: var(--ui-danger);
   --color-ui-danger-hover: var(--ui-danger-hover);
   --color-ui-on-danger: var(--ui-on-danger);
+}
+
+[data-ui-distribution-svg] .box-whisker,
+[data-ui-distribution-svg] .box-median,
+[data-ui-distribution-svg] .violin-axis {
+  stroke: var(--ui-chart-foreground);
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-ui-distribution-svg] .box-body,
+[data-ui-distribution-svg] .violin-body {
+  fill: color-mix(in oklab, var(--ui-chart-accent) 18%, transparent);
+  stroke: var(--ui-chart-accent);
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-ui-distribution-svg] .box-median {
+  stroke: var(--ui-chart-accent);
+  stroke-width: 1;
+}
+
+[data-ui-distribution-range] {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ui-chart-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }

@@ -20,17 +20,36 @@ describe("optional components", () => {
   });
 
   test("non-canvas distribution views expose an optional accessible name", () => {
-    render(
+    const { container, rerender } = render(
       <DistributionChart
         view="box"
         records={[{ label: "a", value: 1 }, { label: "b", value: 2 }, { label: "c", value: 3 }]}
         min={1}
         max={3}
         yLabel="Duration"
+        unit="ms"
         ariaLabel="Duration distribution"
       />,
     );
 
     expect(screen.getByRole("img", { name: "Duration distribution" })).toBeVisible();
+    expect(container.querySelector(".box-whisker")).toBeInTheDocument();
+    expect(container.querySelector(".box-body")).toBeInTheDocument();
+    expect(container.querySelector(".box-median")).toBeInTheDocument();
+    expect(screen.getByText("Median 2.000 ms")).toBeVisible();
+
+    rerender(
+      <DistributionChart
+        view="violin"
+        records={[{ label: "a", value: 1 }, { label: "b", value: 2 }, { label: "c", value: 3 }]}
+        min={1}
+        max={3}
+        yLabel="Duration"
+        unit="ms"
+        ariaLabel="Duration distribution"
+      />,
+    );
+    expect(container.querySelector(".violin-axis")).toBeInTheDocument();
+    expect(container.querySelector(".violin-body")).toBeInTheDocument();
   });
 });

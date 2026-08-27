@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 
-import { Dialog, InfoPopover, Tabs, ThemeSelector, Tooltip } from "./Interactions";
+import { Dialog, Tabs, Tooltip } from "./Interactions";
 
 function ControlledTabs() {
   const [value, setValue] = useState("summary");
@@ -59,25 +59,8 @@ describe("shared interactions", () => {
     expect(screen.queryByRole("dialog", { name: "Details" })).not.toBeInTheDocument();
   });
 
-  test("tooltip and information popover retain accessible names", async () => {
-    render(
-      <>
-        <Tooltip label="Inspect"><button type="button">Target</button></Tooltip>
-        <InfoPopover label="Decision" description="Accepted constraint">i</InfoPopover>
-      </>,
-    );
-
-    expect(screen.getByRole("button", { name: "Decision" })).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Decision" }));
-    expect(await screen.findByText("Accepted constraint")).toBeVisible();
-  });
-
-  test("theme selector reports the selected mode", async () => {
-    const onChange = vi.fn();
-    render(<ThemeSelector mode="system" onChange={onChange} />);
-
-    expect(screen.getByRole("button", { name: "System" })).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(screen.getByRole("button", { name: "Dark" }));
-    expect(onChange).toHaveBeenCalledWith("dark");
+  test("tooltip retains the trigger's accessible name", () => {
+    render(<Tooltip label="Inspect"><button type="button">Target</button></Tooltip>);
+    expect(screen.getByRole("button", { name: "Target" })).toBeVisible();
   });
 });

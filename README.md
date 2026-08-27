@@ -12,7 +12,9 @@ The base entry point contains controls and interaction primitives:
 - `Checkbox`, `Switch`
 - `TextInput`, `NumberInput`, `SelectInput`
 - `Badge`, `StatusPanel`
-- `Dialog`, `InfoPopover`, `Tabs`, `ThemeSelector`, `Tooltip`
+- `Dialog`, `Tabs`, `Tooltip`
+- `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
+- `ThemeProvider`, `ThemeSwitch`, `useTheme`
 
 Heavy components use separate entry points so consumers do not install or bundle
 their dependencies unless they import those components:
@@ -40,6 +42,36 @@ Install the matching peer before importing an optional entry point:
 corepack pnpm add @tanstack/react-table
 corepack pnpm add chart.js
 ```
+
+Wrap the application once to apply and persist the canonical three-way theme:
+
+```tsx
+import { ThemeProvider, ThemeSwitch } from "@dprb-work/ui-lib";
+
+createRoot(root).render(
+  <ThemeProvider storageKey="my-product-theme">
+    <App />
+  </ThemeProvider>,
+);
+
+function Settings() {
+  return <ThemeSwitch />;
+}
+```
+
+`ThemeProvider` resolves `system` against `prefers-color-scheme`, applies the
+resolved `data-theme` and selected `data-theme-mode` to the document root, sets
+`color-scheme`, and owns persistence. Product code must not duplicate that
+lifecycle.
+
+Use `Popover` compound parts for non-modal disclosed content. The trigger owns
+its visible or ARIA label, and `PopoverContent` requires `aria-label` or
+`aria-labelledby`. Use a menu component instead when choices require menu roles
+and menu keyboard behavior.
+
+`MatrixDataTable` keeps both its static matrix and opt-in interactive modes.
+Consumers own domain formatting, captions, chart pairing, and surrounding
+workflow.
 
 The stylesheet ships Tailwind Preflight, the default light and dark application
 palette, and component utilities. The palette follows the baseline established

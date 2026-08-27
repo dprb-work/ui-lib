@@ -24,6 +24,10 @@ import { Button, Checkbox } from "@dprb-work/ui-lib";
 
 Consumers may override the semantic CSS variables `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`, `--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger` at their application root. The package does not ship Tailwind Preflight.
 
+The consuming component owns layout. Pass `className` at the usage site to change
+size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
+those classes replace the component defaults without `!important`.
+
 ## Develop
 
 ```bash

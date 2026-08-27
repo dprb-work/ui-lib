@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-import { classNames } from "../classNames";
+import { cn } from "../cn";
 
 export type StatusPanelProps = Omit<ComponentPropsWithoutRef<"section">, "title"> & {
   eyebrow?: ReactNode;
@@ -21,7 +21,7 @@ export function StatusPanel({
 }: StatusPanelProps) {
   return (
     <section
-      className={classNames(
+      className={cn(
         "mx-auto grid w-full max-w-2xl gap-3 rounded-lg border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100",
         tone === "danger" && "border-red-200 dark:border-red-900",
         className,
@@ -29,7 +29,7 @@ export function StatusPanel({
       {...sectionProps}
     >
       {eyebrow ? (
-        <p className={classNames(
+        <p className={cn(
           "m-0 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400",
           tone === "danger" && "text-red-700 dark:text-red-300",
         )}>

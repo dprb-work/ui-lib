@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-import { classNames } from "../classNames";
+import { cn } from "../cn";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "small" | "default" | "icon";
@@ -40,7 +40,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={classNames(baseClasses, sizeClasses[size], variantClasses[variant], className)}
+      className={cn(baseClasses, sizeClasses[size], variantClasses[variant], className)}
       {...buttonProps}
     />
   );

@@ -17,7 +17,7 @@ corepack pnpm run dev
 - Keep product vocabulary, data models, routing, application shells, and feature workflows in the consuming repository.
 - Prefer semantic HTML and Radix primitives over custom interaction machinery.
 - Every interactive component must preserve keyboard access, visible focus, accessible naming, disabled behavior, and dark mode.
-- Components accept `className` for local layout; the library owns interaction states and baseline appearance.
+- The parent owns layout. Components accept `className` for point-of-use presentation, and conflict-aware Tailwind merging makes consumer classes replace defaults without `!important`.
 - Tailwind class names must remain statically detectable. Use the CSS-first Tailwind v4 setup in `src/styles.css`.
 - The package ships scoped component utilities without Tailwind Preflight. Consumers import `@dprb-work/ui-lib/styles.css` once.
 - Do not add compatibility aliases during extraction. Migrate all consumers in the same change.

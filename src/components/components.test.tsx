@@ -10,10 +10,12 @@ import { StatusPanel } from "./StatusPanel";
 describe("shared controls", () => {
   test("button is non-submitting by default and forwards activation", async () => {
     const onClick = vi.fn();
-    render(<Button onClick={onClick}>Save</Button>);
+    render(<Button className="h-5 rounded-none" onClick={onClick}>Save</Button>);
 
     const button = screen.getByRole("button", { name: "Save" });
     expect(button).toHaveAttribute("type", "button");
+    expect(button).toHaveClass("h-5", "rounded-none");
+    expect(button).not.toHaveClass("h-8", "rounded-md");
     await userEvent.click(button);
     expect(onClick).toHaveBeenCalledOnce();
   });

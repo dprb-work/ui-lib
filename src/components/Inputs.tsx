@@ -2,7 +2,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { Select } from "radix-ui";
 import type { ComponentPropsWithoutRef } from "react";
 
-import { classNames } from "../classNames";
+import { cn } from "../cn";
 
 type InputAppearance = "default" | "subtle";
 
@@ -42,7 +42,7 @@ const subtleClasses =
   "mb-px h-7 w-full border-x-0 border-t-0 border-b border-slate-300/70 bg-transparent px-1 [font-family:inherit] text-xs text-slate-700 outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700/70 dark:text-slate-300 dark:disabled:text-slate-600";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
-  return classNames(appearance === "subtle" ? subtleClasses : defaultClasses, className);
+  return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
 }
 
 export function TextInput({
@@ -84,9 +84,9 @@ export function SelectInput({
   className,
 }: SelectInputProps) {
   const compact = density === "compact";
-  const triggerClasses = classNames(
+  const triggerClasses = cn(
     appearance === "subtle" ? subtleClasses : defaultClasses,
-    compact && "h-5! text-[0.625rem]",
+    compact && "h-5 text-[0.625rem]",
     invalid && "border-ui-danger text-ui-danger",
     "flex min-w-0 items-center justify-between gap-1 overflow-hidden whitespace-nowrap text-left",
     className,
@@ -124,7 +124,7 @@ export function SelectInput({
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
-                className={classNames(
+                className={cn(
                   "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-950 dark:data-[highlighted]:bg-slate-800 dark:data-[highlighted]:text-white",
                   compact ? "text-[0.625rem]" : "text-xs",
                 )}

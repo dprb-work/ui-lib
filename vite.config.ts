@@ -18,7 +18,15 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      external: ["react", "react-dom", "react/jsx-runtime", "lucide-react", "radix-ui"],
+      external: [
+        "clsx",
+        "lucide-react",
+        "radix-ui",
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "tailwind-merge",
+      ],
     },
   },
   test: {

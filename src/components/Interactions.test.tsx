@@ -39,7 +39,7 @@ describe("shared interactions", () => {
     function Example() {
       const [open, setOpen] = useState(false);
       return (
-        <Dialog open={open} onOpenChange={setOpen} title="Details" trigger={<button type="button">Open details</button>}>
+        <Dialog unstyled contentClassName="consumer-dialog" open={open} onOpenChange={setOpen} title="Details" trigger={<button type="button">Open details</button>}>
           {(close) => <button type="button" onClick={close}>Done</button>}
         </Dialog>
       );
@@ -48,6 +48,8 @@ describe("shared interactions", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Open details" }));
     expect(screen.getByRole("dialog", { name: "Details" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Details" })).toHaveClass("consumer-dialog");
+    expect(screen.getByRole("dialog", { name: "Details" }).className).toBe("consumer-dialog");
     await userEvent.click(screen.getByRole("button", { name: "Done" }));
     expect(screen.queryByRole("dialog", { name: "Details" })).not.toBeInTheDocument();
   });

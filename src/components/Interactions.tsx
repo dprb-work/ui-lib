@@ -137,6 +137,7 @@ export type DialogProps = {
   overlayClassName?: string;
   contentClassName?: string;
   titleClassName?: string;
+  unstyled?: boolean;
 };
 
 export function Dialog({
@@ -148,22 +149,23 @@ export function Dialog({
   overlayClassName,
   contentClassName,
   titleClassName,
+  unstyled = false,
 }: DialogProps) {
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>
       <RadixDialog.Portal>
         <RadixDialog.Overlay
-          className={cn("fixed inset-0 z-40 bg-black/60 backdrop-blur-sm", overlayClassName)}
+          className={cn(!unstyled && "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm", overlayClassName)}
         />
         <RadixDialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-white p-5 text-slate-950 shadow-2xl outline-hidden dark:bg-slate-950 dark:text-white",
+            !unstyled && "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-white p-5 text-slate-950 shadow-2xl outline-hidden dark:bg-slate-950 dark:text-white",
             contentClassName,
           )}
           aria-describedby={undefined}
         >
-          <RadixDialog.Title className={cn("sr-only", titleClassName)}>{title}</RadixDialog.Title>
+          <RadixDialog.Title className={cn(!unstyled && "sr-only", titleClassName)}>{title}</RadixDialog.Title>
           {typeof children === "function" ? children(() => onOpenChange(false)) : children}
         </RadixDialog.Content>
       </RadixDialog.Portal>

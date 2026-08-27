@@ -45,6 +45,9 @@ The consuming component owns layout. Pass `className` at the usage site to chang
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
 those classes replace the component defaults without `!important`.
 
+Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
+content, and title treatment through plain CSS.
+
 ## Develop
 
 ```bash

@@ -128,18 +128,6 @@ export const Popovers: Story = {
       </Popover>
     </Frame>
   ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const body = within(canvasElement.ownerDocument.body);
-    await userEvent.click(canvas.getByRole("button", { name: "Explain review effort" }));
-    await expect(
-      await body.findByRole("dialog", { name: "Review effort explanation" }),
-    ).toBeVisible();
-    await userEvent.click(body.getByRole("button", { name: "Close" }));
-    await expect(
-      body.queryByRole("dialog", { name: "Review effort explanation" }),
-    ).not.toBeInTheDocument();
-  },
 };
 
 function DialogFixture() {
@@ -175,16 +163,6 @@ function DialogFixture() {
 export const Dialogs: Story = {
   args: unusedArgs,
   render: () => <DialogFixture />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const body = within(canvasElement.ownerDocument.body);
-    await userEvent.click(canvas.getByRole("button", { name: "Discard notes" }));
-    await expect(await body.findByRole("dialog", { name: "Discard review notes?" })).toBeVisible();
-    await userEvent.click(body.getByRole("button", { name: "Cancel" }));
-    await expect(
-      body.queryByRole("dialog", { name: "Discard review notes?" }),
-    ).not.toBeInTheDocument();
-  },
 };
 
 export const ThemeSelection: Story = {

@@ -12,6 +12,7 @@
   appearance: none;
 }
 @source "./components";
+@source "./*.tsx";
 @custom-variant dark (&:is(.dark *));
 
 :root {

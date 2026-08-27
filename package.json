@@ -15,6 +15,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./charts": {
+      "types": "./dist/charts.d.ts",
+      "import": "./dist/charts.js"
+    },
+    "./data-table": {
+      "types": "./dist/data-table.d.ts",
+      "import": "./dist/data-table.js"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "scripts": {
@@ -36,10 +44,21 @@
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
+    "@tanstack/react-table": "9.1.2",
+    "chart.js": "^4.5.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
+  "peerDependenciesMeta": {
+    "@tanstack/react-table": {
+      "optional": true
+    },
+    "chart.js": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@tanstack/react-table": "9.1.2",
     "@eslint/js": "^10.0.1",
     "@storybook/addon-a11y": "10.5.7",
     "@storybook/addon-docs": "10.5.7",
@@ -54,6 +73,7 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.7.0",
+    "chart.js": "4.5.1",
     "@vitest/browser": "3.2.7",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "^7.1.1",

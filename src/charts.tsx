@@ -167,6 +167,7 @@ export const CartesianChart = forwardRef<ChartHandle, CartesianChartProps>(funct
           datasets: [{
             data: props.records.map((record) => record.value),
             backgroundColor: props.type === "bar" ? palette.accent : "transparent",
+            hoverBackgroundColor: props.type === "bar" ? palette.accent : "transparent",
             borderColor: palette.accent,
             borderRadius: props.type === "bar" ? 4 : undefined,
             borderSkipped: false,
@@ -314,6 +315,7 @@ const HistogramChart = forwardRef<ChartHandle, PlotProps>(function HistogramChar
           datasets: [{
             data: records.map((record) => record.value),
             backgroundColor: palette.accent,
+            hoverBackgroundColor: palette.accent,
             borderRadius: 3,
             borderSkipped: false,
             borderWidth: 0,

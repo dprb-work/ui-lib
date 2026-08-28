@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { cn } from "../cn";
+import { tooltipSurfaceClassName } from "./tooltipStyles";
 
 export type OverlaySide = "top" | "right" | "bottom" | "left";
 export type TabOption = { value: string; label: ReactNode; disabled?: boolean };
@@ -103,10 +104,7 @@ export function Tooltip({
         <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
         <RadixTooltip.Portal>
           <RadixTooltip.Content
-            className={cn(
-              "z-50 max-w-64 rounded-md bg-ui-foreground px-2.5 py-1.5 text-xs text-ui-background shadow-lg",
-              className,
-            )}
+            className={cn(tooltipSurfaceClassName, className)}
             side={side}
             sideOffset={7}
             collisionPadding={8}

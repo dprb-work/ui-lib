@@ -81,6 +81,30 @@
   appearance: none;
 }
 
+[data-ui-chart] {
+  position: relative;
+  min-width: 0;
+  font-family: var(--font-sans);
+}
+
+[data-ui-chart-tooltip]::after {
+  position: absolute;
+  left: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--ui-foreground);
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+}
+
+[data-ui-chart-tooltip][data-side="top"]::after {
+  bottom: -0.2rem;
+}
+
+[data-ui-chart-tooltip][data-side="bottom"]::after {
+  top: -0.2rem;
+}
+
 [data-ui-distribution-svg] .box-whisker,
 [data-ui-distribution-svg] .box-median,
 [data-ui-distribution-svg] .violin-axis {

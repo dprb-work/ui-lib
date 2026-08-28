@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import "./ColorPalette.stories.css";
 
 const meta = {
   title: "Foundations/Color Palette",
@@ -96,33 +95,22 @@ export const SemanticColors: Story = {
 };
 
 const spectrumFamilies = [
-  "slate",
-  "red",
-  "orange",
-  "amber",
-  "yellow",
-  "lime",
-  "green",
-  "emerald",
-  "teal",
-  "cyan",
-  "sky",
-  "blue",
-  "indigo",
-  "violet",
-  "purple",
-  "fuchsia",
-  "pink",
-  "rose",
+  "actor",
+  "branch",
+  "stream",
+  "gen",
+  "xla",
+  "io",
+  "optimize",
 ] as const;
 
-const spectrumSteps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+const spectrumSteps = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950] as const;
 
 function ColorRamp({ family }: { family: typeof spectrumFamilies[number] }) {
   return (
-    <section className="grid min-w-208 grid-cols-[5rem_1fr] items-center gap-4">
+    <section className="grid min-w-[76rem] grid-cols-[5rem_1fr] items-center gap-4">
       <h2 className="text-sm font-semibold capitalize text-ui-foreground">{family}</h2>
-      <div className="grid grid-cols-11 gap-1.5">
+      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${spectrumSteps.length}, minmax(0, 1fr))` }}>
         {spectrumSteps.map((step) => (
           <div key={step} className="grid gap-1">
             <div
@@ -144,9 +132,9 @@ export const FullSpectrum: Story = {
       <div className="mx-auto grid max-w-7xl gap-8">
         <header className="grid max-w-3xl gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ui-accent">Design foundations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Full color spectrum</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Olaf category spectrum</h1>
           <p className="text-sm leading-6 text-ui-muted-foreground">
-            Slate is the library&apos;s neutral scale. The chromatic ramps are Tailwind CSS primitives available from 50 through 950; shared components should still consume semantic <code>--ui-*</code> roles.
+            The shared category ramps copied from Olaf&apos;s Visual Builder provide every 50-step value from 50 through 950. Shared components should still consume semantic <code>--ui-*</code> roles unless category identity is part of their contract.
           </p>
         </header>
         <div className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm">

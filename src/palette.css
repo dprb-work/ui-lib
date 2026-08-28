@@ -1,0 +1,150 @@
+/* Shared category ramps extend Tailwind's scale to every 50:
+   50 = light surface, 300–400 = light pill, 700 = dark pill, 950 = dark surface. */
+@theme static {
+  /* actor */
+  --color-actor-50: #f8fafc;
+  --color-actor-100: color-mix(in oklab, #f8fafc 85.7143%, #94a3b8);
+  --color-actor-150: color-mix(in oklab, #f8fafc 71.4286%, #94a3b8);
+  --color-actor-200: color-mix(in oklab, #f8fafc 57.1429%, #94a3b8);
+  --color-actor-250: color-mix(in oklab, #f8fafc 42.8571%, #94a3b8);
+  --color-actor-300: color-mix(in oklab, #f8fafc 28.5714%, #94a3b8);
+  --color-actor-350: color-mix(in oklab, #f8fafc 14.2857%, #94a3b8);
+  --color-actor-400: #94a3b8;
+  --color-actor-450: color-mix(in oklab, #94a3b8 83.3333%, #64748b);
+  --color-actor-500: color-mix(in oklab, #94a3b8 66.6667%, #64748b);
+  --color-actor-550: color-mix(in oklab, #94a3b8 50%, #64748b);
+  --color-actor-600: color-mix(in oklab, #94a3b8 33.3333%, #64748b);
+  --color-actor-650: color-mix(in oklab, #94a3b8 16.6667%, #64748b);
+  --color-actor-700: #64748b;
+  --color-actor-750: color-mix(in oklab, #64748b 80%, #121a2b);
+  --color-actor-800: color-mix(in oklab, #64748b 60%, #121a2b);
+  --color-actor-850: color-mix(in oklab, #64748b 40%, #121a2b);
+  --color-actor-900: color-mix(in oklab, #64748b 20%, #121a2b);
+  --color-actor-950: #121a2b;
+
+  /* branch */
+  --color-branch-50: #f5f8fc;
+  --color-branch-100: color-mix(in oklab, #f5f8fc 85.7143%, #c6d0dd);
+  --color-branch-150: color-mix(in oklab, #f5f8fc 71.4286%, #c6d0dd);
+  --color-branch-200: color-mix(in oklab, #f5f8fc 57.1429%, #c6d0dd);
+  --color-branch-250: color-mix(in oklab, #f5f8fc 42.8571%, #c6d0dd);
+  --color-branch-300: color-mix(in oklab, #f5f8fc 28.5714%, #c6d0dd);
+  --color-branch-350: color-mix(in oklab, #f5f8fc 14.2857%, #c6d0dd);
+  --color-branch-400: #c6d0dd;
+  --color-branch-450: color-mix(in oklab, #c6d0dd 83.3333%, #6b7b90);
+  --color-branch-500: color-mix(in oklab, #c6d0dd 66.6667%, #6b7b90);
+  --color-branch-550: color-mix(in oklab, #c6d0dd 50%, #6b7b90);
+  --color-branch-600: color-mix(in oklab, #c6d0dd 33.3333%, #6b7b90);
+  --color-branch-650: color-mix(in oklab, #c6d0dd 16.6667%, #6b7b90);
+  --color-branch-700: #6b7b90;
+  --color-branch-750: color-mix(in oklab, #6b7b90 80%, #172033);
+  --color-branch-800: color-mix(in oklab, #6b7b90 60%, #172033);
+  --color-branch-850: color-mix(in oklab, #6b7b90 40%, #172033);
+  --color-branch-900: color-mix(in oklab, #6b7b90 20%, #172033);
+  --color-branch-950: #172033;
+
+  /* stream */
+  --color-stream-50: #f2fbfd;
+  --color-stream-100: color-mix(in oklab, #f2fbfd 85.7143%, #b7d8df);
+  --color-stream-150: color-mix(in oklab, #f2fbfd 71.4286%, #b7d8df);
+  --color-stream-200: color-mix(in oklab, #f2fbfd 57.1429%, #b7d8df);
+  --color-stream-250: color-mix(in oklab, #f2fbfd 42.8571%, #b7d8df);
+  --color-stream-300: color-mix(in oklab, #f2fbfd 28.5714%, #b7d8df);
+  --color-stream-350: color-mix(in oklab, #f2fbfd 14.2857%, #b7d8df);
+  --color-stream-400: #b7d8df;
+  --color-stream-450: color-mix(in oklab, #b7d8df 83.3333%, #4f8b98);
+  --color-stream-500: color-mix(in oklab, #b7d8df 66.6667%, #4f8b98);
+  --color-stream-550: color-mix(in oklab, #b7d8df 50%, #4f8b98);
+  --color-stream-600: color-mix(in oklab, #b7d8df 33.3333%, #4f8b98);
+  --color-stream-650: color-mix(in oklab, #b7d8df 16.6667%, #4f8b98);
+  --color-stream-700: #4f8b98;
+  --color-stream-750: color-mix(in oklab, #4f8b98 80%, #0d2630);
+  --color-stream-800: color-mix(in oklab, #4f8b98 60%, #0d2630);
+  --color-stream-850: color-mix(in oklab, #4f8b98 40%, #0d2630);
+  --color-stream-900: color-mix(in oklab, #4f8b98 20%, #0d2630);
+  --color-stream-950: #0d2630;
+
+  /* gen */
+  --color-gen-50: #f5f3ff;
+  --color-gen-100: color-mix(in oklab, #f5f3ff 85.7143%, #c4b5fd);
+  --color-gen-150: color-mix(in oklab, #f5f3ff 71.4286%, #c4b5fd);
+  --color-gen-200: color-mix(in oklab, #f5f3ff 57.1429%, #c4b5fd);
+  --color-gen-250: color-mix(in oklab, #f5f3ff 42.8571%, #c4b5fd);
+  --color-gen-300: color-mix(in oklab, #f5f3ff 28.5714%, #c4b5fd);
+  --color-gen-350: color-mix(in oklab, #f5f3ff 14.2857%, #c4b5fd);
+  --color-gen-400: #c4b5fd;
+  --color-gen-450: color-mix(in oklab, #c4b5fd 83.3333%, #8064b5);
+  --color-gen-500: color-mix(in oklab, #c4b5fd 66.6667%, #8064b5);
+  --color-gen-550: color-mix(in oklab, #c4b5fd 50%, #8064b5);
+  --color-gen-600: color-mix(in oklab, #c4b5fd 33.3333%, #8064b5);
+  --color-gen-650: color-mix(in oklab, #c4b5fd 16.6667%, #8064b5);
+  --color-gen-700: #8064b5;
+  --color-gen-750: color-mix(in oklab, #8064b5 80%, #211a35);
+  --color-gen-800: color-mix(in oklab, #8064b5 60%, #211a35);
+  --color-gen-850: color-mix(in oklab, #8064b5 40%, #211a35);
+  --color-gen-900: color-mix(in oklab, #8064b5 20%, #211a35);
+  --color-gen-950: #211a35;
+
+  /* xla */
+  --color-xla-50: #fff7f7;
+  --color-xla-100: color-mix(in oklab, #fff7f7 85.7143%, #fecdd3);
+  --color-xla-150: color-mix(in oklab, #fff7f7 71.4286%, #fecdd3);
+  --color-xla-200: color-mix(in oklab, #fff7f7 57.1429%, #fecdd3);
+  --color-xla-250: color-mix(in oklab, #fff7f7 42.8571%, #fecdd3);
+  --color-xla-300: color-mix(in oklab, #fff7f7 28.5714%, #fecdd3);
+  --color-xla-350: color-mix(in oklab, #fff7f7 14.2857%, #fecdd3);
+  --color-xla-400: #fecdd3;
+  --color-xla-450: color-mix(in oklab, #fecdd3 83.3333%, #855f64);
+  --color-xla-500: color-mix(in oklab, #fecdd3 66.6667%, #855f64);
+  --color-xla-550: color-mix(in oklab, #fecdd3 50%, #855f64);
+  --color-xla-600: color-mix(in oklab, #fecdd3 33.3333%, #855f64);
+  --color-xla-650: color-mix(in oklab, #fecdd3 16.6667%, #855f64);
+  --color-xla-700: #855f64;
+  --color-xla-750: color-mix(in oklab, #855f64 80%, #201517);
+  --color-xla-800: color-mix(in oklab, #855f64 60%, #201517);
+  --color-xla-850: color-mix(in oklab, #855f64 40%, #201517);
+  --color-xla-900: color-mix(in oklab, #855f64 20%, #201517);
+  --color-xla-950: #201517;
+
+  /* io */
+  --color-io-50: #fff8ec;
+  --color-io-100: color-mix(in oklab, #fff8ec 85.7143%, #bd8d45);
+  --color-io-150: color-mix(in oklab, #fff8ec 71.4286%, #bd8d45);
+  --color-io-200: color-mix(in oklab, #fff8ec 57.1429%, #bd8d45);
+  --color-io-250: color-mix(in oklab, #fff8ec 42.8571%, #bd8d45);
+  --color-io-300: color-mix(in oklab, #fff8ec 28.5714%, #bd8d45);
+  --color-io-350: color-mix(in oklab, #fff8ec 14.2857%, #bd8d45);
+  --color-io-400: #bd8d45;
+  --color-io-450: color-mix(in oklab, #bd8d45 83.3333%, #8f6732);
+  --color-io-500: color-mix(in oklab, #bd8d45 66.6667%, #8f6732);
+  --color-io-550: color-mix(in oklab, #bd8d45 50%, #8f6732);
+  --color-io-600: color-mix(in oklab, #bd8d45 33.3333%, #8f6732);
+  --color-io-650: color-mix(in oklab, #bd8d45 16.6667%, #8f6732);
+  --color-io-700: #8f6732;
+  --color-io-750: color-mix(in oklab, #8f6732 80%, #2a2115);
+  --color-io-800: color-mix(in oklab, #8f6732 60%, #2a2115);
+  --color-io-850: color-mix(in oklab, #8f6732 40%, #2a2115);
+  --color-io-900: color-mix(in oklab, #8f6732 20%, #2a2115);
+  --color-io-950: #2a2115;
+
+  /* optimize */
+  --color-optimize-50: #f1fbf6;
+  --color-optimize-100: color-mix(in oklab, #f1fbf6 85.7143%, #b8dcc8);
+  --color-optimize-150: color-mix(in oklab, #f1fbf6 71.4286%, #b8dcc8);
+  --color-optimize-200: color-mix(in oklab, #f1fbf6 57.1429%, #b8dcc8);
+  --color-optimize-250: color-mix(in oklab, #f1fbf6 42.8571%, #b8dcc8);
+  --color-optimize-300: color-mix(in oklab, #f1fbf6 28.5714%, #b8dcc8);
+  --color-optimize-350: color-mix(in oklab, #f1fbf6 14.2857%, #b8dcc8);
+  --color-optimize-400: #b8dcc8;
+  --color-optimize-450: color-mix(in oklab, #b8dcc8 83.3333%, #4d8966);
+  --color-optimize-500: color-mix(in oklab, #b8dcc8 66.6667%, #4d8966);
+  --color-optimize-550: color-mix(in oklab, #b8dcc8 50%, #4d8966);
+  --color-optimize-600: color-mix(in oklab, #b8dcc8 33.3333%, #4d8966);
+  --color-optimize-650: color-mix(in oklab, #b8dcc8 16.6667%, #4d8966);
+  --color-optimize-700: #4d8966;
+  --color-optimize-750: color-mix(in oklab, #4d8966 80%, #10251b);
+  --color-optimize-800: color-mix(in oklab, #4d8966 60%, #10251b);
+  --color-optimize-850: color-mix(in oklab, #4d8966 40%, #10251b);
+  --color-optimize-900: color-mix(in oklab, #4d8966 20%, #10251b);
+  --color-optimize-950: #10251b;
+}

@@ -118,7 +118,9 @@ function updateChartTooltip(
   element.dataset.side = placeBelow ? "bottom" : "top";
   element.style.left = `${left}px`;
   element.style.top = `${anchorY}px`;
-  element.style.transform = placeBelow ? "translate(-50%, 10px)" : "translate(-50%, calc(-100% - 10px))";
+  element.style.transform = placeBelow
+    ? "translate(-50%, 0.625rem)"
+    : "translate(-50%, calc(-100% - 0.625rem))";
 }
 
 function ChartTooltipLayer({ tooltipRef }: { tooltipRef: RefObject<HTMLDivElement | null> }) {

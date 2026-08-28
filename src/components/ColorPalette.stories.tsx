@@ -137,7 +137,7 @@ export const FullSpectrum: Story = {
             The shared category ramps copied from Olaf&apos;s Visual Builder provide every 50-step value from 50 through 950. Shared components should still consume semantic <code>--ui-*</code> roles unless category identity is part of their contract.
           </p>
         </header>
-        <div className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm">
+        <div aria-label="Olaf category color ramps" className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm" tabIndex={0}>
           <div className="grid gap-5">
             {spectrumFamilies.map((family) => <ColorRamp key={family} family={family} />)}
           </div>

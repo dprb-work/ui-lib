@@ -9,6 +9,10 @@ import {
 
 import { cn } from "../cn";
 import {
+  SegmentedControl,
+  type SegmentedControlOption,
+} from "./SegmentedControl";
+import {
   ThemeContext,
   type ResolvedThemeMode,
   type ThemeMode,
@@ -32,11 +36,26 @@ export type ThemeSwitchProps = {
 const defaultStorageKey = "dprb-work-theme";
 const systemThemeQuery = "(prefers-color-scheme: dark)";
 
-const themeOptions: ReadonlyArray<{ value: ThemeMode; label: string; icon: LucideIcon }> = [
-  { value: "system", label: "System", icon: Monitor },
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
+const themeOptions: readonly SegmentedControlOption<ThemeMode>[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
 ];
+const themeIcons: Record<ThemeMode, LucideIcon> = {
+  system: Monitor,
+  light: Sun,
+  dark: Moon,
+};
+
+function renderThemeOption(option: SegmentedControlOption<ThemeMode>) {
+  const Icon = themeIcons[option.value];
+  return (
+    <>
+      <Icon aria-hidden="true" />
+      <span>{option.label}</span>
+    </>
+  );
+}
 
 function isThemeMode(value: string | null): value is ThemeMode {
   return value === "system" || value === "light" || value === "dark";
@@ -118,30 +137,16 @@ export function ThemeSwitch({
   return (
     <div className={cn("grid gap-2", className)}>
       {!hideLabel && <span className="text-sm font-medium">{label}</span>}
-      <div
-        className={cn("inline-flex rounded-lg bg-ui-muted p-1", groupClassName)}
-        role="group"
-        aria-label={label}
+      <SegmentedControl
+        ariaLabel={label}
+        options={themeOptions}
+        value={mode}
+        onValueChange={setMode}
+        className={groupClassName}
+        buttonClassName={buttonClassName}
       >
-        {themeOptions.map((option) => {
-          const Icon = option.icon;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={mode === option.value}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent aria-pressed:bg-ui-surface aria-pressed:font-semibold aria-pressed:text-ui-surface-foreground aria-pressed:shadow-sm",
-                buttonClassName,
-              )}
-              onClick={() => setMode(option.value)}
-            >
-              <Icon aria-hidden="true" />
-              <span>{option.label}</span>
-            </button>
-          );
-        })}
-      </div>
+        {renderThemeOption}
+      </SegmentedControl>
     </div>
   );
 }

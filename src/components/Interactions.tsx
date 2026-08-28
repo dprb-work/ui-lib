@@ -48,7 +48,10 @@ export function Tabs({
   return (
     <RadixTabs.Root id={id} className={className} value={value} onValueChange={onValueChange}>
       <RadixTabs.List
-        className={cn("flex gap-1 border-b border-ui-border", listClassName)}
+        className={cn(
+          "flex rounded-t-lg border border-ui-border bg-ui-muted",
+          listClassName,
+        )}
         aria-label={ariaLabel}
       >
         {tabs.map((tab) => (
@@ -57,7 +60,7 @@ export function Tabs({
             value={tab.value}
             disabled={tab.disabled}
             className={cn(
-              "border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted-foreground outline-hidden hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:border-ui-accent data-[state=active]:font-semibold data-[state=active]:text-ui-foreground disabled:opacity-50",
+              "relative rounded-t-[0.4375rem] px-3 py-2 text-sm text-ui-muted-foreground outline-hidden transition-colors hover:text-ui-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:bg-ui-surface data-[state=active]:text-ui-foreground disabled:opacity-50",
               triggerClassName,
             )}
           >
@@ -70,7 +73,10 @@ export function Tabs({
           key={tab.value}
           value={tab.value}
           forceMount={forceMount || undefined}
-          className={cn("outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent", panelClassName)}
+          className={cn(
+            "rounded-b-lg rounded-t-none border border-t-0 border-ui-border bg-ui-surface outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent",
+            panelClassName,
+          )}
           data-tab-label={typeof tab.label === "string" ? tab.label : undefined}
           tabIndex={0}
         >

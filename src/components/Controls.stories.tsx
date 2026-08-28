@@ -106,9 +106,12 @@ export const Inputs: Story = {
             { label: "Complete", value: "complete" },
           ]}
         />
-        <label className="grid gap-1 text-sm text-ui-danger">
+        <label className="grid gap-1 text-sm">
           Invalid example
-          <TextInput aria-invalid defaultValue="Unknown base revision" />
+          <TextInput
+            defaultValue="Unknown base revision"
+            error="Select an existing base revision."
+          />
         </label>
         <label className="grid gap-1 text-sm text-ui-muted-foreground">
           Disabled example

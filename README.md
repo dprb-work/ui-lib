@@ -9,7 +9,7 @@ The library starts with controls proven in OLAF's visual builder and feedback su
 The base entry point contains controls and interaction primitives:
 
 - `Button`, `IconButton`, `CopyButton`
-- `Checkbox`, `Switch`
+- `Checkbox`, `Switch`, `SegmentedControl`
 - `TextInput`, `NumberInput`, `SelectInput`
 - `Badge`, `StatusPanel`
 - `Dialog`, `Tabs`, `Tooltip`

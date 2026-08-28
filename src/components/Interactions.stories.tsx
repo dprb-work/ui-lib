@@ -55,9 +55,7 @@ function TabsFixture() {
         forceMount
       >
         {(option) => (
-          <div className="rounded-lg bg-ui-muted p-4 text-sm">
-            {option.label} content
-          </div>
+          <div className="p-4 text-sm">{option.label} content</div>
         )}
       </Tabs>
     </Frame>

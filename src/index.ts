@@ -51,6 +51,11 @@ export {
   type PopoverTriggerProps,
 } from "./components/Popover";
 export {
+  SegmentedControl,
+  type SegmentedControlOption,
+  type SegmentedControlProps,
+} from "./components/SegmentedControl";
+export {
   ThemeProvider,
   ThemeSwitch,
   type ThemeProviderProps,

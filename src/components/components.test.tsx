@@ -5,6 +5,7 @@ import { describe, expect, test, vi } from "vitest";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
+import { NumberInput, SelectInput, TextInput } from "./Inputs";
 import { Checkbox, Switch } from "./BinaryControls";
 import { StatusPanel } from "./StatusPanel";
 
@@ -47,6 +48,43 @@ describe("shared controls", () => {
     await userEvent.click(toggle);
     expect(checkbox).toBeChecked();
     expect(toggle).toBeChecked();
+  });
+
+  test("standard inputs render and associate error messages", () => {
+    render(
+      <>
+        <label>
+          Repository
+          <TextInput error="Repository is required." />
+        </label>
+        <label>
+          Context lines
+          <NumberInput error="Use at least one line." />
+        </label>
+        <SelectInput
+          label="Review depth"
+          options={[{ label: "Focused", value: "focused" }]}
+          error="Choose a review depth."
+        />
+      </>,
+    );
+
+    expect(screen.getByRole("textbox", { name: "Repository" })).toHaveAccessibleDescription(
+      "Repository is required.",
+    );
+    expect(screen.getByRole("spinbutton", { name: "Context lines" })).toHaveAccessibleDescription(
+      "Use at least one line.",
+    );
+    expect(screen.getByRole("combobox", { name: "Review depth" })).toHaveAccessibleDescription(
+      "Choose a review depth.",
+    );
+    for (const control of [
+      screen.getByRole("textbox", { name: "Repository" }),
+      screen.getByRole("spinbutton", { name: "Context lines" }),
+      screen.getByRole("combobox", { name: "Review depth" }),
+    ]) {
+      expect(control).toHaveAttribute("aria-invalid", "true");
+    }
   });
 });
 

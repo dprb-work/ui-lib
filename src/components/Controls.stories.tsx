@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Clipboard, Search, Trash2 } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  Clipboard,
+  Columns2,
+  List,
+  Monitor,
+  Moon,
+  Search,
+  Sun,
+  Trash2,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { expect, fn, userEvent, within } from "storybook/test";
 
 import { Button } from "./Button";
@@ -8,6 +17,11 @@ import { Checkbox, Switch } from "./BinaryControls";
 import { IconButton } from "./IconButton";
 import { NumberInput, SelectInput, TextInput } from "./Inputs";
 import { CopyButton } from "./Interactions";
+import {
+  SegmentedControl,
+  type SegmentedControlOption,
+  type SegmentedControlProps,
+} from "./SegmentedControl";
 
 const meta = {
   title: "Components/Controls",
@@ -38,6 +52,56 @@ function Frame({ children, width = "w-auto" }: { children: ReactNode; width?: st
     </div>
   );
 }
+const layoutOptions = [
+  { value: "unified", label: "Unified" },
+  { value: "split", label: "Split" },
+] as const;
+
+const themeOptions = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+] as const;
+
+function renderLayoutOption(option: SegmentedControlOption) {
+  const Icon = option.value === "unified" ? List : Columns2;
+  return (
+    <>
+      <Icon aria-hidden="true" />
+      <span>{option.label}</span>
+    </>
+  );
+}
+
+function renderThemeOption(option: SegmentedControlOption) {
+  const Icon =
+    option.value === "system" ? Monitor : option.value === "light" ? Sun : Moon;
+  return (
+    <>
+      <Icon aria-hidden="true" />
+      <span>{option.label}</span>
+    </>
+  );
+}
+
+function ControlledSegmentedControl({
+  value: initialValue,
+  onValueChange,
+  ...props
+}: SegmentedControlProps) {
+  const [value, setValue] = useState(initialValue);
+  return (
+    <SegmentedControl
+      {...props}
+      value={value}
+      onValueChange={(nextValue) => {
+        setValue(nextValue);
+        onValueChange(nextValue);
+      }}
+    />
+  );
+}
+
 
 export const Buttons: Story = {
   render: (args) => (
@@ -148,6 +212,45 @@ export const BinaryControls: Story = {
     await expect(checkbox).toBeChecked();
     await userEvent.click(checkbox);
     await expect(checkbox).not.toBeChecked();
+  },
+};
+
+export const SegmentedControls: Story = {
+  args: { children: "Unused" },
+  render: () => (
+    <Frame>
+      <div className="grid gap-4">
+        <ControlledSegmentedControl
+          ariaLabel="View"
+          options={layoutOptions}
+          value="unified"
+          onValueChange={() => undefined}
+        >
+          {renderLayoutOption}
+        </ControlledSegmentedControl>
+        <ControlledSegmentedControl
+          ariaLabel="Theme"
+          options={themeOptions}
+          value="system"
+          onValueChange={() => undefined}
+        >
+          {renderThemeOption}
+        </ControlledSegmentedControl>
+      </div>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "Split" }));
+    await expect(canvas.getByRole("button", { name: "Split" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(canvas.getByRole("button", { name: "Dark" }));
+    await expect(canvas.getByRole("button", { name: "Dark" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   },
 };
 

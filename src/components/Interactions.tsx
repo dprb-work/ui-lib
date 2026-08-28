@@ -8,6 +8,7 @@ import {
   type ReactElement,
   type ReactNode,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -45,22 +46,75 @@ export function Tabs({
   panelClassName,
   forceMount = false,
 }: TabsProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const tabCount = tabs.length;
+  const [indicator, setIndicator] = useState<{
+    offset: number;
+    width: number;
+  } | null>(null);
+
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) {
+      return;
+    }
+
+    const updateIndicator = () => {
+      const activeTab = list.querySelector<HTMLElement>(
+        '[role="tab"][data-state="active"]',
+      );
+      const nextIndicator = activeTab
+        ? { offset: activeTab.offsetLeft, width: activeTab.offsetWidth }
+        : null;
+      setIndicator((currentIndicator) =>
+        currentIndicator?.offset === nextIndicator?.offset &&
+        currentIndicator?.width === nextIndicator?.width
+          ? currentIndicator
+          : nextIndicator,
+      );
+    };
+
+    updateIndicator();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(updateIndicator);
+    resizeObserver.observe(list);
+    for (const tab of list.querySelectorAll('[role="tab"]')) {
+      resizeObserver.observe(tab);
+    }
+    return () => resizeObserver.disconnect();
+  }, [tabCount, value]);
+
   return (
     <RadixTabs.Root id={id} className={className} value={value} onValueChange={onValueChange}>
       <RadixTabs.List
+        ref={listRef}
         className={cn(
-          "flex rounded-t-lg border border-ui-border bg-ui-muted",
+          "relative isolate flex rounded-t-lg border border-ui-border bg-ui-muted",
           listClassName,
         )}
         aria-label={ariaLabel}
       >
+        {indicator && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[0.4375rem] bg-ui-surface transition-[transform,width] duration-200 ease-out motion-reduce:transition-none"
+            style={{
+              width: indicator.width,
+              transform: `translateX(${indicator.offset}px)`,
+            }}
+            data-ui-tabs-indicator=""
+          />
+        )}
         {tabs.map((tab) => (
           <RadixTabs.Trigger
             key={tab.value}
             value={tab.value}
             disabled={tab.disabled}
             className={cn(
-              "relative rounded-t-[0.4375rem] px-3 py-2 text-sm text-ui-muted-foreground outline-hidden transition-colors hover:text-ui-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:bg-ui-surface data-[state=active]:text-ui-foreground disabled:opacity-50",
+              "relative z-10 rounded-[0.4375rem] px-3 py-2 text-sm text-ui-muted-foreground outline-hidden transition-colors duration-200 hover:text-ui-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:text-ui-foreground disabled:opacity-50 motion-reduce:transition-none",
               triggerClassName,
             )}
           >

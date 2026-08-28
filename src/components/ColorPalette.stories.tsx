@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import "./ColorPalette.stories.css";
+
 const meta = {
   title: "Foundations/Color Palette",
   parameters: { layout: "fullscreen" },
@@ -20,6 +22,7 @@ const semanticTokens: ColorToken[] = [
   { name: "Surface", variable: "--ui-surface", use: "Cards, dialogs, and raised regions", foreground: "--ui-surface-foreground" },
   { name: "Muted", variable: "--ui-muted", use: "Subdued controls and secondary regions", foreground: "--ui-muted-foreground" },
   { name: "Border", variable: "--ui-border", use: "Dividers, outlines, and control boundaries" },
+  { name: "Tooltip", variable: "--ui-tooltip", use: "Transient contextual surfaces", foreground: "--ui-tooltip-foreground" },
   { name: "Accent", variable: "--ui-accent", use: "Primary actions and selected states", foreground: "--ui-on-accent" },
   { name: "Accent hover", variable: "--ui-accent-hover", use: "Primary action hover state", foreground: "--ui-on-accent" },
   { name: "Danger", variable: "--ui-danger", use: "Destructive actions and error emphasis", foreground: "--ui-on-danger" },
@@ -87,6 +90,70 @@ export const SemanticColors: Story = {
           description="Chart renderers consume these aliases so products can tune data visualization independently without replacing component-level semantics."
           tokens={chartTokens}
         />
+      </div>
+    </main>
+  ),
+};
+
+const spectrumFamilies = [
+  "slate",
+  "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
+] as const;
+
+const spectrumSteps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+
+function ColorRamp({ family }: { family: typeof spectrumFamilies[number] }) {
+  return (
+    <section className="grid min-w-208 grid-cols-[5rem_1fr] items-center gap-4">
+      <h2 className="text-sm font-semibold capitalize text-ui-foreground">{family}</h2>
+      <div className="grid grid-cols-11 gap-1.5">
+        {spectrumSteps.map((step) => (
+          <div key={step} className="grid gap-1">
+            <div
+              className="h-12 rounded-md border border-black/8 dark:border-white/8"
+              style={{ backgroundColor: `var(--color-${family}-${step})` }}
+              title={`--color-${family}-${step}`}
+            />
+            <code className="text-center text-[0.625rem] text-ui-muted-foreground">{step}</code>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export const FullSpectrum: Story = {
+  render: () => (
+    <main className="min-h-screen bg-ui-background p-6 text-ui-foreground sm:p-10">
+      <div className="mx-auto grid max-w-7xl gap-8">
+        <header className="grid max-w-3xl gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ui-accent">Design foundations</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Full color spectrum</h1>
+          <p className="text-sm leading-6 text-ui-muted-foreground">
+            Slate is the library&apos;s neutral scale. The chromatic ramps are Tailwind CSS primitives available from 50 through 950; shared components should still consume semantic <code>--ui-*</code> roles.
+          </p>
+        </header>
+        <div className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm">
+          <div className="grid gap-5">
+            {spectrumFamilies.map((family) => <ColorRamp key={family} family={family} />)}
+          </div>
+        </div>
       </div>
     </main>
   ),

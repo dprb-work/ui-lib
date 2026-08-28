@@ -111,7 +111,7 @@ export function Tooltip({
           >
             {label}
             <RadixTooltip.Arrow
-              className={cn("fill-ui-foreground", arrowClassName)}
+              className={cn("fill-ui-tooltip", arrowClassName)}
               width={10}
               height={5}
             />

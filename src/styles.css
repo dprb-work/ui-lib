@@ -15,6 +15,8 @@
   --ui-muted: rgb(241 245 249);
   --ui-muted-foreground: rgb(71 85 105);
   --ui-border: rgb(203 213 225);
+  --ui-tooltip: rgb(241 245 249);
+  --ui-tooltip-foreground: rgb(15 23 42);
   --ui-accent: rgb(14 116 144);
   --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
   --ui-on-accent: rgb(240 253 250);
@@ -36,6 +38,8 @@
   --ui-muted: rgb(30 41 59);
   --ui-muted-foreground: rgb(148 163 184);
   --ui-border: rgb(51 65 85);
+  --ui-tooltip: rgb(30 41 59);
+  --ui-tooltip-foreground: rgb(226 232 240);
   --ui-accent: rgb(45 212 191);
   --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
   --ui-on-accent: rgb(15 23 42);
@@ -52,6 +56,8 @@
   --color-ui-muted: var(--ui-muted);
   --color-ui-muted-foreground: var(--ui-muted-foreground);
   --color-ui-border: var(--ui-border);
+  --color-ui-tooltip: var(--ui-tooltip);
+  --color-ui-tooltip-foreground: var(--ui-tooltip-foreground);
   --color-ui-accent: var(--ui-accent);
   --color-ui-accent-hover: var(--ui-accent-hover);
   --color-ui-on-accent: var(--ui-on-accent);
@@ -92,7 +98,7 @@
   left: 50%;
   width: 0.5rem;
   height: 0.5rem;
-  background: var(--ui-foreground);
+  background: var(--ui-tooltip);
   content: "";
   transform: translateX(-50%) rotate(45deg);
 }

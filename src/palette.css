@@ -1,5 +1,5 @@
-/* Shared category ramps extend Tailwind's scale to every 50:
-   50 = light surface, 300–400 = light pill, 700 = dark pill, 950 = dark surface. */
+/* Customized Tailwind ramps extend the scale to every 50:
+   50 = light surface, 300–400 = light emphasis, 700 = dark emphasis, 950 = dark surface. */
 @theme static {
   /* slate */
   --color-slate-50: #f8fafc;

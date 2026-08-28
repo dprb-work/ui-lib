@@ -92,7 +92,7 @@ export function Tabs({
       <RadixTabs.List
         ref={listRef}
         className={cn(
-          "relative isolate flex rounded-t-lg border border-ui-border bg-ui-muted",
+          "relative isolate mb-2 flex w-fit rounded-lg border border-ui-border bg-ui-muted",
           listClassName,
         )}
         aria-label={ariaLabel}
@@ -128,7 +128,7 @@ export function Tabs({
           value={tab.value}
           forceMount={forceMount || undefined}
           className={cn(
-            "rounded-b-lg rounded-t-none border border-t-0 border-ui-border bg-ui-surface outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent",
+            "outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent",
             panelClassName,
           )}
           data-tab-label={typeof tab.label === "string" ? tab.label : undefined}

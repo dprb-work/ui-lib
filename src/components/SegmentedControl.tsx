@@ -11,7 +11,7 @@ export type SegmentedControlOption<Value extends string = string> = {
 export type SegmentedControlProps<Value extends string = string> = {
   ariaLabel: string;
   options: readonly SegmentedControlOption<Value>[];
-  value: Value;
+  value: Value | null;
   onValueChange: (value: Value) => void;
   children?: (option: SegmentedControlOption<Value>) => ReactNode;
   className?: string;

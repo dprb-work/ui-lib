@@ -40,4 +40,20 @@ describe("SegmentedControl", () => {
     expect(unified).toHaveAttribute("aria-pressed", "false");
     expect(split).toHaveAttribute("aria-pressed", "true");
   });
+
+  test("supports an undecided state without an active indicator", () => {
+    const { container } = render(
+      <SegmentedControl
+        ariaLabel="Finding decision"
+        options={options}
+        value={null}
+        onValueChange={() => undefined}
+      />,
+    );
+
+    expect(container.querySelector("[data-ui-segment-indicator]")).toBeNull();
+    for (const button of screen.getAllByRole("button")) {
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    }
+  });
 });

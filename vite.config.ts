@@ -13,12 +13,17 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       cssFileName: "styles",
-      entry: fileURLToPath(new URL("src/index.ts", import.meta.url)),
-      fileName: "index",
+      entry: {
+        index: fileURLToPath(new URL("src/index.ts", import.meta.url)),
+        charts: fileURLToPath(new URL("src/charts.tsx", import.meta.url)),
+        "data-table": fileURLToPath(new URL("src/data-table.tsx", import.meta.url)),
+      },
       formats: ["es"],
     },
     rollupOptions: {
       external: [
+        "@tanstack/react-table",
+        "chart.js",
         "clsx",
         "lucide-react",
         "radix-ui",

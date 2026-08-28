@@ -3,4 +3,5 @@ dist/
 storybook-static/
 coverage/
 *.tsbuildinfo
+.scratch/
 .DS_Store

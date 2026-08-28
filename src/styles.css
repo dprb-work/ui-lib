@@ -1,6 +1,82 @@
 @import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
+@import "./palette.css";
 
+@source "./components";
+@source "./*.tsx";
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --ui-background: rgb(248 250 252);
+  --ui-foreground: rgb(15 23 42);
+  --ui-surface: rgb(255 255 255);
+  --ui-surface-foreground: rgb(15 23 42);
+  --ui-muted: rgb(241 245 249);
+  --ui-muted-foreground: rgb(71 85 105);
+  --ui-border: rgb(203 213 225);
+  --ui-tooltip: rgb(241 245 249);
+  --ui-tooltip-foreground: rgb(15 23 42);
+  --ui-accent: rgb(14 116 144);
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
+  --ui-on-accent: rgb(240 253 250);
+  --ui-danger: rgb(190 18 60);
+  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, black);
+  --ui-on-danger: rgb(255 241 242);
+  --ui-chart-accent: var(--ui-accent);
+  --ui-chart-surface: var(--ui-surface);
+  --ui-chart-muted: var(--ui-muted-foreground);
+  --ui-chart-foreground: var(--ui-foreground);
+}
+
+.dark, [data-theme="dark"] {
+  color-scheme: dark;
+  --ui-background: rgb(0 3 16);
+  --ui-foreground: rgb(226 232 240);
+  --ui-surface: rgb(10 17 31);
+  --ui-surface-foreground: rgb(226 232 240);
+  --ui-muted: rgb(30 41 59);
+  --ui-muted-foreground: rgb(148 163 184);
+  --ui-border: rgb(51 65 85);
+  --ui-tooltip: rgb(30 41 59);
+  --ui-tooltip-foreground: rgb(226 232 240);
+  --ui-accent: rgb(45 212 191);
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
+  --ui-on-accent: rgb(15 23 42);
+  --ui-danger: rgb(251 113 133);
+  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, white);
+  --ui-on-danger: rgb(76 5 25);
+}
+
+@theme inline {
+  --color-ui-background: var(--ui-background);
+  --color-ui-foreground: var(--ui-foreground);
+  --color-ui-surface: var(--ui-surface);
+  --color-ui-surface-foreground: var(--ui-surface-foreground);
+  --color-ui-muted: var(--ui-muted);
+  --color-ui-muted-foreground: var(--ui-muted-foreground);
+  --color-ui-border: var(--ui-border);
+  --color-ui-tooltip: var(--ui-tooltip);
+  --color-ui-tooltip-foreground: var(--ui-tooltip-foreground);
+  --color-ui-accent: var(--ui-accent);
+  --color-ui-accent-hover: var(--ui-accent-hover);
+  --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-danger: var(--ui-danger);
+  --color-ui-danger-hover: var(--ui-danger-hover);
+  --color-ui-on-danger: var(--ui-on-danger);
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@layer base {
+  body {
+    min-width: 20rem;
+    min-height: 100vh;
+    background-color: var(--ui-background);
+    color: var(--ui-foreground);
+  }
+}
 
 [data-ui-number-input] {
   appearance: textfield;
@@ -11,32 +87,56 @@
   margin: 0;
   appearance: none;
 }
-@source "./components";
-@custom-variant dark (&:is(.dark *));
 
-:root {
-  --ui-accent: oklch(0.55 0.18 250);
-  --ui-accent-hover: oklch(0.48 0.18 250);
-  --ui-on-accent: white;
-  --ui-danger: oklch(0.58 0.22 27);
-  --ui-danger-hover: oklch(0.51 0.22 27);
-  --ui-on-danger: white;
+[data-ui-chart] {
+  position: relative;
+  min-width: 0;
+  font-family: var(--font-sans);
 }
 
-.dark {
-  --ui-accent: oklch(0.72 0.14 250);
-  --ui-accent-hover: oklch(0.78 0.12 250);
-  --ui-on-accent: oklch(0.16 0.03 250);
-  --ui-danger: oklch(0.7 0.18 27);
-  --ui-danger-hover: oklch(0.76 0.15 27);
-  --ui-on-danger: oklch(0.16 0.03 27);
+[data-ui-chart-tooltip]::after {
+  position: absolute;
+  left: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--ui-tooltip);
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
 }
 
-@theme inline {
-  --color-ui-accent: var(--ui-accent);
-  --color-ui-accent-hover: var(--ui-accent-hover);
-  --color-ui-on-accent: var(--ui-on-accent);
-  --color-ui-danger: var(--ui-danger);
-  --color-ui-danger-hover: var(--ui-danger-hover);
-  --color-ui-on-danger: var(--ui-on-danger);
+[data-ui-chart-tooltip][data-side="top"]::after {
+  bottom: -0.2rem;
+}
+
+[data-ui-chart-tooltip][data-side="bottom"]::after {
+  top: -0.2rem;
+}
+
+[data-ui-distribution-svg] .box-whisker,
+[data-ui-distribution-svg] .box-median,
+[data-ui-distribution-svg] .violin-axis {
+  stroke: var(--ui-chart-foreground);
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-ui-distribution-svg] .box-body,
+[data-ui-distribution-svg] .violin-body {
+  fill: color-mix(in oklab, var(--ui-chart-accent) 18%, transparent);
+  stroke: var(--ui-chart-accent);
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
+}
+
+[data-ui-distribution-svg] .box-median {
+  stroke: var(--ui-chart-accent);
+  stroke-width: 1;
+}
+
+[data-ui-distribution-range] {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ui-chart-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }

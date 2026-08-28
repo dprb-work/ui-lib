@@ -22,22 +22,22 @@ export function StatusPanel({
   return (
     <section
       className={cn(
-        "mx-auto grid w-full max-w-2xl gap-3 rounded-lg border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100",
-        tone === "danger" && "border-red-200 dark:border-red-900",
+        "mx-auto grid w-full max-w-2xl gap-3 rounded-lg border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground shadow-sm",
+        tone === "danger" && "border-ui-danger",
         className,
       )}
       {...sectionProps}
     >
       {eyebrow ? (
         <p className={cn(
-          "m-0 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400",
-          tone === "danger" && "text-red-700 dark:text-red-300",
+          "m-0 text-xs font-semibold uppercase tracking-[0.12em] text-ui-muted-foreground",
+          tone === "danger" && "text-ui-danger",
         )}>
           {eyebrow}
         </p>
       ) : null}
       <h1 className="m-0 text-2xl font-semibold tracking-tight">{title}</h1>
-      {description ? <div className="text-sm leading-6 text-slate-600 dark:text-slate-300">{description}</div> : null}
+      {description ? <div className="text-sm leading-6 text-ui-muted-foreground">{description}</div> : null}
       {actions ? <div className="flex flex-wrap gap-2 pt-1">{actions}</div> : null}
     </section>
   );

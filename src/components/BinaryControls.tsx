@@ -23,12 +23,12 @@ export function Switch({ label, className, ...switchProps }: SwitchProps) {
     <RadixSwitch.Root
       aria-label={label}
       className={cn(
-        "relative h-5 w-9 shrink-0 rounded-full bg-slate-300 p-0.5 outline-hidden transition-colors data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700",
+        "relative h-5 w-9 shrink-0 rounded-full bg-ui-border p-0.5 outline-hidden transition-colors data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ui-background disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...switchProps}
     >
-      <RadixSwitch.Thumb className="block size-4 rounded-full bg-white shadow-sm transition-transform data-[state=checked]:translate-x-4 dark:bg-slate-950" />
+      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface shadow-sm transition-transform data-[state=checked]:translate-x-4" />
     </RadixSwitch.Root>
   );
 }
@@ -38,7 +38,7 @@ export function Checkbox({ label, className, ...checkboxProps }: CheckboxProps) 
     <RadixCheckbox.Root
       aria-label={label}
       className={cn(
-        "grid size-4 shrink-0 place-items-center rounded-xs border border-slate-400 bg-white text-ui-on-accent outline-hidden data-[state=checked]:border-ui-accent data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-950",
+        "grid size-4 shrink-0 place-items-center rounded-xs border border-ui-border bg-ui-surface text-ui-on-accent outline-hidden data-[state=checked]:border-ui-accent data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...checkboxProps}

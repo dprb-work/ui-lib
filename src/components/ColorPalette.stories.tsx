@@ -95,13 +95,13 @@ export const SemanticColors: Story = {
 };
 
 const spectrumFamilies = [
-  "actor",
-  "branch",
-  "stream",
-  "gen",
-  "xla",
-  "io",
-  "optimize",
+  "slate",
+  "gray",
+  "cyan",
+  "violet",
+  "rose",
+  "amber",
+  "green",
 ] as const;
 
 const spectrumSteps = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950] as const;
@@ -132,12 +132,12 @@ export const FullSpectrum: Story = {
       <div className="mx-auto grid max-w-7xl gap-8">
         <header className="grid max-w-3xl gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ui-accent">Design foundations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Olaf category spectrum</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Extended Tailwind spectrum</h1>
           <p className="text-sm leading-6 text-ui-muted-foreground">
-            The shared category ramps copied from Olaf&apos;s Visual Builder provide every 50-step value from 50 through 950. Shared components should still consume semantic <code>--ui-*</code> roles unless category identity is part of their contract.
+            These customized Tailwind color ramps provide every 50-step value from 50 through 950. Shared components should still consume semantic <code>--ui-*</code> roles unless a primitive color is part of their contract.
           </p>
         </header>
-        <div aria-label="Olaf category color ramps" className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm" tabIndex={0}>
+        <div aria-label="Extended Tailwind color ramps" className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm" tabIndex={0}>
           <div className="grid gap-5">
             {spectrumFamilies.map((family) => <ColorRamp key={family} family={family} />)}
           </div>

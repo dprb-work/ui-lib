@@ -20,6 +20,8 @@ export {
   SelectInput,
   type SelectInputProps,
   type SelectOption,
+  TextareaInput,
+  type TextareaInputProps,
   TextInput,
   type TextInputProps,
 } from "./components/Inputs";

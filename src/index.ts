@@ -13,6 +13,7 @@ export {
   Switch,
   type SwitchProps,
 } from "./components/BinaryControls";
+export { CopyableText, type CopyableTextProps } from "./components/CopyableText";
 export { IconButton, type IconButtonProps } from "./components/IconButton";
 export {
   NumberInput,

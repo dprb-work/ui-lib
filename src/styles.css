@@ -21,6 +21,7 @@
   --ui-accent: rgb(14 116 144);
   --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
   --ui-on-accent: rgb(240 253 250);
+  --ui-success: var(--color-green-700);
   --ui-danger: rgb(190 18 60);
   --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, black);
   --ui-on-danger: rgb(255 241 242);
@@ -44,6 +45,7 @@
   --ui-accent: rgb(45 212 191);
   --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
   --ui-on-accent: rgb(15 23 42);
+  --ui-success: var(--color-green-400);
   --ui-danger: rgb(251 113 133);
   --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, white);
   --ui-on-danger: rgb(76 5 25);
@@ -62,6 +64,7 @@
   --color-ui-accent: var(--ui-accent);
   --color-ui-accent-hover: var(--ui-accent-hover);
   --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-success: var(--ui-success);
   --color-ui-danger: var(--ui-danger);
   --color-ui-danger-hover: var(--ui-danger-hover);
   --color-ui-on-danger: var(--ui-on-danger);

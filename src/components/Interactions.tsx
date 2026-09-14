@@ -15,6 +15,7 @@ import {
 
 import { cn } from "../cn";
 import { tooltipSurfaceClassName } from "./tooltipStyles";
+import { usePortalContainer } from "./portal-context";
 
 export type OverlaySide = "top" | "right" | "bottom" | "left";
 export type TabOption = { value: string; label: ReactNode; disabled?: boolean };
@@ -158,11 +159,12 @@ export function Tooltip({
   className,
   arrowClassName,
 }: TooltipProps) {
+  const portalContainer = usePortalContainer();
   return (
     <RadixTooltip.Provider delayDuration={delayDuration} skipDelayDuration={100}>
       <RadixTooltip.Root>
         <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
-        <RadixTooltip.Portal>
+        <RadixTooltip.Portal container={portalContainer}>
           <RadixTooltip.Content
             className={cn(tooltipSurfaceClassName, className)}
             side={side}
@@ -205,10 +207,11 @@ export function Dialog({
   titleClassName,
   unstyled = false,
 }: DialogProps) {
+  const portalContainer = usePortalContainer();
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>
-      <RadixDialog.Portal>
+      <RadixDialog.Portal container={portalContainer}>
         <RadixDialog.Overlay
           className={cn(!unstyled && "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm", overlayClassName)}
         />

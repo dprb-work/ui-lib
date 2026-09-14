@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { cn } from "../cn";
+import { usePortalContainer } from "./portal-context";
 
 export type PopoverProps = ComponentPropsWithoutRef<typeof RadixPopover.Root>;
 export type PopoverTriggerProps = ComponentPropsWithoutRef<typeof RadixPopover.Trigger>;
@@ -59,8 +60,9 @@ export const PopoverContent = forwardRef<
   },
   ref,
 ) {
+  const contextPortalContainer = usePortalContainer();
   return (
-    <RadixPopover.Portal container={portalContainer}>
+    <RadixPopover.Portal container={portalContainer ?? contextPortalContainer}>
       <RadixPopover.Content
         ref={ref}
         className={cn(

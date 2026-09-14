@@ -3,6 +3,7 @@ import { Select } from "radix-ui";
 import { type ComponentPropsWithRef, type ComponentPropsWithoutRef, type ReactNode, useId } from "react";
 
 import { cn } from "../cn";
+import { usePortalContainer } from "./portal-context";
 
 type InputAppearance = "default" | "subtle";
 
@@ -167,6 +168,7 @@ export function SelectInput({
   required,
   className,
 }: SelectInputProps) {
+  const portalContainer = usePortalContainer();
   const generatedId = useId();
   const errorId = `${generatedId}-error`;
   const isInvalid = invalid || Boolean(error);
@@ -204,7 +206,7 @@ export function SelectInput({
             />
           </Select.Icon>
         </Select.Trigger>
-        <Select.Portal>
+        <Select.Portal container={portalContainer}>
           <Select.Content
             className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-ui-border bg-ui-surface text-ui-surface-foreground shadow-xl"
             position="popper"

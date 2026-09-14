@@ -8,9 +8,9 @@ The library starts with controls proven in OLAF's visual builder and feedback su
 
 The base entry point contains controls and interaction primitives:
 
-- `Button`, `IconButton`, `CopyButton`
+- `Button`, `IconButton`, `CopyButton`, `CopyableText`
 - `Checkbox`, `Switch`, `SegmentedControl`
-- `TextInput`, `NumberInput`, `SelectInput`
+- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`
 - `Badge`, `StatusPanel`
 - `Dialog`, `Tabs`, `Tooltip`
 - `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
@@ -88,6 +88,15 @@ after the package remain authoritative.
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
 those classes replace the component defaults without `!important`.
+
+`CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
+renders wrapped code text with the existing `CopyButton`; callers retain layout
+and copy-button styling through `className` and `copyButtonClassName`.
+
+`TextareaInput` accepts native textarea props, including `ref`, and shares the
+input appearance and accessible error contract. It grows with content where
+the browser supports `field-sizing`; `rows` supplies the native fallback.
+Consumers control maximum height, resizing, and submission behavior.
 
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
 content, and title treatment through plain CSS.

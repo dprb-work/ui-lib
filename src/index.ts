@@ -13,6 +13,7 @@ export {
   Switch,
   type SwitchProps,
 } from "./components/BinaryControls";
+export { CopyableText, type CopyableTextProps } from "./components/CopyableText";
 export { IconButton, type IconButtonProps } from "./components/IconButton";
 export {
   NumberInput,
@@ -20,6 +21,8 @@ export {
   SelectInput,
   type SelectInputProps,
   type SelectOption,
+  TextareaInput,
+  type TextareaInputProps,
   TextInput,
   type TextInputProps,
 } from "./components/Inputs";

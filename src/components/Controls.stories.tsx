@@ -15,7 +15,7 @@ import { expect, fn, userEvent, within } from "storybook/test";
 import { Button } from "./Button";
 import { Checkbox, Switch } from "./BinaryControls";
 import { IconButton } from "./IconButton";
-import { NumberInput, SelectInput, TextInput } from "./Inputs";
+import { NumberInput, SelectInput, TextareaInput, TextInput } from "./Inputs";
 import { CopyButton } from "./Interactions";
 import {
   SegmentedControl,
@@ -81,6 +81,20 @@ function renderThemeOption(option: SegmentedControlOption) {
       <Icon aria-hidden="true" />
       <span>{option.label}</span>
     </>
+  );
+}
+
+function ControlledTextareaInput() {
+  const [value, setValue] = useState("Capture the review context.\nCall out remaining risks.");
+  return (
+    <label className="grid gap-1 text-sm">
+      Review notes
+      <TextareaInput
+        value={value}
+        rows={3}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    </label>
   );
 }
 
@@ -162,6 +176,7 @@ export const Inputs: Story = {
           Context lines
           <NumberInput defaultValue={25} min={1} />
         </label>
+        <ControlledTextareaInput />
         <SelectInput
           label="Review depth"
           defaultValue="focused"

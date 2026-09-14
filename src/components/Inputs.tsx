@@ -1,6 +1,6 @@
 import { Check, ChevronDown } from "lucide-react";
 import { Select } from "radix-ui";
-import { type ComponentPropsWithoutRef, type ReactNode, useId } from "react";
+import { type ComponentPropsWithRef, type ComponentPropsWithoutRef, type ReactNode, useId } from "react";
 
 import { cn } from "../cn";
 
@@ -12,6 +12,11 @@ export type TextInputProps = Omit<ComponentPropsWithoutRef<"input">, "type"> & {
 };
 
 export type NumberInputProps = Omit<ComponentPropsWithoutRef<"input">, "type"> & {
+  appearance?: InputAppearance;
+  error?: ReactNode;
+};
+
+export type TextareaInputProps = ComponentPropsWithRef<"textarea"> & {
   appearance?: InputAppearance;
   error?: ReactNode;
 };
@@ -43,9 +48,15 @@ const defaultClasses =
 const subtleClasses =
   "mb-px h-7 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
 
+const textareaDefaultClasses =
+  "min-h-16 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
+const textareaSubtleClasses =
+  "mb-px min-h-16 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
+
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
 }
+
 
 function InputError({ id, children }: { id: string; children: ReactNode }) {
   return (
@@ -76,6 +87,37 @@ export function TextInput({
         aria-invalid={error ? true : ariaInvalid}
         className={inputClassName(appearance, className)}
         type="text"
+      />
+      {error && <InputError id={errorId}>{error}</InputError>}
+    </div>
+  );
+}
+
+export function TextareaInput({
+  appearance = "default",
+  error,
+  id,
+  className,
+  ref,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
+  ...textareaProps
+}: TextareaInputProps) {
+  const generatedId = useId();
+  const errorId = `${id ?? generatedId}-error`;
+  const description = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
+  return (
+    <div className="grid gap-1">
+      <textarea
+        {...textareaProps}
+        ref={ref}
+        id={id}
+        aria-describedby={description || undefined}
+        aria-invalid={error ? true : ariaInvalid}
+        className={cn(
+          appearance === "subtle" ? textareaSubtleClasses : textareaDefaultClasses,
+          className,
+        )}
       />
       {error && <InputError id={errorId}>{error}</InputError>}
     </div>

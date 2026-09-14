@@ -1,0 +1,2 @@
+# Deliberately versioned generated payloads only. Never put live state here.
+artifacts/** filter=lfs diff=lfs merge=lfs -text

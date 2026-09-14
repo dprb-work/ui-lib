@@ -1,5 +1,8 @@
 import "./styles.css";
 
+export { ContentBlock, type ContentBlockProps } from "./components/ContentBlock";
+export { CodeViewport, type CodeViewportProps } from "./components/CodeViewport";
+export { ColorPicker, type ColorPickerProps } from "./components/ColorPicker";
 export { Badge, type BadgeProps, type BadgeTone } from "./components/Badge";
 export {
   Button,
@@ -14,7 +17,9 @@ export {
   type SwitchProps,
 } from "./components/BinaryControls";
 export { CopyableText, type CopyableTextProps } from "./components/CopyableText";
+export { Calendar, type CalendarProps } from "./components/Calendar";
 export { IconButton, type IconButtonProps } from "./components/IconButton";
+export { Fullscreen, type FullscreenProps } from "./components/Fullscreen";
 export {
   NumberInput,
   type NumberInputProps,
@@ -53,6 +58,7 @@ export {
   type PopoverProps,
   type PopoverTriggerProps,
 } from "./components/Popover";
+export { PortalProvider } from "./components/portal-context";
 export {
   SegmentedControl,
   type SegmentedControlOption,

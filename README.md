@@ -10,11 +10,11 @@ The base entry point contains controls and interaction primitives:
 
 - `Button`, `IconButton`, `CopyButton`, `CopyableText`
 - `Checkbox`, `Switch`, `SegmentedControl`
-- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`
-- `Badge`, `StatusPanel`
-- `Dialog`, `Tabs`, `Tooltip`
+- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `ColorPicker`
+- `Badge`, `StatusPanel`, `ContentBlock`, `CodeViewport`
+- `Calendar`, `Fullscreen`
+- `Dialog`, `Tabs`, `Tooltip`, `PortalProvider`
 - `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
-- `ThemeProvider`, `ThemeSwitch`, `useTheme`
 
 Heavy components use separate entry points so consumers do not install or bundle
 their dependencies unless they import those components:
@@ -82,8 +82,9 @@ Consumers may override these semantic variables at their application root:
 `--ui-background`, `--ui-foreground`, `--ui-surface`,
 `--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
 `--ui-border`, `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`,
-`--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`. Product styles loaded
-after the package remain authoritative.
+`--ui-success`, `--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`.
+`--ui-success` is the semantic success color. Product styles loaded after the
+package remain authoritative.
 
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
@@ -98,8 +99,44 @@ input appearance and accessible error contract. It grows with content where
 the browser supports `field-sizing`; `rows` supplies the native fallback.
 Consumers control maximum height, resizing, and submission behavior.
 
+`ContentBlock` renders a bordered container with an inset title and an absolutely
+positioned `corner` action. It does not reserve a column for the action.
+Consumers supply the title, icon, metadata, accessible name, content segments,
+and surrounding spacing. Links and domain behavior remain in the consumer.
+
+`CodeViewport` accepts native `pre` props, including `ref`, and a `wrap` boolean.
+Its scroll container spans the available width. The consumer owns preferences,
+syntax highlighting, line numbers, and streaming behavior.
+
+`ColorPicker` is controlled by `value` and `onValueChange` using opaque
+`#rrggbb` strings. It provides RGB sliders, a native color well, and an editable
+hex field. Invalid drafts stay in the field without changing the selected color.
+Supply `label` for the controls' accessible names. Compose it with `Popover`
+when selection should open on click; the consumer owns persistence.
+
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
 content, and title treatment through plain CSS.
+
+`Calendar` is a controlled date grid. Pass the selected `value` and visible
+`month`, then update them through `onValueChange` and `onMonthChange`.
+`onValueChange` receives the selected local calendar day at midnight. It derives
+weekday order and labels from `locale`, unless `weekStartsOn` overrides the
+locale's first weekday. `min`, `max`, and `disabled` disable dates. Arrow keys
+move by day or week, Home and End move within a week, Page Up and Page Down move
+by month, and Shift plus Page Up or Page Down moves by year.
+
+`Fullscreen` is a controlled `Dialog` wrapper. Pass its required `trigger`,
+`open`, `onOpenChange`, and `closeLabel`; `onOpenChange(false)` closes it. The
+component provides its own stationary close button, modal overlay, focus trap,
+Escape handling, scroll lock, and focus return. Set `zoomable` for content that
+remains usable when its width grows from 100% to 300% in 25% steps. The content
+area scrolls in that mode.
+
+`PortalProvider` redirects `Dialog`, `Tooltip`, and `PopoverContent` portals to
+its required `HTMLElement` or `DocumentFragment` container. Put it around a
+rendered subtree that must stay inside a shadow root or another host boundary.
+For one `PopoverContent`, its `portalContainer` prop takes precedence over the
+provider container.
 
 ## Develop
 

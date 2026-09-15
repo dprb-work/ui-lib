@@ -10,7 +10,7 @@ The base entry point contains controls and interaction primitives:
 
 - `Button`, `IconButton`, `CopyButton`, `CopyableText`
 - `Checkbox`, `Switch`, `SegmentedControl`
-- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `ColorPicker`
+- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`
 - `Badge`, `StatusPanel`, `ContentBlock`, `CodeViewport`
 - `Calendar`, `Fullscreen`
 - `Dialog`, `Tabs`, `Tooltip`, `PortalProvider`
@@ -98,6 +98,14 @@ and copy-button styling through `className` and `copyButtonClassName`.
 input appearance and accessible error contract. It grows with content where
 the browser supports `field-sizing`; `rows` supplies the native fallback.
 Consumers control maximum height, resizing, and submission behavior.
+
+`NativeSelect` styles a native HTML select with a decorative chevron. Use native
+`option` children and select props, including `ref`, `name`, `value`,
+`defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
+and form submission. `density` accepts `standard` or `compact`; `className`
+styles the select, and `wrapperClassName` controls its surrounding layout.
+Consumers own labels, options, and selection policy. Use `SelectInput` instead
+when the existing Radix-backed picker and its `onValueChange` API are needed.
 
 `ContentBlock` renders a bordered container with an inset title and an absolutely
 positioned `corner` action. It does not reserve a column for the action.

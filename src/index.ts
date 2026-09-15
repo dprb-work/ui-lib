@@ -31,6 +31,7 @@ export {
   TextInput,
   type TextInputProps,
 } from "./components/Inputs";
+export { NativeSelect, type NativeSelectProps } from "./components/NativeSelect";
 export { StatusPanel, type StatusPanelProps } from "./components/StatusPanel";
 export {
   CopyButton,

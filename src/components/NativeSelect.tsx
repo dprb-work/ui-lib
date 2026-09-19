@@ -9,9 +9,9 @@ export type NativeSelectProps = ComponentPropsWithRef<"select"> & {
 };
 
 const standardClasses =
-  "min-h-11 w-full appearance-none rounded-md border border-ui-border bg-ui-background px-3 py-2 pr-9 text-sm text-ui-foreground outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-accent disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 w-full appearance-none rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pt-2 pl-1 pr-6 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
 const compactClasses =
-  "min-h-8 cursor-pointer appearance-none rounded-sm bg-transparent py-1 pr-5 pl-2 text-xs text-ui-muted-foreground hover:bg-ui-muted outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ui-accent disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-8 w-full cursor-pointer appearance-none rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pl-1 pr-5 [font-family:inherit] text-[0.625rem] text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
 
 export function NativeSelect({
   className,
@@ -30,8 +30,8 @@ export function NativeSelect({
       <ChevronDown
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-ui-muted-foreground",
-          density === "compact" ? "right-1 size-3.5" : "size-4",
+          "pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-ui-muted-foreground",
+          density === "compact" ? "right-0 size-3" : "top-[calc(50%+0.25rem)] size-3.5",
         )}
       />
     </div>

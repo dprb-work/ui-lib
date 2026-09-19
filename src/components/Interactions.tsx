@@ -31,6 +31,7 @@ export type TabsProps = {
   listClassName?: string;
   triggerClassName?: string;
   panelClassName?: string;
+  renderTabList?: (list: ReactElement) => ReactNode;
   forceMount?: boolean;
 };
 
@@ -45,6 +46,7 @@ export function Tabs({
   listClassName,
   triggerClassName,
   panelClassName,
+  renderTabList,
   forceMount = false,
 }: TabsProps) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -88,9 +90,7 @@ export function Tabs({
     return () => resizeObserver.disconnect();
   }, [tabCount, value]);
 
-  return (
-    <RadixTabs.Root id={id} className={className} value={value} onValueChange={onValueChange}>
-      <RadixTabs.List
+  const tabList = <RadixTabs.List
         ref={listRef}
         className={cn(
           "relative isolate mb-2 flex w-fit rounded-lg border border-ui-border bg-ui-muted",
@@ -122,7 +122,11 @@ export function Tabs({
             {tab.label}
           </RadixTabs.Trigger>
         ))}
-      </RadixTabs.List>
+      </RadixTabs.List>;
+
+  return (
+    <RadixTabs.Root id={id} className={className} value={value} onValueChange={onValueChange}>
+      {renderTabList ? renderTabList(tabList) : tabList}
       {tabs.map((tab) => (
         <RadixTabs.Content
           key={tab.value}

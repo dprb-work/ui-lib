@@ -90,6 +90,11 @@ The consuming component owns layout. Pass `className` at the usage site to chang
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
 those classes replace the component defaults without `!important`.
 
+Use parent layout gaps for space between sibling components. Internal content
+padding belongs to the component; page gutters and safe areas belong to the
+consumer's container. A component must not add external top/bottom spacing to
+separate itself from its neighbors.
+
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
 and copy-button styling through `className` and `copyButtonClassName`.
@@ -102,10 +107,12 @@ Consumers control maximum height, resizing, and submission behavior.
 `NativeSelect` styles a native HTML select with a decorative chevron. Use native
 `option` children and select props, including `ref`, `name`, `value`,
 `defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
-and form submission. `density` accepts `standard` or `compact`; `className`
-styles the select, and `wrapperClassName` controls its surrounding layout.
-Consumers own labels, options, and selection policy. Use `SelectInput` instead
-when the existing Radix-backed picker and its `onValueChange` API are needed.
+and form submission. `density` accepts `standard` or `compact`; the standard
+density keeps a 44px control height while positioning selected text close to the
+underline. `className` styles the select, and `wrapperClassName` controls its
+surrounding layout. Consumers own labels, options, and selection policy. Use
+`SelectInput` instead when the existing Radix-backed picker and its
+`onValueChange` API are needed.
 
 `ContentBlock` renders a bordered container with an inset title and an absolutely
 positioned `corner` action. It does not reserve a column for the action.
@@ -154,6 +161,18 @@ corepack pnpm run dev
 ```
 
 Storybook is the component catalog and browser verification surface.
+
+### CoEx input, select and tab defaults
+
+CoEx uses the shared `TextInput`, `NativeSelect` and `Tabs` contracts. This is library behavior, not a CoEx stylesheet override.
+
+`TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and error treatment. Consumers own accessible labels, query state, routing and page layout. The recent-chat search uses this default.
+
+`NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density keeps the native control at 44px high while placing its text close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
+
+`Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics. CoEx uses that composition for consolidated tabs in the overview title slot.
+
+The affected shared stories and consumers were updated with these defaults. Preserve controlled and uncontrolled values, native form behavior, refs, labels, error descriptions, focus, disabled state, light/dark appearance and tab accessibility when changing these components. Do not add a parallel primitive for a style-only variation.
 
 ## Verify
 

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createRef } from "react";
 import { describe, expect, test, vi } from "vitest";
 
 import { Badge } from "./Badge";
@@ -48,6 +49,24 @@ describe("shared controls", () => {
     await userEvent.click(toggle);
     expect(checkbox).toBeChecked();
     expect(toggle).toBeChecked();
+  });
+
+  test("supports native search behavior and refs without losing error association", () => {
+    const ref = createRef<HTMLInputElement>();
+    render(
+      <label>
+        Search repositories
+        <TextInput ref={ref} type="search" error="Enter at least two characters." />
+      </label>,
+    );
+
+    const input = screen.getByRole("searchbox", { name: "Search repositories" });
+    ref.current?.focus();
+
+    expect(input).toHaveFocus();
+    expect(input).toHaveAttribute("type", "search");
+    expect(input).toHaveAccessibleDescription("Enter at least two characters.");
+    expect(input).toHaveAttribute("aria-invalid", "true");
   });
 
   test("standard inputs render and associate error messages", () => {

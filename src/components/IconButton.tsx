@@ -1,14 +1,15 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
 import { Button } from "./Button";
 
 export type IconButtonProps = Omit<
-  ComponentPropsWithoutRef<typeof Button>,
-  "aria-label" | "children" | "size" | "title"
+  ComponentPropsWithRef<typeof Button>,
+  "aria-label" | "children" | "label" | "size" | "title" | "tooltip"
 > & {
   label: string;
   size?: "small" | "default" | "large";
   children: ReactNode;
+  tooltip?: ReactNode | false;
 };
 
 const sizeClasses = {
@@ -23,17 +24,20 @@ export function IconButton({
   className,
   variant = "ghost",
   children,
+  tooltip,
+  ref,
   ...buttonProps
 }: IconButtonProps) {
   const classes = [sizeClasses[size], className].filter(Boolean).join(" ");
   return (
     <Button
+      {...buttonProps}
+      ref={ref}
       aria-label={label}
-      title={label}
       size="icon"
       variant={variant}
       className={classes}
-      {...buttonProps}
+      tooltip={tooltip === undefined ? label : tooltip}
     >
       {children}
     </Button>

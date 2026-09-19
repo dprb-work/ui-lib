@@ -1,13 +1,15 @@
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
 import { cn } from "../cn";
+import { Tooltip } from "./Interactions";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "small" | "default" | "icon";
 
-export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
+export type ButtonProps = Omit<ComponentPropsWithRef<"button">, "title"> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  tooltip?: ReactNode | false;
 };
 
 const baseClasses =
@@ -35,13 +37,18 @@ export function Button({
   size = "default",
   type = "button",
   variant = "primary",
+  tooltip,
+  ref,
   ...buttonProps
 }: ButtonProps) {
-  return (
+  const button = (
     <button
+      {...buttonProps}
+      ref={ref}
       type={type}
       className={cn(baseClasses, sizeClasses[size], variantClasses[variant], className)}
-      {...buttonProps}
     />
   );
+
+  return <Tooltip label={tooltip}>{button}</Tooltip>;
 }

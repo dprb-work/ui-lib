@@ -1,25 +1,30 @@
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { Select } from "radix-ui";
-import { type ComponentPropsWithRef, type ComponentPropsWithoutRef, type ReactNode, useId } from "react";
+import { type ComponentPropsWithRef, type ReactNode, useId } from "react";
 
 import { cn } from "../cn";
+import { Tooltip } from "./Interactions";
 import { usePortalContainer } from "./portal-context";
 
 type InputAppearance = "default" | "subtle";
 
-export type TextInputProps = Omit<ComponentPropsWithoutRef<"input">, "type"> & {
+export type TextInputProps = Omit<ComponentPropsWithRef<"input">, "type" | "title"> & {
   appearance?: InputAppearance;
   error?: ReactNode;
+  type?: "text" | "search";
+  tooltip?: ReactNode | false;
 };
 
-export type NumberInputProps = Omit<ComponentPropsWithoutRef<"input">, "type"> & {
+export type NumberInputProps = Omit<ComponentPropsWithRef<"input">, "type" | "title"> & {
   appearance?: InputAppearance;
   error?: ReactNode;
+  tooltip?: ReactNode | false;
 };
 
-export type TextareaInputProps = ComponentPropsWithRef<"textarea"> & {
+export type TextareaInputProps = Omit<ComponentPropsWithRef<"textarea">, "title"> & {
   appearance?: InputAppearance;
   error?: ReactNode;
+  tooltip?: ReactNode | false;
 };
 
 export type SelectOption = Readonly<{
@@ -42,17 +47,18 @@ export type SelectInputProps = {
   name?: string;
   required?: boolean;
   className?: string;
+  tooltip?: ReactNode | false;
 };
 
 const defaultClasses =
   "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
 const subtleClasses =
-  "mb-px h-7 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
+  "h-7 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
 
 const textareaDefaultClasses =
   "min-h-16 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
 const textareaSubtleClasses =
-  "mb-px min-h-16 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
+  "min-h-16 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
@@ -72,8 +78,11 @@ export function TextInput({
   error,
   id,
   className,
+  ref,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  type = "text",
+  tooltip,
   ...inputProps
 }: TextInputProps) {
   const generatedId = useId();
@@ -81,14 +90,20 @@ export function TextInput({
   const description = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
   return (
     <div className="grid gap-1">
-      <input
-        {...inputProps}
-        id={id}
-        aria-describedby={description || undefined}
-        aria-invalid={error ? true : ariaInvalid}
-        className={inputClassName(appearance, className)}
-        type="text"
-      />
+      <div className="relative">
+        {type === "search" && <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1 size-3.5 -translate-y-1/2 text-ui-muted-foreground" />}
+        <Tooltip label={tooltip}>
+          <input
+            {...inputProps}
+            ref={ref}
+            id={id}
+            aria-describedby={description || undefined}
+            aria-invalid={error ? true : ariaInvalid}
+            className={inputClassName(appearance, cn(type === "search" && "pl-6", className))}
+            type={type}
+          />
+        </Tooltip>
+      </div>
       {error && <InputError id={errorId}>{error}</InputError>}
     </div>
   );
@@ -102,6 +117,7 @@ export function TextareaInput({
   ref,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  tooltip,
   ...textareaProps
 }: TextareaInputProps) {
   const generatedId = useId();
@@ -109,17 +125,19 @@ export function TextareaInput({
   const description = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
   return (
     <div className="grid gap-1">
-      <textarea
-        {...textareaProps}
-        ref={ref}
-        id={id}
-        aria-describedby={description || undefined}
-        aria-invalid={error ? true : ariaInvalid}
-        className={cn(
-          appearance === "subtle" ? textareaSubtleClasses : textareaDefaultClasses,
-          className,
-        )}
-      />
+      <Tooltip label={tooltip}>
+        <textarea
+          {...textareaProps}
+          ref={ref}
+          id={id}
+          aria-describedby={description || undefined}
+          aria-invalid={error ? true : ariaInvalid}
+          className={cn(
+            appearance === "subtle" ? textareaSubtleClasses : textareaDefaultClasses,
+            className,
+          )}
+        />
+      </Tooltip>
       {error && <InputError id={errorId}>{error}</InputError>}
     </div>
   );
@@ -132,6 +150,8 @@ export function NumberInput({
   className,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  ref,
+  tooltip,
   ...inputProps
 }: NumberInputProps) {
   const generatedId = useId();
@@ -139,15 +159,18 @@ export function NumberInput({
   const description = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
   return (
     <div className="grid gap-1">
-      <input
-        {...inputProps}
-        id={id}
-        aria-describedby={description || undefined}
-        aria-invalid={error ? true : ariaInvalid}
-        className={inputClassName(appearance, className)}
-        data-ui-number-input
-        type="number"
-      />
+      <Tooltip label={tooltip}>
+        <input
+          {...inputProps}
+          ref={ref}
+          id={id}
+          aria-describedby={description || undefined}
+          aria-invalid={error ? true : ariaInvalid}
+          className={inputClassName(appearance, className)}
+          data-ui-number-input
+          type="number"
+        />
+      </Tooltip>
       {error && <InputError id={errorId}>{error}</InputError>}
     </div>
   );
@@ -167,6 +190,7 @@ export function SelectInput({
   name,
   required,
   className,
+  tooltip,
 }: SelectInputProps) {
   const portalContainer = usePortalContainer();
   const generatedId = useId();
@@ -175,7 +199,7 @@ export function SelectInput({
   const compact = density === "compact";
   const triggerClasses = cn(
     appearance === "subtle" ? subtleClasses : defaultClasses,
-    compact && "h-5 text-[0.625rem]",
+    compact && "h-5 text-xs",
     isInvalid && "border-ui-danger text-ui-danger",
     "flex min-w-0 items-center justify-between gap-1 overflow-hidden whitespace-nowrap text-left",
     className,
@@ -191,21 +215,41 @@ export function SelectInput({
         name={name}
         required={required}
       >
-        <Select.Trigger
-          aria-label={label}
-          aria-invalid={isInvalid || undefined}
-          aria-describedby={error ? errorId : undefined}
-          className={triggerClasses}
-        >
-          <Select.Value className="truncate" />
-          <Select.Icon className="shrink-0 text-ui-muted-foreground">
-            <ChevronDown
-              aria-hidden="true"
-              className={compact ? "size-3" : "size-3.5"}
-              strokeWidth={2}
-            />
-          </Select.Icon>
-        </Select.Trigger>
+        {tooltip === false || tooltip == null ? (
+          <Select.Trigger
+            aria-label={label}
+            aria-invalid={isInvalid || undefined}
+            aria-describedby={error ? errorId : undefined}
+            className={cn(triggerClasses, !compact && "text-sm")}
+          >
+            <Select.Value className="truncate" />
+            <Select.Icon className="shrink-0 text-ui-muted-foreground">
+              <ChevronDown
+                aria-hidden="true"
+                className={compact ? "size-3" : "size-3.5"}
+                strokeWidth={2}
+              />
+            </Select.Icon>
+          </Select.Trigger>
+        ) : (
+          <Tooltip label={tooltip}>
+            <Select.Trigger
+              aria-label={label}
+              aria-invalid={isInvalid || undefined}
+              aria-describedby={error ? errorId : undefined}
+              className={cn(triggerClasses, !compact && "text-sm")}
+            >
+              <Select.Value className="truncate" />
+              <Select.Icon className="shrink-0 text-ui-muted-foreground">
+                <ChevronDown
+                  aria-hidden="true"
+                  className={compact ? "size-3" : "size-3.5"}
+                  strokeWidth={2}
+                />
+              </Select.Icon>
+            </Select.Trigger>
+          </Tooltip>
+        )}
         <Select.Portal container={portalContainer}>
           <Select.Content
             className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-ui-border bg-ui-surface text-ui-surface-foreground shadow-xl"
@@ -220,7 +264,7 @@ export function SelectInput({
                   disabled={option.disabled}
                   className={cn(
                     "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-muted data-[highlighted]:text-ui-foreground",
-                    compact ? "text-[0.625rem]" : "text-xs",
+                    compact ? "text-xs" : "text-xs",
                   )}
                 >
                   <Select.ItemIndicator className="absolute left-2 inline-flex items-center">

@@ -11,9 +11,10 @@ The base entry point contains controls and interaction primitives:
 - `Button`, `IconButton`, `CopyButton`, `CopyableText`
 - `Checkbox`, `Switch`, `SegmentedControl`
 - `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`
+- `Image`, `Breadcrumbs`
 - `Badge`, `StatusPanel`, `ContentBlock`, `CodeViewport`
 - `Calendar`, `Fullscreen`
-- `Dialog`, `Tabs`, `Tooltip`, `PortalProvider`
+- `Dialog`, `Tabs`, `Tooltip`, `TooltipProvider`, `PortalProvider`
 - `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
 
 Heavy components use separate entry points so consumers do not install or bundle
@@ -59,6 +60,41 @@ function Settings() {
 }
 ```
 
+Wrap the application with `TooltipProvider` when a product needs one tooltip
+delay, placement, or visual treatment. `Tooltip` keeps its `label` API and
+returns its child unchanged when `label` is omitted or `false`. Shared controls
+accept `tooltip?: ReactNode | false`; `IconButton` and `CopyButton` use their
+accessible label by default, while `false` opts out. Do not pass native `title`
+to these controls.
+
+```tsx
+<TooltipProvider delayDuration={500} side="bottom" className="bg-slate-950 text-white">
+  <App />
+</TooltipProvider>
+```
+
+Tooltips are arrowless by default. Set `arrowClassName` on `Tooltip` to render
+and style an optional arrow, as Reporter does with `reporter-tooltip-arrow`.
+
+`Image` requires `alt`. It uses a nonempty `alt` as its default tooltip, retains
+that alt text for accessibility, and leaves decorative `alt=""` images
+unwrapped. Pass `tooltip={false}` to opt out, or a React node to override the
+fallback.
+
+`Breadcrumbs` renders an accessible navigation list. Give it `"aria-label"` and
+ordered `{ key, label, href?, onClick?, current? }` items. The final item defaults
+to the noninteractive current page. Set `current: false` when the trail ends at
+an ancestor that must remain navigable rather than the current page.
+
+Tooltip owners are `TooltipProvider`, `Tooltip`, `IconButton`, `CopyButton`,
+`Button`, `Checkbox`, `Switch`, `TextInput`, `TextareaInput`, `NumberInput`,
+`SelectInput`, `NativeSelect`, and `Image`. When a shared interactive component
+gains contextual help, add its `tooltip?: ReactNode | false` prop and compose
+the canonical `Tooltip`; never add a native `title` or a second tooltip
+renderer. Chart tooltips remain chart-owned because Chart.js positions them
+against canvas data coordinates. They use the shared tooltip appearance tokens
+but do not inherit `TooltipProvider` defaults.
+
 `ThemeProvider` resolves `system` against `prefers-color-scheme`, applies the
 resolved `data-theme` and selected `data-theme-mode` to the document root, sets
 `color-scheme`, and owns persistence. Product code must not duplicate that
@@ -77,7 +113,6 @@ The stylesheet ships Tailwind Preflight, the default light and dark application
 palette, and component utilities. The palette follows the baseline established
 in the OLAF visual builder: slate surfaces, teal actions, and rose destructive
 states. Add `.dark` to an ancestor or set `data-theme="dark"` on one.
-
 Consumers may override these semantic variables at their application root:
 `--ui-background`, `--ui-foreground`, `--ui-surface`,
 `--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
@@ -89,6 +124,11 @@ package remain authoritative.
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
 those classes replace the component defaults without `!important`.
+
+Use parent layout gaps for space between sibling components. Internal content
+padding belongs to the component; page gutters and safe areas belong to the
+consumer's container. A component must not add external top/bottom spacing to
+separate itself from its neighbors.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
@@ -102,10 +142,11 @@ Consumers control maximum height, resizing, and submission behavior.
 `NativeSelect` styles a native HTML select with a decorative chevron. Use native
 `option` children and select props, including `ref`, `name`, `value`,
 `defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
-and form submission. `density` accepts `standard` or `compact`; `className`
-styles the select, and `wrapperClassName` controls its surrounding layout.
-Consumers own labels, options, and selection policy. Use `SelectInput` instead
-when the existing Radix-backed picker and its `onValueChange` API are needed.
+and form submission. `density` accepts `standard` or `compact`; standard density
+keeps a 44px control height and uses 0.875rem selected text near the underline.
+`className` styles the select, and `wrapperClassName` controls its surrounding
+layout. Consumers own labels, options, and selection policy. Use `SelectInput`
+instead when the existing Radix-backed picker and its `onValueChange` API is needed.
 
 `ContentBlock` renders a bordered container with an inset title and an absolutely
 positioned `corner` action. It does not reserve a column for the action.
@@ -154,6 +195,18 @@ corepack pnpm run dev
 ```
 
 Storybook is the component catalog and browser verification surface.
+
+### CoEx input, select and tab defaults
+
+CoEx uses the shared `TextInput`, `NativeSelect` and `Tabs` contracts. This is library behavior, not a CoEx stylesheet override.
+
+`TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and error treatment. Consumers own accessible labels, query state, routing and page layout. The recent-chat search uses this default.
+
+`NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density keeps the native control at 44px high, uses 0.875rem selected text, and places it close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
+
+`Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics. CoEx uses that composition for consolidated tabs in the overview title slot.
+
+The affected shared stories and consumers were updated with these defaults. Preserve controlled and uncontrolled values, native form behavior, refs, labels, error descriptions, focus, disabled state, light/dark appearance and tab accessibility when changing these components. Do not add a parallel primitive for a style-only variation.
 
 ## Verify
 

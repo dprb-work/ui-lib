@@ -5,8 +5,12 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import {
+  createContext,
+  type ComponentPropsWithRef,
+  type ComponentPropsWithoutRef,
   type ReactElement,
   type ReactNode,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -146,44 +150,80 @@ export function Tabs({
   );
 }
 
+type TooltipDefaults = {
+  side: OverlaySide;
+  sideOffset: number;
+  collisionPadding: number;
+  className?: string;
+};
+
+const TooltipContext = createContext<TooltipDefaults | null>(null);
+
+export type TooltipProviderProps = ComponentPropsWithoutRef<typeof RadixTooltip.Provider> & {
+  children: ReactNode;
+  side?: OverlaySide;
+  sideOffset?: number;
+  collisionPadding?: number;
+  className?: string;
+};
+
+export function TooltipProvider({
+  children,
+  side = "bottom",
+  sideOffset = 7,
+  collisionPadding = 8,
+  className,
+  delayDuration = 350,
+  skipDelayDuration = 100,
+  ...providerProps
+}: TooltipProviderProps) {
+  return (
+    <TooltipContext.Provider value={{ side, sideOffset, collisionPadding, className }}>
+      <RadixTooltip.Provider {...providerProps} delayDuration={delayDuration} skipDelayDuration={skipDelayDuration}>
+        {children}
+      </RadixTooltip.Provider>
+    </TooltipContext.Provider>
+  );
+}
+
 export type TooltipProps = {
-  label: ReactNode;
+  label?: ReactNode | false;
   children: ReactElement;
   side?: OverlaySide;
   delayDuration?: number;
   className?: string;
-  arrowClassName?: string;
 };
 
 export function Tooltip({
   label,
   children,
-  side = "top",
-  delayDuration = 350,
+  side,
+  delayDuration,
   className,
-  arrowClassName,
 }: TooltipProps) {
+  const defaults = useContext(TooltipContext);
   const portalContainer = usePortalContainer();
-  return (
-    <RadixTooltip.Provider delayDuration={delayDuration} skipDelayDuration={100}>
-      <RadixTooltip.Root>
-        <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
-        <RadixTooltip.Portal container={portalContainer}>
-          <RadixTooltip.Content
-            className={cn(tooltipSurfaceClassName, className)}
-            side={side}
-            sideOffset={7}
-            collisionPadding={8}
-          >
-            {label}
-            <RadixTooltip.Arrow
-              className={cn("fill-ui-tooltip", arrowClassName)}
-              width={10}
-              height={5}
-            />
-          </RadixTooltip.Content>
-        </RadixTooltip.Portal>
-      </RadixTooltip.Root>
+  if (label === false || label == null) return children;
+
+  const tooltip = (
+    <RadixTooltip.Root delayDuration={delayDuration}>
+      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
+      <RadixTooltip.Portal container={portalContainer}>
+        <RadixTooltip.Content
+          className={cn(tooltipSurfaceClassName, defaults?.className, className)}
+          side={side ?? defaults?.side ?? "bottom"}
+          sideOffset={defaults?.sideOffset ?? 7}
+          collisionPadding={defaults?.collisionPadding ?? 8}
+        >
+          {label}
+        </RadixTooltip.Content>
+      </RadixTooltip.Portal>
+    </RadixTooltip.Root>
+  );
+
+  return defaults ? tooltip : (
+    <RadixTooltip.Provider delayDuration={delayDuration ?? 350} skipDelayDuration={100}>
+      {tooltip}
     </RadixTooltip.Provider>
   );
 }
@@ -191,6 +231,7 @@ export function Tooltip({
 export type DialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenAutoFocus?: ComponentPropsWithoutRef<typeof RadixDialog.Content>["onOpenAutoFocus"];
   title: ReactNode;
   trigger: ReactElement;
   children: ReactNode | ((close: () => void) => ReactNode);
@@ -203,6 +244,7 @@ export type DialogProps = {
 export function Dialog({
   open,
   onOpenChange,
+  onOpenAutoFocus,
   title,
   trigger,
   children,
@@ -220,6 +262,7 @@ export function Dialog({
           className={cn(!unstyled && "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm", overlayClassName)}
         />
         <RadixDialog.Content
+          onOpenAutoFocus={onOpenAutoFocus}
           className={cn(
             !unstyled && "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-ui-surface p-5 text-ui-surface-foreground shadow-2xl outline-hidden",
             contentClassName,
@@ -256,13 +299,13 @@ async function copyText(text: string): Promise<void> {
   }
 }
 
-export type CopyButtonProps = {
+export type CopyButtonProps = Omit<ComponentPropsWithRef<"button">, "aria-label" | "children" | "title" | "type"> & {
   text: string;
   label?: string;
   copiedLabel?: string;
   failedLabel?: string;
   resetAfter?: number;
-  className?: string;
+  tooltip?: ReactNode | false;
 };
 
 export function CopyButton({
@@ -271,7 +314,11 @@ export function CopyButton({
   copiedLabel = "Copied",
   failedLabel = "Copy failed",
   resetAfter = 1600,
+  tooltip,
   className,
+  ref,
+  onClick,
+  ...buttonProps
 }: CopyButtonProps) {
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<number | undefined>(undefined);
@@ -289,18 +336,24 @@ export function CopyButton({
     timer.current = window.setTimeout(() => setStatus("idle"), resetAfter);
   }
 
-  return (
+  const button = (
     <button
+      {...buttonProps}
+      ref={ref}
       type="button"
       className={cn(
         "inline-flex size-8 items-center justify-center rounded-md text-ui-muted-foreground outline-hidden hover:bg-ui-muted hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent",
         className,
       )}
       aria-label={accessibleLabel}
-      title={accessibleLabel}
-      onClick={() => void copy()}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) void copy();
+      }}
     >
-      {status === "copied" ? <Check aria-hidden="true" /> : status === "failed" ? <TriangleAlert aria-hidden="true" /> : <Copy aria-hidden="true" />}
+      {status === "copied" ? <Check className="size-4 shrink-0" aria-hidden="true" /> : status === "failed" ? <TriangleAlert className="size-4 shrink-0" aria-hidden="true" /> : <Copy className="size-4 shrink-0" aria-hidden="true" />}
     </button>
   );
+
+  return <Tooltip label={tooltip === undefined ? accessibleLabel : tooltip}>{button}</Tooltip>;
 }

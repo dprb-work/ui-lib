@@ -1,6 +1,11 @@
 import "./styles.css";
 
 export { ContentBlock, type ContentBlockProps } from "./components/ContentBlock";
+export {
+  Breadcrumbs,
+  type BreadcrumbItem,
+  type BreadcrumbsProps,
+} from "./components/Breadcrumbs";
 export { CodeViewport, type CodeViewportProps } from "./components/CodeViewport";
 export { ColorPicker, type ColorPickerProps } from "./components/ColorPicker";
 export { Badge, type BadgeProps, type BadgeTone } from "./components/Badge";
@@ -19,6 +24,7 @@ export {
 export { CopyableText, type CopyableTextProps } from "./components/CopyableText";
 export { Calendar, type CalendarProps } from "./components/Calendar";
 export { IconButton, type IconButtonProps } from "./components/IconButton";
+export { Image, type ImageProps } from "./components/Image";
 export { Fullscreen, type FullscreenProps } from "./components/Fullscreen";
 export {
   NumberInput,
@@ -38,12 +44,14 @@ export {
   Dialog,
   Tabs,
   Tooltip,
+  TooltipProvider,
   type CopyButtonProps,
   type DialogProps,
   type OverlaySide,
   type TabOption,
   type TabsProps,
   type TooltipProps,
+  type TooltipProviderProps,
 } from "./components/Interactions";
 export {
   Popover,

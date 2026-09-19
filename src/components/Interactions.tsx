@@ -192,6 +192,7 @@ export type TooltipProps = {
   side?: OverlaySide;
   delayDuration?: number;
   className?: string;
+  arrowClassName?: string;
 };
 
 export function Tooltip({
@@ -200,6 +201,7 @@ export function Tooltip({
   side,
   delayDuration,
   className,
+  arrowClassName,
 }: TooltipProps) {
   const defaults = useContext(TooltipContext);
   const portalContainer = usePortalContainer();
@@ -216,6 +218,7 @@ export function Tooltip({
           collisionPadding={defaults?.collisionPadding ?? 8}
         >
           {label}
+          {arrowClassName !== undefined && <RadixTooltip.Arrow className={arrowClassName} />}
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     </RadixTooltip.Root>

@@ -27,6 +27,19 @@ export const Default: Story = {
   },
 };
 
+export const CustomArrow: Story = {
+  render: () => (
+    <Tooltip label="Custom arrow presentation" delayDuration={0} arrowClassName="fill-ui-foreground">
+      <Button>With arrow</Button>
+    </Tooltip>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.hover(canvas.getByRole("button", { name: "With arrow" }));
+    await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Custom arrow presentation" })).toBeVisible();
+  },
+};
+
 export const Optional: Story = {
   render: () => (
     <div className="flex items-center gap-3">

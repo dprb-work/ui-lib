@@ -73,6 +73,9 @@ to these controls.
 </TooltipProvider>
 ```
 
+Tooltips are arrowless by default. Set `arrowClassName` on `Tooltip` to render
+and style an optional arrow, as Reporter does with `reporter-tooltip-arrow`.
+
 `Image` requires `alt`. It uses a nonempty `alt` as its default tooltip, retains
 that alt text for accessibility, and leaves decorative `alt=""` images
 unwrapped. Pass `tooltip={false}` to opt out, or a React node to override the

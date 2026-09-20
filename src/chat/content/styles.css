@@ -1,0 +1,38 @@
+.chat-operation [data-code-viewport] {
+  padding-top: 0.5rem;
+}
+
+.chat-operation > :first-child:not(header) {
+  min-width: 0;
+}
+
+.chat-block--compact {
+  overflow: hidden;
+}
+.chat-block--compact > header {
+  position: static;
+  height: auto;
+  min-height: 2rem;
+  border-bottom: 1px solid var(--ui-border);
+  padding: 0.25rem 2.5rem 0.25rem 0.75rem;
+  background: var(--ui-surface);
+}
+.chat-block--compact > header > span {
+  background: transparent;
+  padding: 0;
+  font-size: 0.75rem;
+}
+.chat-block--compact > [data-content-block-corner] {
+  top: 0.125rem;
+  right: 0.375rem;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  background: transparent;
+}
+.chat-block--compact > [data-content-block-corner] button {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.chat-block--compact [data-code-viewport] {
+  padding-top: 0;
+}

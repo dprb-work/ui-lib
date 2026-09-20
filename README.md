@@ -2,7 +2,7 @@
 
 Shared React and Tailwind CSS components for dprb-work products.
 
-The library starts with controls proven in OLAF's visual builder and feedback surfaces extracted from Archmap. It deliberately excludes product navigation, review streams, function cards, diff renderers, graph editors, and domain-specific field composition.
+The library contains controls proven in OLAF, feedback components extracted from Archmap, and reusable chat presentation extracted from CoEx. Product navigation, session lifecycle, service connections, model policy, and screenshot capture remain in consuming applications.
 
 ## Components
 
@@ -24,6 +24,7 @@ their dependencies unless they import those components:
 | --- | --- | --- |
 | `@dprb-work/ui-lib/data-table` | `MatrixDataTable` | `@tanstack/react-table` |
 | `@dprb-work/ui-lib/charts` | `CartesianChart`, `DistributionChart` | `chart.js` |
+| `@dprb-work/ui-lib/chat` | Composer, transcript, model controls, Markdown, code, diff and tool renderers | See chat dependencies below |
 
 ## Use
 
@@ -186,6 +187,45 @@ its required `HTMLElement` or `DocumentFragment` container. Put it around a
 rendered subtree that must stay inside a shadow root or another host boundary.
 For one `PopoverContent`, its `portalContainer` prop takes precedence over the
 provider container.
+
+### Chat presentation
+
+Import chat separately from the base controls. Load both stylesheets before
+product styles:
+
+```tsx
+import "@dprb-work/ui-lib/styles.css";
+import "@dprb-work/ui-lib/chat/styles.css";
+import { ChatPresentationProvider, ChatTranscript, ComposerFrame, ModelControls } from "@dprb-work/ui-lib/chat";
+import "./product.css";
+```
+
+The chat entry requires these optional peers:
+
+```bash
+corepack pnpm add @icons-pack/react-simple-icons katex lowlight mdast-util-directive react-markdown rehype-katex remark-directive remark-gfm remark-math strip-ansi unist-util-visit
+```
+
+`ChatPresentationProvider` accepts a controlled `wrapText` boolean and an optional
+`density` of `"comfortable"` or `"compact"`. Compact density reduces composer
+spacing and gives rich blocks an inline header. The application owns preference
+persistence.
+
+`ChatTranscript` accepts application messages and a `renderMessage` callback.
+It owns scrolling, not history fetching or DSH state. Change `followKey` when the
+application wants to follow a new submission. Incoming messages and delayed
+queue acknowledgments otherwise preserve manual scrollback.
+Keep unchanged message objects and renderer callbacks stable so streaming updates
+skip historical message rendering. Replace a message object when its content changes.
+`ChatMessageContent` composes rich text, reasoning, attachments, and tool content.
+
+`ComposerFrame`, `ComposerInput`, `ComposerSubmitButton`, `ModelControls`, and
+`ReasoningSlider` accept controlled values and callbacks. The application owns
+drafts, submission, model options, permission checks, and session lifecycle.
+The application container also owns width and page gutters.
+
+CoEx and Workbench consume this entry independently. Neither application is a
+dependency of the library or of the other application.
 
 ## Develop
 

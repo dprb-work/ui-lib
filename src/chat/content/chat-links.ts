@@ -18,3 +18,11 @@ export function safeHref(value: string | undefined): string | undefined {
     return undefined;
   }
 }
+
+export function isSameOriginHref(value: string) {
+  return (
+    typeof window !== "undefined" &&
+    /^https?:\/\//.test(value) &&
+    new URL(value).origin === window.location.origin
+  );
+}

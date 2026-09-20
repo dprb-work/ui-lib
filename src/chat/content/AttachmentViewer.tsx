@@ -10,7 +10,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
-import { safeHref } from "./chat-links";
+import { isSameOriginHref, safeHref } from "./chat-links";
 export type Attachment = {
   name: string;
   href?: string;
@@ -31,13 +31,6 @@ type ImageState =
   | undefined;
 const linkClassName =
   "inline-flex items-center gap-1 rounded border border-ui-border px-3 py-2 text-sm text-ui-accent underline focus:outline-hidden focus:ring-2 focus:ring-ui-accent";
-function isSameOriginHref(value: string) {
-  return (
-    typeof window !== "undefined" &&
-    /^https?:\/\//.test(value) &&
-    new URL(value).origin === window.location.origin
-  );
-}
 function isTrustedBlobUrl(value: string) {
   if (typeof window === "undefined") return false;
   try {

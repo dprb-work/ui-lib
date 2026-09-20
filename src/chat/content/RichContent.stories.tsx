@@ -73,13 +73,19 @@ const downloadArtifact = fn();
 
 export const DownloadOnlyArtifacts: Story = {
   render: () => <>
-    <ArtifactCard name="Download link" downloadHref="https://example.com/report.csv" />
+    <ArtifactCard name="Download link" downloadHref={`${window.location.origin}/report.csv`} />
+    <ArtifactCard name="External artifact" downloadHref="https://example.com/report.csv" />
     <ArtifactCard name="Download callback" onDownload={downloadArtifact} />
   </>,
   play: async ({ canvasElement }) => {
     downloadArtifact.mockClear();
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("link", { name: "Download" })).toHaveAttribute("href", "https://example.com/report.csv");
+    await expect(canvas.getByRole("link", { name: "Download" })).toHaveAttribute("download");
+    const external = canvas.getByRole("link", { name: "Open artifact" });
+    await expect(external).toHaveAttribute("href", "https://example.com/report.csv");
+    await expect(external).toHaveAttribute("target", "_blank");
+    await expect(external).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(external).not.toHaveAttribute("download");
     await userEvent.click(canvas.getByRole("button", { name: "Download" }));
     await expect(downloadArtifact).toHaveBeenCalledOnce();
     await expect(canvas.queryByText("Artifact is unavailable.")).not.toBeInTheDocument();

@@ -1,7 +1,7 @@
 import { Button } from "../../components/Button";
 import { Download, ExternalLink, FileText } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
-import { safeHref } from "./chat-links";
+import { isSameOriginHref, safeHref } from "./chat-links";
 export type ArtifactCardProps = {
   name: string;
   kind?: string;
@@ -28,6 +28,7 @@ export function ArtifactCard({
 }: ArtifactCardProps) {
   const openHref = safeHref(href);
   const safeDownload = safeHref(downloadHref);
+  const localDownload = safeDownload && isSameOriginHref(safeDownload) ? safeDownload : undefined;
   const unavailable = Boolean(unavailableReason) || (!openHref && !onOpen && !safeDownload && !onDownload);
   return (
     <ChatBlock
@@ -64,10 +65,15 @@ export function ArtifactCard({
                 </Button>
               )
             )}
-            {safeDownload ? (
-              <a href={safeDownload} download className={linkClassName}>
+            {localDownload ? (
+              <a href={localDownload} download className={linkClassName}>
                 <Download size={14} />
                 Download
+              </a>
+            ) : safeDownload ? (
+              <a href={safeDownload} target="_blank" rel="noopener noreferrer" className={linkClassName}>
+                <ExternalLink size={14} />
+                Open artifact
               </a>
             ) : (
               onDownload && (

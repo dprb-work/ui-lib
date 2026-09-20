@@ -46,7 +46,11 @@ function renderMessage(message: Message) {
   return <ChatMessageContent {...message} />;
 }
 
-function FollowAfterSendingExample() {
+function FollowAfterSendingExample({
+  followOnSubmit = true,
+}: {
+  followOnSubmit?: boolean;
+}) {
   const [conversation, setConversation] = useState<readonly Message[]>(
     Array.from(
       { length: 24 },
@@ -58,6 +62,7 @@ function FollowAfterSendingExample() {
     ),
   );
   const [running, setRunning] = useState(false);
+  const [followKey, setFollowKey] = useState(0);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -65,6 +70,7 @@ function FollowAfterSendingExample() {
         type="button"
         onClick={() => {
           setRunning(true);
+          if (followOnSubmit) setFollowKey((value) => value + 1);
           setConversation((current) => [
             ...current,
             { id: "follow-up", role: "user", text: "Please continue." },
@@ -102,6 +108,7 @@ function FollowAfterSendingExample() {
       <ChatTranscript
         messages={conversation}
         running={running}
+        followKey={followKey}
         renderMessage={renderMessage}
       />
     </div>
@@ -158,3 +165,29 @@ export const FollowsNewUserMessage: StoryObj<typeof FollowAfterSendingExample> =
       ).not.toBeInTheDocument();
     },
   };
+
+export const PreservesPositionOnAcknowledgment: StoryObj<
+  typeof FollowAfterSendingExample
+> = {
+  render: () => <FollowAfterSendingExample followOnSubmit={false} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const transcript = canvas.getByRole("log", {
+      name: "Conversation messages",
+    });
+    transcript.scrollTop = 0;
+    transcript.dispatchEvent(new Event("scroll", { bubbles: true }));
+    await canvas.findByRole("button", { name: "Return to latest" });
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Send follow-up" }),
+    );
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Complete response" }),
+    );
+    await canvas.findByText("Final response is visible.");
+    await expect(transcript.scrollTop).toBe(0);
+    await expect(
+      canvas.getByRole("button", { name: "Return to latest" }),
+    ).toBeVisible();
+  },
+};

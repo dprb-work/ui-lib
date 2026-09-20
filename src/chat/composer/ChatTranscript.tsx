@@ -19,6 +19,7 @@ export type ChatTranscriptProps<T extends { id: string; role: string }> = {
   renderMessage: (message: T) => ReactNode;
   renderQueuedMessage?: (message: T) => ReactNode;
   initialPosition?: "start" | "latest";
+  followKey?: string | number;
   className?: string;
 };
 
@@ -40,27 +41,6 @@ function isPrepend<T extends { id: string }>(
   );
 }
 
-function hasAppendedUserMessage<T extends { id: string; role: string }>(
-  messages: readonly T[],
-  previousMessages: readonly T[],
-) {
-  if (
-    previousMessages.length === 0 ||
-    messages.length <= previousMessages.length
-  )
-    return false;
-  if (
-    !previousMessages.every(
-      (message, index) => messages[index]?.id === message.id,
-    )
-  )
-    return false;
-  for (let index = previousMessages.length; index < messages.length; index++) {
-    if (messages[index]?.role === "user") return true;
-  }
-  return false;
-}
-
 function isAtBottom(element: HTMLDivElement) {
   return (
     element.scrollHeight - element.scrollTop - element.clientHeight <
@@ -76,6 +56,7 @@ export function ChatTranscript<T extends { id: string; role: string }>({
   renderMessage,
   renderQueuedMessage,
   initialPosition = "latest",
+  followKey,
   className,
 }: ChatTranscriptProps<T>) {
   const { density } = useChatPresentation();
@@ -85,9 +66,11 @@ export function ChatTranscript<T extends { id: string; role: string }>({
   const previous = useRef<{
     messages: readonly T[];
     scrollHeight: number;
+    followKey: string | number | undefined;
   }>({
     messages: [],
     scrollHeight: 0,
+    followKey,
   });
   const [following, setFollowing] = useState(initialPosition === "latest");
 
@@ -96,12 +79,12 @@ export function ChatTranscript<T extends { id: string; role: string }>({
     if (!element) return;
 
     const previousMessages = previous.current.messages;
-    if (isPrepend(messages, previousMessages)) {
-      element.scrollTop += element.scrollHeight - previous.current.scrollHeight;
-    } else if (hasAppendedUserMessage(messages, previousMessages)) {
+    if (followKey !== previous.current.followKey) {
       follow.current = true;
       setFollowing(true);
       element.scrollTop = element.scrollHeight;
+    } else if (isPrepend(messages, previousMessages)) {
+      element.scrollTop += element.scrollHeight - previous.current.scrollHeight;
     } else if (follow.current) {
       element.scrollTop = element.scrollHeight;
     }
@@ -109,8 +92,9 @@ export function ChatTranscript<T extends { id: string; role: string }>({
     previous.current = {
       messages,
       scrollHeight: element.scrollHeight,
+      followKey,
     };
-  }, [messages, running]);
+  }, [messages, running, followKey]);
 
   useEffect(() => {
     const element = viewport.current;

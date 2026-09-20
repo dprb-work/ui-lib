@@ -212,8 +212,9 @@ spacing and gives rich blocks an inline header. The application owns preference
 persistence.
 
 `ChatTranscript` accepts application messages and a `renderMessage` callback.
-It owns scrolling, not history fetching or DSH state. Submitting a new user
-message restores follow mode; assistant-only updates respect manual scrollback.
+It owns scrolling, not history fetching or DSH state. Change `followKey` when the
+application wants to follow a new submission. Incoming messages and delayed
+queue acknowledgments otherwise preserve manual scrollback.
 `ChatMessageContent` composes rich text, reasoning, attachments, and tool content.
 
 `ComposerFrame`, `ComposerInput`, `ComposerSubmitButton`, `ModelControls`, and

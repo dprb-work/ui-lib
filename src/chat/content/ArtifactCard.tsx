@@ -28,7 +28,7 @@ export function ArtifactCard({
 }: ArtifactCardProps) {
   const openHref = safeHref(href);
   const safeDownload = safeHref(downloadHref);
-  const unavailable = Boolean(unavailableReason) || (!openHref && !onOpen);
+  const unavailable = Boolean(unavailableReason) || (!openHref && !onOpen && !safeDownload && !onDownload);
   return (
     <ChatBlock
       title={name}
@@ -57,10 +57,12 @@ export function ArtifactCard({
                 Open
               </a>
             ) : (
-              <Button type="button" variant="secondary" onClick={onOpen}>
-                <ExternalLink size={14} />
-                Open
-              </Button>
+              onOpen && (
+                <Button type="button" variant="secondary" onClick={onOpen}>
+                  <ExternalLink size={14} />
+                  Open
+                </Button>
+              )
             )}
             {safeDownload ? (
               <a href={safeDownload} download className={linkClassName}>

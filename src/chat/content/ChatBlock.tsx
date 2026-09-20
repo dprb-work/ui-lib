@@ -40,7 +40,7 @@ export function ChatBlock({
   const externalDestination = Boolean(
     destination &&
       typeof window !== "undefined" &&
-      new URL(destination).origin !== window.location.origin,
+      new URL(destination, window.location.href).origin !== window.location.origin,
   );
   return (
     <ContentBlock

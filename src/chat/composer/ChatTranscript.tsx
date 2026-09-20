@@ -1,4 +1,5 @@
 import {
+  memo,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -22,6 +23,20 @@ export type ChatTranscriptProps<T extends { id: string; role: string }> = {
   followKey?: string | number;
   className?: string;
 };
+
+type MessageBoundaryProps<T extends { id: string; role: string }> = {
+  message: T;
+  renderMessage: (message: T) => ReactNode;
+};
+
+function MessageBoundary<T extends { id: string; role: string }>({
+  message,
+  renderMessage,
+}: MessageBoundaryProps<T>) {
+  return renderMessage(message);
+}
+
+const MemoizedMessageBoundary = memo(MessageBoundary) as typeof MessageBoundary;
 
 const followThreshold = 48;
 
@@ -151,7 +166,10 @@ export function ChatTranscript<T extends { id: string; role: string }>({
                 aria-label={`${message.role} message`}
                 className={`transcript__message transcript__message--${message.role}`}
               >
-                {renderMessage(message)}
+                <MemoizedMessageBoundary
+                  message={message}
+                  renderMessage={renderMessage}
+                />
               </article>
             ))}
           </div>
@@ -164,9 +182,10 @@ export function ChatTranscript<T extends { id: string; role: string }>({
                 aria-label="Queued user message"
                 className="transcript__message transcript__message--user transcript__message--queued"
               >
-                {renderQueuedMessage
-                  ? renderQueuedMessage(message)
-                  : renderMessage(message)}
+                <MemoizedMessageBoundary
+                  message={message}
+                  renderMessage={renderQueuedMessage ?? renderMessage}
+                />
               </article>
             ))}
           </div>

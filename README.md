@@ -215,6 +215,8 @@ persistence.
 It owns scrolling, not history fetching or DSH state. Change `followKey` when the
 application wants to follow a new submission. Incoming messages and delayed
 queue acknowledgments otherwise preserve manual scrollback.
+Keep unchanged message objects and renderer callbacks stable so streaming updates
+skip historical message rendering. Replace a message object when its content changes.
 `ChatMessageContent` composes rich text, reasoning, attachments, and tool content.
 
 `ComposerFrame`, `ComposerInput`, `ComposerSubmitButton`, `ModelControls`, and

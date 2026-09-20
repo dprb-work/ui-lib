@@ -1,6 +1,6 @@
 {
   "name": "@dprb-work/ui-lib",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.29.1",
@@ -8,13 +8,18 @@
     "dist"
   ],
   "sideEffects": [
-    "./dist/styles.css"
+    "./dist/*.css"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./chat": {
+      "types": "./dist/chat.d.ts",
+      "import": "./dist/chat.js"
+    },
+    "./chat/styles.css": "./dist/chat.css",
     "./charts": {
       "types": "./dist/charts.d.ts",
       "import": "./dist/charts.js"
@@ -44,12 +49,34 @@
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
+    "@icons-pack/react-simple-icons": "^13.15.1",
+    "katex": "^0.18.7",
+    "lowlight": "^3.3.0",
+    "mdast-util-directive": "^3.1.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-directive": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "strip-ansi": "^7.2.0",
+    "unist-util-visit": "^5.1.0",
     "@tanstack/react-table": "9.1.2",
     "chart.js": "^4.5.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "peerDependenciesMeta": {
+    "@icons-pack/react-simple-icons": { "optional": true },
+    "katex": { "optional": true },
+    "lowlight": { "optional": true },
+    "mdast-util-directive": { "optional": true },
+    "react-markdown": { "optional": true },
+    "rehype-katex": { "optional": true },
+    "remark-directive": { "optional": true },
+    "remark-gfm": { "optional": true },
+    "remark-math": { "optional": true },
+    "strip-ansi": { "optional": true },
+    "unist-util-visit": { "optional": true },
     "@tanstack/react-table": {
       "optional": true
     },
@@ -58,6 +85,20 @@
     }
   },
   "devDependencies": {
+    "@icons-pack/react-simple-icons": "^13.15.1",
+    "@types/hast": "^3.0.5",
+    "@types/katex": "^0.16.8",
+    "@types/mdast": "^4.0.4",
+    "katex": "^0.18.7",
+    "lowlight": "^3.3.0",
+    "mdast-util-directive": "^3.1.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-directive": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "strip-ansi": "^7.2.0",
+    "unist-util-visit": "^5.1.0",
     "@tanstack/react-table": "9.1.2",
     "@eslint/js": "^10.0.1",
     "@storybook/addon-a11y": "10.5.7",

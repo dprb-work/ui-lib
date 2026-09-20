@@ -1,7 +1,10 @@
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview, ReactRenderer } from "@storybook/react-vite";
 
+import "katex/dist/katex.min.css";
 import "../src/styles.css";
+import "../src/chat/composer/styles.css";
+import "../src/chat/content/styles.css";
 
 const preview = {
   decorators: [

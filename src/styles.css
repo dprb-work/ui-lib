@@ -4,6 +4,7 @@
 @import "./palette.css";
 
 @source "./components";
+@source "./chat";
 @source "./*.tsx";
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 

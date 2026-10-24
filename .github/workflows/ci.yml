@@ -30,11 +30,10 @@ jobs:
         id: routing
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PATH: ${{ github.event_path }}
         run: |
           node --input-type=module <<'NODE'
           import { appendFileSync, readFileSync } from 'node:fs';
-          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
           const changes = event.changes;
           let metadataOnly = false;
           if (process.env.EVENT_NAME === 'pull_request' && event.action === 'edited'
@@ -61,7 +60,6 @@ jobs:
         if: steps.routing.outputs.metadata_only != 'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PATH: ${{ github.event_path }}
           EVENT_SHA: ${{ github.sha }}
           EVENT_BEFORE: ${{ github.event.before }}
         run: |
@@ -69,7 +67,7 @@ jobs:
           import { appendFileSync, readFileSync } from 'node:fs';
           import { execFileSync } from 'node:child_process';
           import { plan } from './scripts/ci-plan.mjs';
-          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
           let paths = [];
           let head = process.env.EVENT_SHA;
           let base = '';
@@ -140,14 +138,13 @@ jobs:
         name: Read current candidate refs
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PATH: ${{ github.event_path }}
           EXPECTED_BASE: ${{ needs.plan.outputs.base }}
           GH_TOKEN: ${{ github.token }}
         run: |
           node --input-type=module <<'NODE'
           import { appendFileSync, readFileSync } from 'node:fs';
           import { execFileSync } from 'node:child_process';
-          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
           let head = '';
           let base = process.env.EXPECTED_BASE || '';
           if (process.env.EVENT_NAME === 'pull_request') {

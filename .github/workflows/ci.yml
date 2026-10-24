@@ -125,6 +125,9 @@ jobs:
         run: pnpm run verify
 
   aggregate:
+    permissions:
+      contents: read
+      pull-requests: read
     name: ${{ needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true' && 'metadata-only' || 'aggregate' }}
     if: always() && !(needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true')
     needs: [plan, docs, verify]

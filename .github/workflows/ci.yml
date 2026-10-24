@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +16,73 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      tier: ${{ steps.plan.outputs.tier }}
+      checks: ${{ steps.plan.outputs.checks }}
+      run_heavy: ${{ steps.plan.outputs.run_heavy }}
+      head: ${{ steps.plan.outputs.head }}
+      base: ${{ steps.plan.outputs.base }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test CI classifier
+        run: node --test scripts/ci-plan.node-test.mjs
+      - id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          EVENT_SHA: ${{ github.sha }}
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import { plan } from './scripts/ci-plan.mjs';
+          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          let paths = [];
+          let head = process.env.EVENT_SHA;
+          let base = '';
+          if (process.env.EVENT_NAME === 'pull_request') {
+            head = event.pull_request.head.sha;
+            base = event.pull_request.base.sha;
+            paths = execFileSync('git', ['diff', '--no-renames', '--name-only', '-z', `${base}...${head}`], { encoding: 'utf8' }).split('\0').filter(Boolean);
+          } else if (process.env.EVENT_NAME === 'push') {
+            base = process.env.EVENT_BEFORE || '';
+            if (base && !/^0+$/.test(base)) paths = execFileSync('git', ['diff', '--no-renames', '--name-only', '-z', `${base}..${head}`], { encoding: 'utf8' }).split('\0').filter(Boolean);
+          }
+          const result = plan({ event: process.env.EVENT_NAME, draft: event.pull_request?.draft === true, paths });
+          appendFileSync(process.env.GITHUB_OUTPUT, `tier=${result.tier}\nchecks=${JSON.stringify(result.checks)}\nrun_heavy=${result.run_heavy}\nhead=${head}\nbase=${base}\n`);
+          console.log(`Selected ${result.tier}: ${result.checks.join(', ') || 'no application checks'}`);
+          NODE
+
+  docs:
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.checks), 'docs')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check whitespace errors
+        env:
+          BASE: ${{ needs.plan.outputs.base }}
+          HEAD: ${{ needs.plan.outputs.head }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$BASE...$HEAD"
+          elif [ -n "$BASE" ] && [[ ! "$BASE" =~ ^0+$ ]]; then
+            git diff --check "$BASE..$HEAD"
+          else
+            git diff --check HEAD^...HEAD
+          fi
+
   verify:
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.checks), 'verify')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,3 +97,56 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify library
         run: pnpm run verify
+
+  aggregate:
+    if: always()
+    needs: [plan, docs, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: freshness
+        name: Read current candidate refs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          EXPECTED_BASE: ${{ needs.plan.outputs.base }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          let head = '';
+          let base = process.env.EXPECTED_BASE || '';
+          if (process.env.EVENT_NAME === 'pull_request') {
+            const pull = JSON.parse(execFileSync('gh', ['api', `repos/${process.env.GITHUB_REPOSITORY}/pulls/${event.number}`], { encoding: 'utf8' }));
+            head = pull.head.sha;
+            base = execFileSync('gh', ['api', `repos/${pull.base.repo.full_name}/commits/${pull.base.ref}`, '--jq', '.sha'], { encoding: 'utf8' }).trim();
+          } else {
+            head = execFileSync('gh', ['api', `repos/${process.env.GITHUB_REPOSITORY}/commits/${event.ref.replace('refs/heads/', '')}`, '--jq', '.sha'], { encoding: 'utf8' }).trim();
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, ['head=' + head, 'base=' + base, ''].join(String.fromCharCode(10)));
+          NODE
+      - name: Require selected checks and current candidate
+        env:
+          TIER: ${{ needs.plan.outputs.tier }}
+          CHECKS: ${{ needs.plan.outputs.checks }}
+          DOCS_RESULT: ${{ needs.docs.result }}
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          EXPECTED_HEAD: ${{ needs.plan.outputs.head }}
+          EXPECTED_BASE: ${{ needs.plan.outputs.base }}
+          ACTUAL_HEAD: ${{ steps.freshness.outputs.head }}
+          ACTUAL_BASE: ${{ steps.freshness.outputs.base }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { aggregateSuccess } from './scripts/ci-plan.mjs';
+          const selected = JSON.parse(process.env.CHECKS || '[]');
+          const results = { docs: process.env.DOCS_RESULT, verify: process.env.VERIFY_RESULT };
+          const expectedBase = process.env.EXPECTED_BASE || process.env.EXPECTED_HEAD;
+          const actualBase = process.env.ACTUAL_BASE || expectedBase;
+          if (process.env.TIER === 'draft' || !aggregateSuccess(selected, results, process.env.EXPECTED_HEAD, process.env.ACTUAL_HEAD, expectedBase, actualBase)) throw new Error('Required checks are not all successful for the current candidate and base.');
+          console.log(`CI tier ${process.env.TIER} passed for current candidate.`);
+          NODE

@@ -152,6 +152,7 @@ jobs:
           let base = process.env.EXPECTED_BASE || '';
           if (process.env.EVENT_NAME === 'pull_request') {
             const pull = JSON.parse(execFileSync('gh', ['api', `repos/${process.env.GITHUB_REPOSITORY}/pulls/${event.number}`], { encoding: 'utf8' }));
+            if (pull.state !== 'open' || pull.draft) throw new Error('PR is not open and ready for verification.');
             head = pull.head.sha;
             base = execFileSync('gh', ['api', `repos/${pull.base.repo.full_name}/commits/${pull.base.ref}`, '--jq', '.sha'], { encoding: 'utf8' }).trim();
           } else {

@@ -5,14 +5,14 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, edited]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ui-lib-${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.event_name == 'pull_request' && github.event.action == 'edited' && github.event.changes.base == null && (github.event.changes.title != null || github.event.changes.body != null) && 'metadata' || 'verification' }}-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,13 +24,41 @@ jobs:
       run_heavy: ${{ steps.plan.outputs.run_heavy }}
       head: ${{ steps.plan.outputs.head }}
       base: ${{ steps.plan.outputs.base }}
+      metadata_only: ${{ steps.routing.outputs.metadata_only }}
     steps:
+      - name: Classify metadata-only PR edit
+        id: routing
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const event = JSON.parse(readFileSync(process.env.EVENT_PATH, 'utf8'));
+          const changes = event.changes;
+          let metadataOnly = false;
+          if (process.env.EVENT_NAME === 'pull_request' && event.action === 'edited'
+              && changes && typeof changes === 'object' && !Array.isArray(changes)) {
+            const entries = Object.entries(changes);
+            metadataOnly = entries.length > 0
+              && entries.every(([key, value]) => {
+                if (key !== 'title' && key !== 'body') return false;
+                if (!value || typeof value !== 'object' || Array.isArray(value)
+                    || Object.keys(value).length !== 1 || !Object.hasOwn(value, 'from')) return false;
+                return key === 'title' ? typeof value.from === 'string' : value.from === null || typeof value.from === 'string';
+              });
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, ['metadata_only=' + metadataOnly, ''].join(String.fromCharCode(10)));
+          NODE
       - uses: actions/checkout@v4
+        if: steps.routing.outputs.metadata_only != 'true'
         with:
           fetch-depth: 0
       - name: Test CI classifier
+        if: steps.routing.outputs.metadata_only != 'true'
         run: node --test scripts/ci-plan.node-test.mjs
       - id: plan
+        if: steps.routing.outputs.metadata_only != 'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_PATH: ${{ github.event_path }}
@@ -60,7 +88,7 @@ jobs:
 
   docs:
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.checks), 'docs')
+    if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'docs')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +110,7 @@ jobs:
 
   verify:
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.checks), 'verify')
+    if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'verify')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -99,7 +127,8 @@ jobs:
         run: pnpm run verify
 
   aggregate:
-    if: always()
+    name: ${{ needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true' && 'metadata-only' || 'aggregate' }}
+    if: always() && !(needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true')
     needs: [plan, docs, verify]
     runs-on: ubuntu-latest
     steps:

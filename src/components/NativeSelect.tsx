@@ -11,9 +11,9 @@ export type NativeSelectProps = Omit<ComponentPropsWithRef<"select">, "title"> &
 };
 
 const standardClasses =
-  "min-h-11 w-full appearance-none rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pt-2 pl-1 pr-6 [font-family:inherit] text-sm text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
+  "ui-select-control min-h-11 w-full appearance-none pr-8 [font-family:inherit] outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent aria-invalid:text-ui-danger aria-invalid:focus-visible:ring-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground disabled:opacity-60";
 const compactClasses =
-  "min-h-8 w-full cursor-pointer appearance-none rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pl-1 pr-5 [font-family:inherit] text-sm text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
+  "ui-select-control min-h-8 w-full cursor-pointer appearance-none pr-6 [font-family:inherit] outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent aria-invalid:text-ui-danger aria-invalid:focus-visible:ring-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground disabled:opacity-60";
 
 export function NativeSelect({
   className,

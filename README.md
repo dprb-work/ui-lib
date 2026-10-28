@@ -143,11 +143,16 @@ Consumers control maximum height, resizing, and submission behavior.
 `NativeSelect` styles a native HTML select with a decorative chevron. Use native
 `option` children and select props, including `ref`, `name`, `value`,
 `defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
-and form submission. `density` accepts `standard` or `compact`; standard density
-keeps a 44px control height and uses 0.875rem selected text near the underline.
-`className` styles the select, and `wrapperClassName` controls its surrounding
-layout. Consumers own labels, options, and selection policy. Use `SelectInput`
-instead when the existing Radix-backed picker and its `onValueChange` API is needed.
+and form submission. `density` accepts `standard` or `compact`, preserving
+44px and 32px minimum control heights respectively. By default, both
+`NativeSelect` and the Radix-backed `SelectInput` use the shared
+`ui-select-control` class: muted fill, foreground text at 14px/medium weight,
+6px corners, and 10px horizontal padding. `SelectInput` also retains its
+explicit `appearance="subtle"` alternative. Components retain their own
+chevron clearance, focus, error and disabled semantics. `className` styles the
+select, and `wrapperClassName` controls its surrounding layout. Consumers own
+labels, options, and selection policy. Use `SelectInput` instead when the
+Radix-backed picker and its `onValueChange` API is needed.
 
 `ContentBlock` renders a bordered container with an inset title and an absolutely
 positioned `corner` action. It does not reserve a column for the action.
@@ -242,7 +247,7 @@ CoEx uses the shared `TextInput`, `NativeSelect` and `Tabs` contracts. This is l
 
 `TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and error treatment. Consumers own accessible labels, query state, routing and page layout. The recent-chat search uses this default.
 
-`NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density keeps the native control at 44px high, uses 0.875rem selected text, and places it close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
+`NativeSelect` accepts native select props and forwards its `ref` to the select. Its default appearance is muted-filled with foreground 14px medium text, 6px corners and 10px horizontal padding; the compact density keeps a 32px minimum height. It includes a decorative right-side chevron and preserves native picker, keyboard and form behavior. `SelectInput` defaults to the same `ui-select-control` appearance while retaining its Radix-backed `onValueChange` contract and explicit subtle appearance.
 
 `Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics. CoEx uses that composition for consolidated tabs in the overview title slot.
 

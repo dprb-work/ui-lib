@@ -198,13 +198,13 @@ export function SelectInput({
   const isInvalid = invalid || Boolean(error);
   const compact = density === "compact";
   const triggerClasses = cn(
-    appearance === "subtle" ? subtleClasses : defaultClasses,
-    compact && "h-5 text-xs",
-    isInvalid && "border-ui-danger text-ui-danger",
+    appearance === "subtle"
+      ? subtleClasses
+      : "ui-select-control h-7 w-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent aria-invalid:text-ui-danger aria-invalid:focus-visible:ring-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground disabled:opacity-60",
+    compact && "h-5",
     "flex min-w-0 items-center justify-between gap-1 overflow-hidden whitespace-nowrap text-left",
     className,
   );
-
   return (
     <div className="grid gap-1">
       <Select.Root
@@ -220,7 +220,7 @@ export function SelectInput({
             aria-label={label}
             aria-invalid={isInvalid || undefined}
             aria-describedby={error ? errorId : undefined}
-            className={cn(triggerClasses, !compact && "text-sm")}
+            className={triggerClasses}
           >
             <Select.Value className="truncate" />
             <Select.Icon className="shrink-0 text-ui-muted-foreground">
@@ -237,7 +237,7 @@ export function SelectInput({
               aria-label={label}
               aria-invalid={isInvalid || undefined}
               aria-describedby={error ? errorId : undefined}
-              className={cn(triggerClasses, !compact && "text-sm")}
+              className={triggerClasses}
             >
               <Select.Value className="truncate" />
               <Select.Icon className="shrink-0 text-ui-muted-foreground">
@@ -262,10 +262,7 @@ export function SelectInput({
                   key={option.value}
                   value={option.value}
                   disabled={option.disabled}
-                  className={cn(
-                    "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-muted data-[highlighted]:text-ui-foreground",
-                    compact ? "text-xs" : "text-xs",
-                  )}
+                  className="relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] text-xs outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-muted data-[highlighted]:text-ui-foreground"
                 >
                   <Select.ItemIndicator className="absolute left-2 inline-flex items-center">
                     <Check aria-hidden="true" className="size-3" strokeWidth={2.5} />

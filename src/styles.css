@@ -73,6 +73,17 @@
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
+@utility ui-select-control {
+  box-sizing: border-box;
+  padding-inline: 0.625rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background-color: var(--ui-muted);
+  color: var(--ui-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 @layer base {
   body {
     min-width: 20rem;

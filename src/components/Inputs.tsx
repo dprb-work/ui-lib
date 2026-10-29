@@ -1,6 +1,6 @@
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Select } from "radix-ui";
-import { type ComponentPropsWithRef, type ReactNode, useId } from "react";
+import { forwardRef, type ComponentPropsWithRef, type ReactNode, useId } from "react";
 
 import { cn } from "../cn";
 import { Tooltip } from "./Interactions";
@@ -73,18 +73,17 @@ function InputError({ id, children }: { id: string; children: ReactNode }) {
   );
 }
 
-export function TextInput({
+export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInput({
   appearance = "default",
   error,
   id,
   className,
-  ref,
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
   type = "text",
   tooltip,
   ...inputProps
-}: TextInputProps) {
+}, ref) {
   const generatedId = useId();
   const errorId = `${id ?? generatedId}-error`;
   const description = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
@@ -107,7 +106,7 @@ export function TextInput({
       {error && <InputError id={errorId}>{error}</InputError>}
     </div>
   );
-}
+});
 
 export function TextareaInput({
   appearance = "default",

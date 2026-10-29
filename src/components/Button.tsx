@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import { forwardRef, type ComponentPropsWithRef, type ReactNode } from "react";
 
 import { cn } from "../cn";
 import { Tooltip } from "./Interactions";
@@ -32,15 +32,14 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border-ui-danger bg-ui-danger text-ui-on-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover focus-visible:ring-ui-danger",
 };
 
-export function Button({
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
   className,
   size = "default",
   type = "button",
   variant = "primary",
   tooltip,
-  ref,
   ...buttonProps
-}: ButtonProps) {
+}, ref) {
   const button = (
     <button
       {...buttonProps}
@@ -51,4 +50,4 @@ export function Button({
   );
 
   return <Tooltip label={tooltip}>{button}</Tooltip>;
-}
+});

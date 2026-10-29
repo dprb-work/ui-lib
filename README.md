@@ -68,6 +68,15 @@ accept `tooltip?: ReactNode | false`; `IconButton` and `CopyButton` use their
 accessible label by default, while `false` opts out. Do not pass native `title`
 to these controls.
 
+`TextInput`, `Button`, and `IconButton` forward the standard React `ref` to their
+native input or button, including through tooltip and button composition. Version
+0.2.3 uses `forwardRef` for this chain because Concierge's native DSH renderer
+supplies React 18.3.1, while standalone consumers use React 19. React 18 does not
+deliver `ref` as a function-component prop: the earlier implementation left native
+search and focus-return refs unset. This focused repair preserves the same public
+ref API; it does not broaden the package's React peer range or establish React 18
+compatibility for every other component.
+
 ```tsx
 <TooltipProvider delayDuration={500} side="bottom" className="bg-slate-950 text-white">
   <App />

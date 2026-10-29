@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import { forwardRef, type ComponentPropsWithRef, type ReactNode } from "react";
 
 import { Button } from "./Button";
 
@@ -18,16 +18,15 @@ const sizeClasses = {
   large: "h-11 w-11 [&_svg]:size-5",
 } as const;
 
-export function IconButton({
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton({
   label,
   size = "default",
   className,
   variant = "ghost",
   children,
   tooltip,
-  ref,
   ...buttonProps
-}: IconButtonProps) {
+}, ref) {
   const classes = [sizeClasses[size], className].filter(Boolean).join(" ");
   return (
     <Button
@@ -42,4 +41,4 @@ export function IconButton({
       {children}
     </Button>
   );
-}
+});

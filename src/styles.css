@@ -14,7 +14,7 @@
   --ui-foreground: rgb(15 23 42);
   --ui-surface: rgb(255 255 255);
   --ui-surface-foreground: rgb(15 23 42);
-  --ui-muted: rgb(241 245 249);
+  --ui-muted: rgb(226 232 240);
   --ui-muted-foreground: rgb(71 85 105);
   --ui-border: rgb(203 213 225);
   --ui-tooltip: rgb(241 245 249);
@@ -38,7 +38,7 @@
   --ui-foreground: rgb(226 232 240);
   --ui-surface: rgb(10 17 31);
   --ui-surface-foreground: rgb(226 232 240);
-  --ui-muted: rgb(30 41 59);
+  --ui-muted: color-mix(in srgb, rgb(30 41 59), rgb(51 65 85));
   --ui-muted-foreground: rgb(148 163 184);
   --ui-border: rgb(51 65 85);
   --ui-tooltip: rgb(30 41 59);

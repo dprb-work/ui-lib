@@ -235,6 +235,7 @@ export type DialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenAutoFocus?: ComponentPropsWithoutRef<typeof RadixDialog.Content>["onOpenAutoFocus"];
+  onCloseAutoFocus?: ComponentPropsWithoutRef<typeof RadixDialog.Content>["onCloseAutoFocus"];
   title: ReactNode;
   trigger: ReactElement;
   children: ReactNode | ((close: () => void) => ReactNode);
@@ -248,6 +249,7 @@ export function Dialog({
   open,
   onOpenChange,
   onOpenAutoFocus,
+  onCloseAutoFocus,
   title,
   trigger,
   children,
@@ -266,6 +268,7 @@ export function Dialog({
         />
         <RadixDialog.Content
           onOpenAutoFocus={onOpenAutoFocus}
+          onCloseAutoFocus={onCloseAutoFocus}
           className={cn(
             !unstyled && "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl bg-ui-surface p-5 text-ui-surface-foreground shadow-2xl outline-hidden",
             contentClassName,

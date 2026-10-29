@@ -181,6 +181,11 @@ when selection should open on click; the consumer owns persistence.
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
 content, and title treatment through plain CSS.
 
+`Dialog` forwards optional `onOpenAutoFocus` and `onCloseAutoFocus` callbacks.
+Call `event.preventDefault()` in either callback to replace that default focus
+action. Use `onCloseAutoFocus` to hand focus to another dialog after the closing
+dialog releases its focus trap; ordinary closes still return focus to the trigger.
+
 `Calendar` is a controlled date grid. Pass the selected `value` and visible
 `month`, then update them through `onValueChange` and `onMonthChange`.
 `onValueChange` receives the selected local calendar day at midnight. It derives

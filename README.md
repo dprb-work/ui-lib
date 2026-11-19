@@ -251,6 +251,15 @@ corepack pnpm run dev
 
 Storybook is the component catalog and browser verification surface.
 
+The **Foundations / Accent candidates** story is a proposal, not a default change.
+Its four non-cyan options—indigo, warm amber, violet, and ink—reuse the existing
+accent, hover, on-accent, and chart-accent tokens. The story and catalog toolbar
+share Storybook globals, so a selection applies across the catalog without a
+second preferences store. Light and dark previews measure text-on-accent and
+accent-on-surface contrast from the rendered controls. **Current default**
+removes the preview attribute and restores the unchanged library palette.
+Only Storybook imports `.storybook/accent-candidates.css`; library builds do not.
+
 ### CoEx input, select and tab defaults
 
 CoEx uses the shared `TextInput`, `NativeSelect` and `Tabs` contracts. This is library behavior, not a CoEx stylesheet override.

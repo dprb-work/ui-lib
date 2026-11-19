@@ -1,0 +1,49 @@
+/* Proposal only: imported by Storybook, never by the library stylesheet. */
+:root[data-accent-candidate] {
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
+  --ui-on-accent: #ffffff;
+  --ui-chart-accent: var(--ui-accent);
+}
+
+:root.dark[data-accent-candidate],
+:root[data-theme="dark"][data-accent-candidate],
+:root[data-accent-candidate] .dark,
+:root[data-accent-candidate] [data-theme="dark"] {
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
+  --ui-on-accent: #0f172a;
+  --ui-chart-accent: var(--ui-accent);
+}
+
+:root[data-accent-candidate="indigo"] { --ui-accent: #3f51b5; }
+:root.dark[data-accent-candidate="indigo"],
+:root[data-theme="dark"][data-accent-candidate="indigo"],
+:root[data-accent-candidate="indigo"] .dark,
+:root[data-accent-candidate="indigo"] [data-theme="dark"] { --ui-accent: #9aa8ef; }
+
+:root[data-accent-candidate="amber"] { --ui-accent: #9a4b06; }
+:root.dark[data-accent-candidate="amber"],
+:root[data-theme="dark"][data-accent-candidate="amber"],
+:root[data-accent-candidate="amber"] .dark,
+:root[data-accent-candidate="amber"] [data-theme="dark"] { --ui-accent: #f0b46c; }
+
+:root[data-accent-candidate="violet"] { --ui-accent: #79449a; }
+:root.dark[data-accent-candidate="violet"],
+:root[data-theme="dark"][data-accent-candidate="violet"],
+:root[data-accent-candidate="violet"] .dark,
+:root[data-accent-candidate="violet"] [data-theme="dark"] { --ui-accent: #c6a0dd; }
+
+:root[data-accent-candidate="ink"] { --ui-accent: #334155; }
+:root.dark[data-accent-candidate="ink"],
+:root[data-theme="dark"][data-accent-candidate="ink"],
+:root[data-accent-candidate="ink"] .dark,
+:root[data-accent-candidate="ink"] [data-theme="dark"] { --ui-accent: #cbd5e1; }
+
+:root[data-accent-candidate="ink"] a {
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.accent-preview-link { color: var(--ui-accent); text-decoration: underline; }
+.accent-preview-contrast { font-variant-numeric: tabular-nums; }

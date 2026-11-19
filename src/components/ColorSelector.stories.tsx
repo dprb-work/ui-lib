@@ -13,7 +13,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const sampleColors = ["#0f766e", "#2563eb", "#c2410c", "#7e22ce", "#475569"];
+const sampleColors = ["#2563eb", "#0f766e", "#c2410c", "#7e22ce", "#475569"];
 const initialColors = [...sampleColors, ...sampleColors];
 
 function InteractiveSelector() {

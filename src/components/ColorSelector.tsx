@@ -38,7 +38,6 @@ export function ColorSelector({
                 <button
                   type="button"
                   aria-label={slotLabel}
-                  aria-pressed={isOpen}
                   disabled={disabled}
                   className={cn(
                     "size-6 shrink-0 rounded-sm border border-ui-border outline-hidden transition-colors hover:border-ui-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-40",

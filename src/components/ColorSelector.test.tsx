@@ -22,7 +22,10 @@ describe("ColorSelector", () => {
     render(<ControlledSelector />);
     const firstSlot = screen.getByRole("button", { name: "Series color 1" });
     expect(screen.getByRole("button", { name: "Series color 2" })).toBeVisible();
+    expect(firstSlot).toHaveAttribute("aria-expanded", "false");
     await user.click(firstSlot);
+    expect(firstSlot).toHaveAttribute("aria-expanded", "true");
+    expect(firstSlot).not.toHaveAttribute("aria-pressed");
 
     const picker = within(screen.getByRole("dialog", { name: "Series color 1 picker" }));
     const input = picker.getByRole("textbox", { name: "Series color 1 hex value" });
@@ -32,6 +35,7 @@ describe("ColorSelector", () => {
 
     await user.keyboard("{Escape}");
     expect(firstSlot).toHaveFocus();
+    expect(firstSlot).toHaveAttribute("aria-expanded", "false");
     await user.click(firstSlot);
     expect(screen.getByRole("textbox", { name: "Series color 1 hex value" })).toHaveValue("#654321");
     await user.keyboard("{Escape}");

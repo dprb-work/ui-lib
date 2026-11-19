@@ -178,6 +178,8 @@ Consumers may bind swatch presentation to existing CSS tokens with
 `--ui-color-selector-1`, `--ui-color-selector-2`, and so on at the group.
 The controlled hex values still supply the picker; the optional CSS slots let
 charts, legends, and swatches inherit one palette without copying color values.
+Reporter maps these slots to its existing `--series-N` variables; consumers must
+keep the painted colors consistent with the controlled hex values.
 
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
 content, and title treatment through plain CSS.

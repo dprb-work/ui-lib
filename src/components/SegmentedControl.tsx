@@ -61,7 +61,7 @@ export function SegmentedControl<Value extends string>({
           aria-pressed={value === option.value}
           disabled={option.disabled}
           className={cn(
-            "relative z-10 inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden transition-colors duration-200 hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:text-ui-surface-foreground motion-reduce:transition-none [&_svg]:size-3.5 [&_svg]:shrink-0",
+            "relative z-10 inline-flex items-center justify-center gap-ui-icon-text rounded-lg px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden transition-colors duration-200 hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:text-ui-surface-foreground motion-reduce:transition-none [&_svg]:size-3.5 [&_svg]:shrink-0",
             buttonClassName,
           )}
           onClick={() => onValueChange(option.value)}

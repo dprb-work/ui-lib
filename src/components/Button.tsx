@@ -13,7 +13,7 @@ export type ButtonProps = Omit<ComponentPropsWithRef<"button">, "title"> & {
 };
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border [font-family:inherit] font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ui-background disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:shrink-0";
+  "inline-flex items-center justify-center gap-ui-icon-text rounded-md border [font-family:inherit] font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ui-background disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:shrink-0";
 
 const sizeClasses: Record<ButtonSize, string> = {
   small: "h-7 px-2.5 text-xs [&_svg]:size-3.5",
@@ -23,13 +23,13 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "border-ui-accent bg-ui-accent text-ui-on-accent hover:border-ui-accent-hover hover:bg-ui-accent-hover",
+    "border-ui-accent bg-ui-accent text-ui-on-accent hover:bg-ui-accent-hover",
   secondary:
     "border-ui-border bg-ui-surface text-ui-surface-foreground hover:bg-ui-muted",
   ghost:
     "border-transparent bg-transparent text-ui-muted-foreground hover:bg-ui-muted hover:text-ui-foreground",
   danger:
-    "border-ui-danger bg-ui-danger text-ui-on-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover focus-visible:ring-ui-danger",
+    "border-ui-danger-ink bg-transparent text-ui-danger hover:bg-ui-danger-fill focus-visible:ring-ui-danger",
 };
 
 export function Button({

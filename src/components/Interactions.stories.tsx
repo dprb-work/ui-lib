@@ -149,7 +149,7 @@ function DialogFixture() {
               <Button variant="ghost" onClick={close}>
                 Cancel
               </Button>
-              <Button variant="danger" onClick={close}>
+              <Button variant="danger" className="bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover" onClick={close}>
                 Discard
               </Button>
             </div>

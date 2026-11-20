@@ -1,6 +1,7 @@
 # ui-lib visual language
 
-ui-lib owns reusable UI controls and their shared visual language. These words describe roles and states, not a chosen palette.
+ui-lib owns reusable UI controls and their shared visual language. The final
+palette values and adopted Green accent/success relationship are current.
 
 ## Language
 
@@ -23,7 +24,8 @@ The highest-priority action in a local group, not a color.
 _Avoid_: Accent when describing action hierarchy.
 
 **Accent**:
-The interface emphasis color, separate from status and data identity.
+The interface emphasis color, separate from status and data identity. Green is
+the accent family.
 _Avoid_: Primary as a color name; any fixed hue as its definition.
 
 **Tone**:
@@ -33,6 +35,28 @@ _Avoid_: Hue, status, selected state.
 **Status**:
 A user-visible condition or outcome, such as running, failed or ready.
 _Avoid_: Tone, color, StatusPanel as the condition itself.
+
+### Palette roles
+
+Current status roles are success Green, warning Amber, info Blue, and
+danger independent red. Danger is status-only, not a family in the ten-color
+palette. Pair every status with an icon and words; color alone is not enough.
+
+Primary actions and success intentionally share Green because a primary action
+is positive. The adopted anti-crowding rule is: at most one primary action per
+view region; show success with an icon and words; do not color unrelated
+elements green.
+
+The final ten-family palette retains Pearl and drops Slate. Its series order is
+Blue, Amber, Green, Violet, Rose, Olive, Cyan, Magenta, Copper and Pearl.
+Light uses 650 for all ten. Dark uses 700 for Blue, Amber, Violet, Rose,
+Magenta, Copper and Pearl; Green, Olive and Cyan stay at 650.
+
+Links use the readable Green link role and remain underlined. Danger buttons
+are outlined by default. Reserve a solid danger button for the confirming step;
+the [README](README.md#styling-and-composition) owns styling and composition.
+
+
 
 ### States
 
@@ -74,8 +98,8 @@ _Avoid_: Invalid as a synonym for an operation failure.
 
 #### Showing states
 
-This is the adopted direction, not today's component behavior. Component changes
-follow in a later pull request, after visual confirmation alongside today's rings.
+This direction is confirmed after visual comparison; component changes are not
+yet shipped.
 
 - **Color says what it is:** selected or on uses the accent; status uses its role color.
 - **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on.

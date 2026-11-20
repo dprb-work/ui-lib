@@ -17,7 +17,7 @@ export function ContentBlock({ title, icon, metadata, corner, children, classNam
       {...props}
     >
       <header className="absolute -top-3 right-3 left-3 flex h-6 items-center text-[.8125rem]">
-        <span className="flex h-6 min-w-0 items-center gap-1 rounded-md bg-ui-background pr-2 pl-1 text-ui-muted-foreground">
+        <span className="flex h-6 min-w-0 items-center gap-ui-icon-text rounded-md bg-ui-background pr-2 pl-1 text-ui-muted-foreground">
           {icon}
           <span className="truncate font-medium leading-6 text-ui-foreground">
             {title}

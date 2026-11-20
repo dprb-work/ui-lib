@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { type KeyboardEvent, useEffect, useId, useRef } from "react";
 import { cn } from "../cn";
+import { Button } from "./Button";
+import { IconButton } from "./IconButton";
 
 export type CalendarProps = {
   value: Date | null;
@@ -147,31 +149,38 @@ export function Calendar({
   return (
     <section ref={calendarRef} aria-label={ariaLabel} className={cn("w-fit rounded-lg border border-ui-border bg-ui-surface p-3 text-ui-surface-foreground", className)}>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <button ref={previousMonthButton} type="button" aria-label="Previous month" onClick={() => onMonthChange(addMonths(normalizedMonth, -1))} className="grid size-8 place-items-center rounded-md text-ui-muted-foreground hover:bg-ui-muted focus-visible:outline-2 focus-visible:outline-ui-accent"><ChevronLeft aria-hidden="true" size={16} /></button>
+        <IconButton ref={previousMonthButton} type="button" label="Previous month" tooltip={false} onClick={() => onMonthChange(addMonths(normalizedMonth, -1))}><ChevronLeft aria-hidden="true" size={16} /></IconButton>
         <h2 id={labelId} className="text-sm font-medium">{monthLabel}</h2>
-        <button type="button" aria-label="Next month" onClick={() => onMonthChange(addMonths(normalizedMonth, 1))} className="grid size-8 place-items-center rounded-md text-ui-muted-foreground hover:bg-ui-muted focus-visible:outline-2 focus-visible:outline-ui-accent"><ChevronRight aria-hidden="true" size={16} /></button>
+        <IconButton type="button" label="Next month" tooltip={false} onClick={() => onMonthChange(addMonths(normalizedMonth, 1))}><ChevronRight aria-hidden="true" size={16} /></IconButton>
       </div>
-      <div role="grid" aria-labelledby={labelId} className="grid grid-cols-7 gap-1">
-        {weekdayNames.map((name) => <div key={name} role="columnheader" className="grid size-8 place-items-center text-xs text-ui-muted-foreground">{name}</div>)}
-        {days.map((day) => {
-          const currentMonth = day.getMonth() === normalizedMonth.getMonth();
-          const isUnavailable = unavailable(day);
-          const selected = sameDay(value, day);
-          const focusable = sameDay(focusDate, day);
-          return <button
-            key={dateKey(day)}
-            type="button"
-            role="gridcell"
-            data-calendar-day={dateKey(day)}
-            tabIndex={focusable ? 0 : -1}
-            disabled={isUnavailable}
-            aria-label={dateLabel.format(day)}
-            aria-selected={selected}
-            onClick={() => onValueChange(startOfDay(day))}
-            onKeyDown={(event) => onDayKeyDown(event, day)}
-            className={cn("grid size-8 place-items-center rounded-md text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-40", !currentMonth && "text-ui-muted-foreground", selected ? "bg-ui-accent text-ui-on-accent" : "hover:bg-ui-muted")}
-          >{day.getDate()}</button>;
-        })}
+      <div role="grid" aria-labelledby={labelId} className="grid gap-1">
+        <div role="row" className="grid grid-cols-7 gap-1">
+          {weekdayNames.map((name) => <div key={name} role="columnheader" className="grid size-8 place-items-center text-xs text-ui-muted-foreground">{name}</div>)}
+        </div>
+        {Array.from({ length: days.length / 7 }, (_, week) => (
+          <div key={week} role="row" className="grid grid-cols-7 gap-1">
+            {days.slice(week * 7, (week + 1) * 7).map((day) => {
+              const currentMonth = day.getMonth() === normalizedMonth.getMonth();
+              const isUnavailable = unavailable(day);
+              const selected = sameDay(value, day);
+              const focusable = sameDay(focusDate, day);
+              return <Button
+                key={dateKey(day)}
+                type="button"
+                variant={selected ? "primary" : "secondary"}
+                role="gridcell"
+                data-calendar-day={dateKey(day)}
+                tabIndex={focusable ? 0 : -1}
+                disabled={isUnavailable}
+                aria-label={dateLabel.format(day)}
+                aria-selected={selected}
+                onClick={() => onValueChange(startOfDay(day))}
+                onKeyDown={(event) => onDayKeyDown(event, day)}
+                className={cn("grid size-8 place-items-center rounded-md border-transparent p-0 text-sm font-normal", !currentMonth && !selected && "text-ui-muted-foreground", !selected && "bg-transparent")}
+              >{day.getDate()}</Button>;
+            })}
+          </div>
+        ))}
       </div>
     </section>
   );

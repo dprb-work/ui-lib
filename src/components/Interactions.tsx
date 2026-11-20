@@ -97,7 +97,7 @@ export function Tabs({
   const tabList = <RadixTabs.List
         ref={listRef}
         className={cn(
-          "relative isolate mb-2 flex w-fit rounded-lg border border-ui-border bg-ui-muted",
+          "relative isolate mb-2 flex w-full min-w-0 rounded-lg border border-ui-border bg-ui-muted [--ui-control-fill:var(--color-ui-muted)]",
           listClassName,
         )}
         aria-label={ariaLabel}
@@ -119,7 +119,7 @@ export function Tabs({
             value={tab.value}
             disabled={tab.disabled}
             className={cn(
-              "relative z-10 rounded-[0.4375rem] px-3 py-2 text-sm text-ui-muted-foreground outline-hidden transition-colors duration-200 hover:text-ui-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ui-accent data-[state=active]:text-ui-foreground disabled:opacity-50 motion-reduce:transition-none",
+              "relative z-10 min-w-0 flex-1 rounded-[0.4375rem] px-3 py-2 text-center text-sm font-normal text-ui-muted-foreground outline-hidden -outline-offset-2 transition-colors duration-200 enabled:hover:bg-ui-hover-fill enabled:active:bg-ui-press-fill focus-visible:z-10 focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] data-[state=active]:[--ui-control-fill:var(--color-ui-surface)] data-[state=active]:font-semibold data-[state=active]:text-ui-foreground disabled:opacity-50 motion-reduce:transition-none",
               triggerClassName,
             )}
           >
@@ -137,7 +137,7 @@ export function Tabs({
           value={tab.value}
           forceMount={forceMount || undefined}
           className={cn(
-            "outline-hidden data-[state=inactive]:hidden focus-visible:ring-2 focus-visible:ring-ui-accent",
+            "outline-hidden -outline-offset-2 data-[state=inactive]:hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
             panelClassName,
           )}
           data-tab-label={typeof tab.label === "string" ? tab.label : undefined}
@@ -345,7 +345,7 @@ export function CopyButton({
       ref={ref}
       type="button"
       className={cn(
-        "inline-flex size-8 items-center justify-center rounded-md text-ui-muted-foreground outline-hidden hover:bg-ui-muted hover:text-ui-foreground focus-visible:ring-2 focus-visible:ring-ui-accent",
+        "inline-flex size-8 items-center justify-center rounded-md border border-transparent text-ui-muted-foreground outline-hidden -outline-offset-2 hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:border-ui-accent-link focus-visible:bg-ui-press-fill disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       aria-label={accessibleLabel}

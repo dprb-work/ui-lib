@@ -6,7 +6,9 @@ import { useState } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Dialog } from "./Interactions";
+import { MenuItem } from "./MenuItem";
 import { TextInput } from "./Inputs";
+import { StatusMessage } from "./StatusMessage";
 import { StatusPanel } from "./StatusPanel";
 
 const meta = {
@@ -16,7 +18,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const families = ["Blue", "Amber", "Green", "Violet", "Rose", "Magenta", "Olive", "Slate", "Copper", "Cyan"] as const;
+const families = ["Blue", "Amber", "Green", "Violet", "Rose", "Olive", "Cyan", "Magenta", "Copper", "Pearl"] as const;
 const roles = [
   { name: "success", family: "Green", Icon: CircleCheck, words: "Saved successfully" },
   { name: "warning", family: "Amber", Icon: TriangleAlert, words: "Warning: review before continuing" },
@@ -29,8 +31,8 @@ export const Shipped: Story = {
     <main className="mx-auto grid max-w-4xl gap-6 text-sm text-ui-foreground">
       <header className="grid gap-2">
         <h1 className="text-xl font-semibold">Palette and roles</h1>
-        <p>Current defaults. Exact steps and saturation await the owner’s brightness comparison; the ten-family selection is not final.</p>
-        <p>Green is the accent. Status and data identity remain separate roles, even when their families overlap.</p>
+        <p>Final in-between saturation values, with Pearl retained and Slate dropped. Green is both the accent and success family because the primary action is positive.</p>
+        <p>Adopted crowding rule: at most one primary action per view region; show success with an icon and words; do not color unrelated elements green.</p>
       </header>
       <section className="grid gap-3" aria-label="Ten palette families and series order">
         <h2 className="text-base font-semibold">Ten families, in series order</h2>
@@ -43,7 +45,7 @@ export const Shipped: Story = {
             </li>
           ))}
         </ol>
-        <p className="text-ui-muted-foreground">Light: 650. Dark: 700, except Green, Olive and Cyan at 650. These opaque paints serve fills, marks and edges; use neutral text for series labels.</p>
+        <p className="text-ui-muted-foreground">Light: 650 for all ten. Dark: 700 for Blue, Amber, Violet, Rose, Magenta, Copper and Pearl; 650 for Green, Olive and Cyan. These opaque paints serve fills, marks and edges; use neutral text for series labels.</p>
       </section>
       <section className="grid gap-3" aria-label="Accent roles">
         <h2 className="text-base font-semibold">Accent: Green</h2>
@@ -65,7 +67,7 @@ export const Shipped: Story = {
           ))}
         </div>
       </section>
-      <p className="text-ui-muted-foreground">Shipped palette stops: 650 for all ten; 700 for the seven darker series; 50, 600, 750 and 950 for Blue, Amber and Green. No unused full ramps are added.</p>
+      <p className="text-ui-muted-foreground">Final palette stops: 650 for all ten in light; 700 for Blue, Amber, Violet, Rose, Magenta, Pearl and Copper in dark; 650 for Green, Olive and Cyan in dark. No Slate family is shipped.</p>
     </main>
   ),
 };
@@ -76,9 +78,8 @@ export const AccentAndSuccess: Story = {
     <main className="mx-auto grid max-w-6xl gap-6 text-sm text-ui-foreground">
       <header className="grid gap-2">
         <h1 className="text-xl font-semibold">Primary action beside success</h1>
-        <p>Open question: should primary action and success deliberately share Green? The owner is leaning yes: the primary button is the positive action. This is not final.</p>
-        <p>Proposed rule: at most one primary action per view region; success uses an icon and words; do not color unrelated elements green.</p>
-        <p>Alternatives: move success to another family, or use different steps for accent text/fills and success.</p>
+        <p>Primary and success intentionally share Green. The adopted rule limits green to one primary action per view region; success uses an icon and words; unrelated elements stay neutral.</p>
+        <p>Compare the final Green treatment in Light and Dark.</p>
       </header>
       <div className="grid items-start gap-6 lg:grid-cols-2">
         {(["light", "dark"] as const).map((theme) => (
@@ -92,11 +93,11 @@ export const AccentAndSuccess: Story = {
               <div className="grid gap-4">
                 <h3 className="font-semibold">Success status</h3>
                 <Badge tone="success" className="justify-self-start"><CircleCheck aria-hidden="true" size={14} />Saved successfully</Badge>
-                <StatusPanel className="border-ui-success bg-ui-success-fill p-4 text-ui-success-ink" title={<span className="flex items-center gap-2 text-base"><CircleCheck aria-hidden="true" size={18} />Changes saved</span>} />
+                <StatusPanel icon={<CircleCheck aria-hidden="true" size={18} />} className="border-ui-success bg-ui-success-fill p-4 text-ui-success-ink" title={<span className="text-base">Changes saved</span>} />
                 <label className="grid gap-2">
                   Display name
                   <TextInput defaultValue="Sample" className="border-ui-success" aria-describedby={`valid-name-${theme}`} />
-                  <span id={`valid-name-${theme}`} className="flex items-center gap-2 text-ui-success"><CircleCheck aria-hidden="true" size={14} />Valid: this name is available</span>
+                  <StatusMessage id={`valid-name-${theme}`} icon={<CircleCheck aria-hidden="true" size={14} />} className="text-ui-success">Valid: this name is available</StatusMessage>
                 </label>
               </div>
             </div>
@@ -122,7 +123,7 @@ function DangerExample() {
           <DropdownMenu.Trigger asChild><Button variant="secondary"><MoreHorizontal aria-hidden="true" />More actions</Button></DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content className="rounded-md border border-ui-border bg-ui-surface p-1 shadow-sm" sideOffset={4}>
-              <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded p-2 text-ui-danger outline-hidden data-highlighted:bg-ui-danger-fill focus-visible:ring-2 focus-visible:ring-ui-danger" onSelect={() => setState("confirming")}><Trash2 aria-hidden="true" size={16} />Delete sample</DropdownMenu.Item>
+              <MenuItem icon={<Trash2 aria-hidden="true" size={16} />} className="cursor-pointer rounded p-2 text-ui-danger outline-hidden data-highlighted:bg-ui-danger-fill focus-visible:ring-2 focus-visible:ring-ui-danger" onSelect={() => setState("confirming")}>Delete sample</MenuItem>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -130,7 +131,7 @@ function DangerExample() {
       <p role="status">{state === "removed" ? "Sample deleted." : "Sample is present."}</p>
       <Badge tone="danger" className="justify-self-start"><CircleX aria-hidden="true" size={14} />Save failed</Badge>
       <label className="grid gap-2">Sample name<TextInput defaultValue="" error="Enter a name before saving." /></label>
-      <p className="text-ui-danger"><CircleX aria-hidden="true" className="inline" size={16} /> Error: the sample could not be saved.</p>
+      <StatusMessage icon={<CircleX aria-hidden="true" size={16} />} className="text-ui-danger">Error: the sample could not be saved.</StatusMessage>
     </main>
   );
 }

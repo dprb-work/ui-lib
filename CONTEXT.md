@@ -1,6 +1,7 @@
 # ui-lib visual language
 
-ui-lib owns reusable UI controls and their shared visual language. These words describe roles and states; current palette values remain a proposal.
+ui-lib owns reusable UI controls and their shared visual language. The final
+palette values and adopted Green accent/success relationship are current.
 
 ## Language
 
@@ -41,20 +42,20 @@ Current status roles are success Green, warning Amber, info Blue, and
 danger independent red. Danger is status-only, not a family in the ten-color
 palette. Pair every status with an icon and words; color alone is not enough.
 
-The owner is considering sharing Green between primary actions and success,
-because a primary action is positive. This is not a final decision. The
-proposed anti-crowding rule is: at most one primary action per view region;
-show success with an icon and words; do not color unrelated elements green.
-The exact palette steps and saturation remain open pending a brightness
-comparison. Keep the success-family question unresolved: alternatives are
-moving success to another family or using different accent and success steps.
-Compare them side by side in one story: a primary button with a success badge,
-panel, and valid field in light and dark themes.
+Primary actions and success intentionally share Green because a primary action
+is positive. The adopted anti-crowding rule is: at most one primary action per
+view region; show success with an icon and words; do not color unrelated
+elements green.
+
+The final ten-family palette retains Pearl and drops Slate. Its series order is
+Blue, Amber, Green, Violet, Rose, Olive, Cyan, Magenta, Copper and Pearl.
+Light uses 650 for all ten. Dark uses 700 for Blue, Amber, Violet, Rose,
+Magenta, Copper and Pearl; Green, Olive and Cyan stay at 650.
 
 Links use the readable Green link role and remain underlined. Danger buttons
 are outlined by default. Reserve a solid danger button for the confirming step;
-a consumer can apply `bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover`
-through `className`.
+the [README](README.md#styling-and-composition) owns styling and composition.
+
 
 
 ### States

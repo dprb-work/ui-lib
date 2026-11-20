@@ -12,7 +12,7 @@ The base entry point contains controls and interaction primitives:
 - `Checkbox`, `Switch`, `SegmentedControl`
 - `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`, `ColorSelector`
 - `Image`, `Breadcrumbs`
-- `Badge`, `StatusPanel`, `ContentBlock`, `CodeViewport`
+- `Badge`, `StatusPanel`, `StatusMessage`, `MenuItem`, `ContentBlock`, `CodeViewport`
 - `Calendar`, `Fullscreen`
 - `Dialog`, `Tabs`, `Tooltip`, `TooltipProvider`, `PortalProvider`
 - `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
@@ -126,9 +126,10 @@ status. Links use the readable Green link role and stay underlined. Danger
 buttons use an outlined treatment by default. Reserve a solid danger button for
 the confirming step; consumers can apply
 `bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover` through `className`.
-The proposed anti-crowding rule and open success-family question are in
-[CONTEXT.md](CONTEXT.md#palette-roles). Exact steps, saturation and the final
-ten-family selection await the owner's comparison; these are current values.
+The adopted anti-crowding rule is in [CONTEXT.md](CONTEXT.md#palette-roles):
+allow at most one primary action per view region, show success with an icon and
+words, and keep unrelated elements neutral. The ten-family selection and values
+are final for this release: Pearl replaces Slate.
 Add `.dark` to an ancestor or set `data-theme="dark"` on one.
 Consumers may override these semantic variables at their application root:
 `--ui-background`, `--ui-foreground`, `--ui-surface`,
@@ -147,11 +148,15 @@ including the readable `--text-color-ui-accent` and `--text-color-ui-danger`
 mappings. Product styles loaded after the package remain authoritative.
 
 Only palette stops used by roles ship: `650` for all ten families; `700` for
-Blue, Amber, Violet, Rose, Magenta, Slate and Copper; `600` and `750` for
-Green, Amber and Blue; and `50` and `950` for Green, Amber and Blue.
-`--ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose,
-Magenta, Olive, Slate, Copper and Cyan.
-
+Blue, Amber, Violet, Rose, Magenta, Pearl and Copper in dark; `600` and `750`
+for Green, Amber and Blue; and `50` and `950` for Green, Amber and Blue.
+`--ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose, Olive,
+Cyan, Magenta, Copper and Pearl.
+Use `StatusMessage` for icon-plus-text status feedback and `MenuItem` for
+icon-plus-text Radix menu entries. `StatusPanel` owns the gap between its
+optional icon and title, and input error messages own their decorative error
+icon. These components use the shared `--ui-icon-text-gap` token; callers
+provide content and do not add a second gap or a literal space.
 ### Styling and composition
 
 Use the existing UI component before writing replacement markup. Find controls

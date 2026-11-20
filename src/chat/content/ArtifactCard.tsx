@@ -14,7 +14,7 @@ export type ArtifactCardProps = {
   onDownload?: () => void;
 };
 const linkClassName =
-  "inline-flex items-center gap-1 rounded border border-ui-border px-3 py-2 text-sm text-ui-accent underline focus:outline-hidden focus:ring-2 focus:ring-ui-accent";
+  "inline-flex items-center gap-ui-icon-text rounded border border-ui-border px-3 py-2 text-sm text-ui-accent underline focus:outline-hidden focus:ring-2 focus:ring-ui-accent";
 export function ArtifactCard({
   name,
   kind = "Artifact",

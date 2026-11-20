@@ -4,10 +4,10 @@ import { expect, within } from "storybook/test";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 
-const families = ["blue", "amber", "green", "violet", "rose", "magenta", "olive", "slate", "copper", "cyan"] as const;
-const dark700Families = ["blue", "amber", "violet", "rose", "magenta", "slate", "copper"] as const;
-const lightSeries = ["#5688bc", "#a57c45", "#5a9372", "#8b77b7", "#a5767c", "#a86e9b", "#828b44", "#76869d", "#b66f59", "#558f9b"] as const;
-const darkSeries = ["#457aaf", "#966d39", "#5a9372", "#7e69a9", "#96686e", "#9a5f8e", "#828b44", "#67778f", "#a8604a", "#558f9b"] as const;
+const families = ["blue", "amber", "green", "violet", "rose", "olive", "cyan", "magenta", "copper", "pearl"] as const;
+const dark700Families = ["blue", "amber", "violet", "rose", "magenta", "pearl", "copper"] as const;
+const lightSeries = ["#4c88c5", "#aa7a35", "#50956f", "#8c74c0", "#aa737b", "#828c34", "#49919f", "#ae699f", "#be6a50", "#75869e"] as const;
+const darkSeries = ["#397ab9", "#9b6b29", "#50956f", "#8066b1", "#9b656d", "#828c34", "#49919f", "#9f5a92", "#b05b41", "#657891"] as const;
 const statuses = ["success", "warning", "info", "danger"] as const;
 
 function PaletteProbe() {
@@ -92,8 +92,7 @@ export const ComputedBrowserTokens: Story = {
         expect(seriesColor).toBe(sampledColor((theme === "light" ? lightSeries : darkSeries)[index - 1]!));
       }
 
-      expect(colorValue(style, "--ui-accent")).toBe(sampledColor("#5a9372"));
-      expect(colorValue(style, "--ui-accent")).toBe(colorValue(style, "--ui-palette-green-650"));
+      expect(colorValue(style, "--ui-accent")).toBe(sampledColor("#50956f"));
       expect(colorValue(style, "--ui-accent-hover")).toBe(sampledColor("#6ba181"));
       expect(colorValue(style, "--ui-accent-hover")).toBe(colorValue(style, "--ui-palette-green-600"));
       expect(colorValue(style, "--ui-accent-link")).toBe(colorValue(style, `--ui-palette-green-${theme === "light" ? "750" : "600"}`));

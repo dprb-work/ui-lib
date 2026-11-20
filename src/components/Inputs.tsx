@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown, CircleX, Search } from "lucide-react";
 import { Select } from "radix-ui";
 import { type ComponentPropsWithRef, type ReactNode, useId } from "react";
 
@@ -67,8 +67,9 @@ function inputClassName(appearance: InputAppearance, className: string | undefin
 
 function InputError({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <p id={id} aria-hidden="true" className="m-0 text-xs leading-4 text-ui-danger">
-      {children}
+    <p id={id} aria-hidden="true" className="m-0 flex min-w-0 items-start gap-ui-icon-text text-xs leading-4 text-ui-danger">
+      <CircleX aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+      <span className="min-w-0">{children}</span>
     </p>
   );
 }

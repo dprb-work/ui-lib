@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, LoaderCircle } from "lucide-react";
+import { StatusMessage } from "../../components/StatusMessage";
 import { FileExcerpt } from "./FileExcerpt";
 import { RawRequest } from "./RawRequest";
 export type FileDeletion = {
@@ -33,13 +34,13 @@ export function FileDeletion({ deletion, rawInput }: FileDeletionProps) {
           };
   return (
     <div className="space-y-2 p-3">
-      <p
+      <StatusMessage
         role="status"
-        className={`inline-flex items-center gap-1 text-sm ${status.className}`}
+        className={`text-sm ${status.className}`}
+        icon={status.icon}
       >
-        {status.icon}
         {status.label}
-      </p>
+      </StatusMessage>
       <p className="text-sm text-ui-muted-foreground">
         {deletion.state === "confirmed"
           ? "The supplied deletion record explicitly confirms this file deletion."

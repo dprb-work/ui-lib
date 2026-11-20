@@ -1,0 +1,4 @@
+@import "tailwindcss" source(none);
+@reference "@dprb-work/ui-lib/theme.css";
+
+@source inline("flex bg-ui-surface/75 bg-ui-palette-blue-650/60 bg-ui-series-1/80 text-ui-accent text-ui-danger gap-ui-icon-text data-[consumer=selected]:bg-ui-series-2/50");

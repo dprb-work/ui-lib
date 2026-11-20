@@ -5,10 +5,13 @@
   "type": "module",
   "packageManager": "pnpm@10.29.1",
   "files": [
-    "dist"
+    "dist",
+    "src/theme.css",
+    "src/palette.css"
   ],
   "sideEffects": [
-    "./dist/*.css"
+    "./dist/*.css",
+    "./src/*.css"
   ],
   "exports": {
     ".": {
@@ -28,7 +31,8 @@
       "types": "./dist/data-table.d.ts",
       "import": "./dist/data-table.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/styles.css",
+    "./theme.css": "./src/theme.css"
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",

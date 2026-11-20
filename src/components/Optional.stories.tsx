@@ -32,7 +32,7 @@ const durationRecords = [8, 11, 12, 14, 14, 15, 18, 22, 35, 55].map((value, inde
 const chartFrameClass =
   "h-72 rounded-xl border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground shadow-sm [&_[data-ui-chart]]:h-full [&_[data-ui-distribution-svg]]:h-full [&_[data-ui-distribution-svg]]:w-full [&_[data-ui-distribution-svg]_line]:stroke-ui-accent [&_[data-ui-distribution-svg]_rect]:fill-ui-accent/20 [&_[data-ui-distribution-svg]_rect]:stroke-ui-accent";
 
-const chartStyle = { "--ui-chart-accent": "var(--ui-accent)" } as CSSProperties;
+const chartStyle = { "--ui-chart-accent": "var(--color-ui-accent)" } as CSSProperties;
 
 export const StaticTable: Story = {
   args: { title: "Static table" },

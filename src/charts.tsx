@@ -39,7 +39,7 @@ const defaultPalette: ChartPalette = {
   surface: "--ui-chart-surface",
   muted: "--ui-chart-muted",
   foreground: "--ui-chart-foreground",
-  grid: "--ui-border",
+  grid: "--color-ui-border",
 };
 
 export type PlotProps = {

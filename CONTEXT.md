@@ -56,6 +56,12 @@ Links use the readable Green link role and remain underlined. Danger buttons
 are outlined by default. Reserve a solid danger button for the confirming step;
 the [README](README.md#styling-and-composition) owns styling and composition.
 
+The shared color roles, role-used palette stops and series defaults are Tailwind
+theme tokens in the `--color-ui-*` namespace. Use role utilities for UI styling;
+plain CSS and JavaScript read those same properties. Values and adopted palette
+relationships are unchanged. The [README](README.md#styling-and-composition)
+owns the CSS-variable migration and override contract.
+
 
 
 ### States

@@ -13,9 +13,9 @@
   position: static;
   height: auto;
   min-height: 2rem;
-  border-bottom: 1px solid var(--ui-border);
+  border-bottom: 1px solid var(--color-ui-border);
   padding: 0.25rem 2.5rem 0.25rem 0.75rem;
-  background: var(--ui-surface);
+  background: var(--color-ui-surface);
 }
 .chat-block--compact > header > span {
   background: transparent;

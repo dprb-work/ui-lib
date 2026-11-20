@@ -1,0 +1,131 @@
+@import "./palette.css";
+
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@theme static {
+  /* Only role-used stops ship; each paint has one editable value. */
+  --color-ui-palette-blue-50: oklch(0.9813 0.009149 250);
+  --color-ui-palette-blue-600: #6697c9;
+  --color-ui-palette-blue-650: #4c88c5;
+  --color-ui-palette-blue-700: #397ab9;
+  --color-ui-palette-blue-750: #3d6793;
+  --color-ui-palette-blue-950: oklch(0.243201 0.03 250);
+  --color-ui-palette-amber-50: oklch(0.9813 0.017508 81.333);
+  --color-ui-palette-amber-600: #b48a52;
+  --color-ui-palette-amber-650: #aa7a35;
+  --color-ui-palette-amber-700: #9b6b29;
+  --color-ui-palette-amber-750: #7e5c31;
+  --color-ui-palette-amber-950: oklch(0.243201 0.02511 74.276);
+  --color-ui-palette-green-50: oklch(0.9813 0.012407 164.808);
+  --color-ui-palette-green-600: #6ba181;
+  --color-ui-palette-green-650: #50956f;
+  --color-ui-palette-green-750: #3d7053;
+  --color-ui-palette-green-950: oklch(0.243201 0.033535 161.816);
+  --color-ui-palette-violet-650: #8c74c0;
+  --color-ui-palette-violet-700: #8066b1;
+  --color-ui-palette-rose-650: #aa737b;
+  --color-ui-palette-rose-700: #9b656d;
+  --color-ui-palette-magenta-650: #ae699f;
+  --color-ui-palette-magenta-700: #9f5a92;
+  --color-ui-palette-olive-650: #828c34;
+  --color-ui-palette-pearl-650: #75869e;
+  --color-ui-palette-pearl-700: #657891;
+  --color-ui-palette-copper-650: #be6a50;
+  --color-ui-palette-copper-700: #b05b41;
+  --color-ui-palette-cyan-650: #49919f;
+
+  --color-ui-series-1: var(--color-ui-palette-blue-650);
+  --color-ui-series-2: var(--color-ui-palette-amber-650);
+  --color-ui-series-3: var(--color-ui-palette-green-650);
+  --color-ui-series-4: var(--color-ui-palette-violet-650);
+  --color-ui-series-5: var(--color-ui-palette-rose-650);
+  --color-ui-series-6: var(--color-ui-palette-olive-650);
+  --color-ui-series-7: var(--color-ui-palette-cyan-650);
+  --color-ui-series-8: var(--color-ui-palette-magenta-650);
+  --color-ui-series-9: var(--color-ui-palette-copper-650);
+  --color-ui-series-10: var(--color-ui-palette-pearl-650);
+
+  --color-ui-background: rgb(248 250 252);
+  --color-ui-foreground: rgb(15 23 42);
+  --color-ui-surface: rgb(255 255 255);
+  --color-ui-surface-foreground: rgb(15 23 42);
+  --color-ui-muted: rgb(241 245 249);
+  --color-ui-muted-foreground: rgb(71 85 105);
+  --color-ui-border: rgb(203 213 225);
+  --color-ui-tooltip: rgb(241 245 249);
+  --color-ui-tooltip-foreground: rgb(15 23 42);
+  --color-ui-accent: var(--color-ui-palette-green-650);
+  --color-ui-accent-hover: var(--color-ui-palette-green-600);
+  --color-ui-accent-link: var(--color-ui-palette-green-750);
+  --color-ui-on-accent: rgb(15 23 42);
+  --spacing-ui-icon-text: 0.375rem;
+  --color-ui-success: var(--color-ui-success-ink);
+  --color-ui-success-ink: var(--color-ui-palette-green-750);
+  --color-ui-success-fill: var(--color-ui-palette-green-50);
+  --color-ui-warning-ink: var(--color-ui-palette-amber-750);
+  --color-ui-warning-fill: var(--color-ui-palette-amber-50);
+  --color-ui-info-ink: var(--color-ui-palette-blue-750);
+  --color-ui-info-fill: var(--color-ui-palette-blue-50);
+  /* Status-only red: OKLCH hue 25deg, chroma .15, L .53 light / .57 dark. */
+  --color-ui-danger: #b2403d;
+  --color-ui-danger-hover: #a53332;
+  --color-ui-on-danger: #ffffff;
+  --color-ui-danger-ink: #b2403d;
+  --color-ui-danger-fill: #fceae8;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+:root {
+  color-scheme: light;
+  /* Chart.js reads these root runtime properties; they are not utility scales. */
+  --ui-chart-accent: var(--color-ui-accent);
+  --ui-chart-surface: var(--color-ui-surface);
+  --ui-chart-muted: var(--color-ui-muted-foreground);
+  --ui-chart-foreground: var(--color-ui-foreground);
+}
+
+.dark, [data-theme="dark"] {
+  color-scheme: dark;
+  --color-ui-background: rgb(0 3 16);
+  --color-ui-foreground: rgb(226 232 240);
+  --color-ui-surface: rgb(10 17 31);
+  --color-ui-surface-foreground: rgb(226 232 240);
+  --color-ui-muted: rgb(30 41 59);
+  --color-ui-muted-foreground: rgb(148 163 184);
+  --color-ui-border: rgb(51 65 85);
+  --color-ui-tooltip: rgb(30 41 59);
+  --color-ui-tooltip-foreground: rgb(226 232 240);
+  --color-ui-series-1: var(--color-ui-palette-blue-700);
+  --color-ui-series-2: var(--color-ui-palette-amber-700);
+  --color-ui-series-3: var(--color-ui-palette-green-650);
+  --color-ui-series-4: var(--color-ui-palette-violet-700);
+  --color-ui-series-5: var(--color-ui-palette-rose-700);
+  --color-ui-series-6: var(--color-ui-palette-olive-650);
+  --color-ui-series-7: var(--color-ui-palette-cyan-650);
+  --color-ui-series-8: var(--color-ui-palette-magenta-700);
+  --color-ui-series-9: var(--color-ui-palette-copper-700);
+  --color-ui-series-10: var(--color-ui-palette-pearl-700);
+  --color-ui-accent: var(--color-ui-palette-green-650);
+  --color-ui-accent-hover: var(--color-ui-palette-green-600);
+  --color-ui-accent-link: var(--color-ui-palette-green-600);
+  --color-ui-on-accent: rgb(15 23 42);
+  --color-ui-success: var(--color-ui-success-ink);
+  --color-ui-success-ink: var(--color-ui-palette-green-600);
+  --color-ui-success-fill: var(--color-ui-palette-green-950);
+  --color-ui-warning-ink: var(--color-ui-palette-amber-600);
+  --color-ui-warning-fill: var(--color-ui-palette-amber-950);
+  --color-ui-info-ink: var(--color-ui-palette-blue-600);
+  --color-ui-info-fill: var(--color-ui-palette-blue-950);
+  --color-ui-danger: #c04c48;
+  --color-ui-danger-hover: #b64340;
+  --color-ui-on-danger: #ffffff;
+  --color-ui-danger-ink: #dc655f;
+  --color-ui-danger-fill: #321a18;
+}
+
+/* Text needs readable ink rather than the action-fill role with the same name. */
+@theme inline {
+  --text-color-ui-accent: var(--color-ui-accent-link);
+  --text-color-ui-danger: var(--color-ui-danger-ink);
+}

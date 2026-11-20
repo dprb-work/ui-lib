@@ -63,7 +63,7 @@ export const SharedRenderedIconTextGap: Story = {
   render: () => (
     <>
       {(["light", "dark"] as const).map((theme) => (
-        <section key={theme} data-theme={theme} className="bg-ui-background text-ui-foreground" style={{ "--ui-icon-text-gap": "13px" } as CSSProperties}>
+        <section key={theme} data-theme={theme} className="bg-ui-background text-ui-foreground" style={{ "--spacing-ui-icon-text": "13px" } as CSSProperties}>
           <IconTextGapProbe theme={theme} />
         </section>
       ))}
@@ -73,14 +73,15 @@ export const SharedRenderedIconTextGap: Story = {
     const documentRoot = canvasElement.ownerDocument.documentElement;
     const body = canvasElement.ownerDocument.body;
     const previousTheme = body.getAttribute("data-theme");
-    const previousGap = documentRoot.style.getPropertyValue("--ui-icon-text-gap");
-    documentRoot.style.setProperty("--ui-icon-text-gap", "13px");
+    const previousGap = documentRoot.style.getPropertyValue("--spacing-ui-icon-text");
+    const previousGapPriority = documentRoot.style.getPropertyPriority("--spacing-ui-icon-text");
+    documentRoot.style.setProperty("--spacing-ui-icon-text", "13px");
     try {
       for (const theme of ["light", "dark"] as const) {
         body.setAttribute("data-theme", theme);
         const section = canvasElement.querySelector<HTMLElement>(`[data-theme="${theme}"]`)!;
         const style = getComputedStyle(section);
-        const rawGap = style.getPropertyValue("--ui-icon-text-gap").trim();
+        const rawGap = style.getPropertyValue("--spacing-ui-icon-text").trim();
         expect(rawGap).toBe("13px");
         const expectedGap = Number.parseFloat(rawGap);
         const probe = section.querySelector<HTMLElement>(`[data-testid="gap-probe-${theme}"]`)!;
@@ -105,8 +106,38 @@ export const SharedRenderedIconTextGap: Story = {
     } finally {
       if (previousTheme) body.setAttribute("data-theme", previousTheme);
       else body.removeAttribute("data-theme");
-      if (previousGap) documentRoot.style.setProperty("--ui-icon-text-gap", previousGap);
-      else documentRoot.style.removeProperty("--ui-icon-text-gap");
+      if (previousGap) documentRoot.style.setProperty("--spacing-ui-icon-text", previousGap, previousGapPriority);
+      else documentRoot.style.removeProperty("--spacing-ui-icon-text");
+    }
+  },
+};
+
+export const CanonicalDefaultGap: Story = {
+  tags: ["!dev", "!autodocs"],
+  render: () => (
+    <>
+      {(["light", "dark"] as const).map((theme) => (
+        <section key={theme} data-theme={theme} className="bg-ui-background text-ui-foreground">
+          <Button data-testid={`default-button-${theme}`}><CircleCheck aria-hidden="true" size={16} /><span>Save changes</span></Button>
+          <div data-testid={`default-utility-${theme}`} className="flex items-center gap-ui-icon-text"><CircleCheck aria-hidden="true" size={16} /><span>Utility spacing</span></div>
+          <div data-testid={`default-css-${theme}`} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-ui-icon-text)" }}><CircleCheck aria-hidden="true" size={16} /><span>Plain CSS spacing</span></div>
+        </section>
+      ))}
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const scoped = within(canvasElement);
+    const rem = Number.parseFloat(getComputedStyle(canvasElement.ownerDocument.documentElement).fontSize);
+    for (const theme of ["light", "dark"] as const) {
+      const section = canvasElement.querySelector<HTMLElement>(`[data-theme="${theme}"]`)!;
+      const style = getComputedStyle(section);
+      const token = style.getPropertyValue("--spacing-ui-icon-text").trim();
+      expect(token.endsWith("rem")).toBe(true);
+      expect(Number.parseFloat(token)).toBe(0.375);
+      expect(style.getPropertyValue("--ui-icon-text-gap").trim()).toBe("");
+      for (const kind of ["button", "utility", "css"]) {
+        expectRenderedGap(scoped.getByTestId(`default-${kind}-${theme}`), rem * 0.375);
+      }
     }
   },
 };

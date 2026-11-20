@@ -34,7 +34,7 @@ corepack pnpm run dev
 ## Styling
 
 - Follow [Styling and composition](README.md#styling-and-composition) for Tailwind versus plain CSS, role tokens, product-local density and consumer overrides.
-- `src/styles.css` owns Preflight, light/dark role values and their CSS-first theme mapping. Keep token definitions there or in `src/palette.css` for raw ramps; do not add a JavaScript theme config or a parallel token source.
+- `src/theme.css` is the authored theme entry: shared role values, light/dark overrides and Tailwind token metadata. It imports the raw ramps from `src/palette.css`. `src/styles.css` imports that theme and owns Preflight and runtime component CSS. Do not add a JavaScript theme config or copied token mappings.
 
 ## Evidence
 

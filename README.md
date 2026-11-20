@@ -43,6 +43,19 @@ import { Button, Checkbox } from "@dprb-work/ui-lib";
 import "./product.css";
 ```
 
+If your application builds Tailwind v4 utilities, reference the authored theme
+from its CSS entry point:
+
+```css
+@import "tailwindcss";
+@reference "@dprb-work/ui-lib/theme.css";
+```
+
+Keep the runtime `styles.css` import above. `@reference` supplies the token and
+variant metadata without emitting another copy of the theme or Preflight.
+Use complete utility names such as `bg-ui-surface`, `stroke-ui-series-3`
+and `text-ui-accent`; no local role mapping is needed.
+
 Install the matching peer before importing an optional entry point:
 
 ```bash
@@ -131,32 +144,72 @@ allow at most one primary action per view region, show success with an icon and
 words, and keep unrelated elements neutral. The ten-family selection and values
 are final for this release: Pearl replaces Slate.
 Add `.dark` to an ancestor or set `data-theme="dark"` on one.
-Consumers may override these semantic variables at their application root:
-`--ui-background`, `--ui-foreground`, `--ui-surface`,
-`--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
-`--ui-border`, `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`,
-`--ui-accent-link`, `--ui-success`,
-`--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`.
-`--ui-success` remains the readable success text color. Each status has
-`--ui-<status>-ink` and `--ui-<status>-fill` for readable text and its tinted
-background; `text-ui-danger` uses danger ink, not the solid confirming fill.
-`text-ui-accent` uses the readable link role; action fills retain `--ui-accent`.
-Override accent fill, hover, on-accent and link together and verify their contrast;
-an old accent fill with the new label color may be unreadable. Consumers with
-copied Tailwind theme mappings must remove or update those copies on adoption,
-including the readable `--text-color-ui-accent` and `--text-color-ui-danger`
-mappings. Product styles loaded after the package remain authoritative.
+Shared color roles use Tailwind's canonical `--color-ui-*` namespace:
+`--color-ui-background`, `--color-ui-foreground`, `--color-ui-surface`,
+`--color-ui-surface-foreground`, `--color-ui-muted`, `--color-ui-muted-foreground`,
+`--color-ui-border`, `--color-ui-tooltip`, `--color-ui-tooltip-foreground`,
+`--color-ui-accent`, `--color-ui-accent-hover`, `--color-ui-on-accent`,
+`--color-ui-accent-link`, `--color-ui-success`,
+`--color-ui-danger`, `--color-ui-danger-hover`, and `--color-ui-on-danger`.
+Each status has `--color-ui-<status>-ink` and `--color-ui-<status>-fill`
+for readable text and its tinted background. `--color-ui-success` remains
+the readable success text color. `text-ui-danger` uses danger ink, not the solid
+confirming fill. `text-ui-accent` uses the readable link role; action fills use
+`--color-ui-accent`.
+
+**CSS-variable migration:** the old role, palette, series and icon-gap names
+are removed. Existing utility names do not change.
+
+| Previous property | Canonical property |
+| --- | --- |
+| `--ui-<role>` | `--color-ui-<role>` |
+| `--ui-palette-<family>-<stop>` | `--color-ui-palette-<family>-<stop>` |
+| `--ui-series-<slot>` | `--color-ui-series-<slot>` |
+| `--ui-icon-text-gap` | `--spacing-ui-icon-text` |
+
+Migrate plain CSS, JavaScript readers and root overrides together. Remove copied
+theme mappings that point to the retired properties, including the two readable
+`--text-color-ui-accent` and `--text-color-ui-danger` mappings.
+The `--ui-chart-*` runtime properties are retained; they are not color-role aliases
+for generating utilities.
+
+Set canonical role overrides in product CSS loaded after the library, at the
+application root or on a local container. Utilities and plain CSS read the same
+properties. Use `var(--color-ui-surface)` in plain CSS, not a separate token copy.
+For example:
+
+```css
+.product-region {
+  --color-ui-surface: #f4f2ee;
+  --color-ui-surface-foreground: #172b4d;
+}
+```
+
+Override accent fill, hover, on-accent and link together and verify their contrast.
+CSS variable references resolve where they are declared: replace palette stops
+at the root, where shared roles reference them. On a local container, override the
+role itself, or redeclare its relationship there. Dark theme values are scoped
+to `.dark` or `[data-theme="dark"]`; override that scope's canonical roles when
+customizing dark colors. Portalled content follows its portal container's scope.
+
+Chart.js still reads `--ui-chart-accent`, `--ui-chart-surface`,
+`--ui-chart-muted` and `--ui-chart-foreground` from the document root.
+Their defaults reference the canonical accent, surface, muted-foreground and
+foreground roles; the grid reads `--color-ui-border`.
+Keep chart palette overrides as named root properties passed through `palette`;
+saved per-slot colors remain consumer-owned. This migration does not add
+scoped chart theme resolution or change saved values.
 
 Only palette stops used by roles ship: `650` for all ten families; `700` for
 Blue, Amber, Violet, Rose, Magenta, Pearl and Copper in dark; `600` and `750`
 for Green, Amber and Blue; and `50` and `950` for Green, Amber and Blue.
-`--ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose, Olive,
-Cyan, Magenta, Copper and Pearl.
+`--color-ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose, Olive,
+Cyan, Magenta, Copper and Pearl. Utilities include `bg-ui-series-1` and `stroke-ui-series-1`.
 Use `StatusMessage` for icon-plus-text status feedback and `MenuItem` for
 icon-plus-text Radix menu entries. `StatusPanel` owns the gap between its
 optional icon and title, and input error messages own their decorative error
-icon. These components use the shared `--ui-icon-text-gap` token; callers
-provide content and do not add a second gap or a literal space.
+icon. These components use the shared `--spacing-ui-icon-text` theme token through
+`gap-ui-icon-text`; callers provide content and do not add a second gap or a literal space.
 ### Styling and composition
 
 Use the existing UI component before writing replacement markup. Find controls
@@ -176,13 +229,19 @@ structural geometry, keyframes and motion, or when one cohesive rule is clearer
 than utilities. Do not express the same declarations in both places. Keep
 utility names complete and statically detectable rather than assembling fragments.
 
-`src/styles.css` uses CSS-first Tailwind v4 through `@tailwindcss/vite`
-(the lockfile resolves both to 4.3.3), with no JavaScript theme config.
-Light/dark `--ui-*` properties hold application, tooltip, action, status and
-chart roles. `@theme inline` maps the non-chart roles to `--color-ui-*`
-theme values and declares `--font-sans` and `--font-mono`.
-`src/styles.css` owns the used `--ui-palette-*` stops and `--ui-series-1..10`;
-`src/palette.css` retains the existing raw `--color-*` ramps in `@theme static`.
+`src/styles.css` imports `src/theme.css`, the authored theme published as
+`@dprb-work/ui-lib/theme.css`. The runtime stylesheet uses CSS-first Tailwind v4
+through `@tailwindcss/vite` (the lockfile resolves both to 4.3.3), with no
+JavaScript theme config.
+`@theme static` owns the `--color-ui-*` role values, used
+`--color-ui-palette-*` stops, `--color-ui-series-1..10`, icon-text spacing and
+font stacks. Static emission keeps colors available to CSS and canvas readers
+even when a utility is not used. Dark selectors override those same properties.
+Only the readable accent and danger text specializations use `@theme inline`;
+they reference canonical role properties directly, so scoped overrides work.
+The theme imports `src/palette.css` for the existing raw `--color-*` ramps;
+both authored files ship with the package. Products reference the public theme
+entry instead of copying either source.
 
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes

@@ -39,9 +39,9 @@ export const Shipped: Story = {
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {families.map((family, index) => (
             <li key={family} className="grid gap-2">
-              <span className="block h-10 rounded" style={{ backgroundColor: `var(--ui-series-${index + 1})` }} />
+              <span className="block h-10 rounded" style={{ backgroundColor: `var(--color-ui-series-${index + 1})` }} />
               <span>{index + 1}. {family}</span>
-              <code className="text-xs">--ui-series-{index + 1}</code>
+              <code className="text-xs">--color-ui-series-{index + 1}</code>
             </li>
           ))}
         </ol>
@@ -59,7 +59,7 @@ export const Shipped: Story = {
         <h2 className="text-base font-semibold">Status: words and icons, not color alone</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {roles.map(({ name, family, Icon, words }) => (
-            <div key={name} className="grid gap-2 rounded-md border p-4" style={{ color: `var(--ui-${name}-ink)`, backgroundColor: `var(--ui-${name}-fill)`, borderColor: `var(--ui-${name}-ink)` }}>
+            <div key={name} className="grid gap-2 rounded-md border p-4" style={{ color: `var(--color-ui-${name}-ink)`, backgroundColor: `var(--color-ui-${name}-fill)`, borderColor: `var(--color-ui-${name}-ink)` }}>
               <p className="font-semibold">{name}: {family}</p>
               <Badge tone={name}><Icon aria-hidden="true" size={14} />{words}</Badge>
               <p className="flex items-center gap-2"><Icon aria-hidden="true" size={18} />{words}</p>

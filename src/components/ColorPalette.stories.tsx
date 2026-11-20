@@ -11,30 +11,30 @@ type Story = StoryObj<typeof meta>;
 
 type ColorToken = {
   name: string;
-  variable: `--ui-${string}`;
+  variable: `--color-ui-${string}` | `--ui-chart-${string}`;
   use: string;
-  foreground?: `--ui-${string}`;
+  foreground?: ColorToken["variable"];
 };
 
 const semanticTokens: ColorToken[] = [
-  { name: "Background", variable: "--ui-background", use: "Application canvas", foreground: "--ui-foreground" },
-  { name: "Surface", variable: "--ui-surface", use: "Cards, dialogs, and raised regions", foreground: "--ui-surface-foreground" },
-  { name: "Muted", variable: "--ui-muted", use: "Subdued controls and secondary regions", foreground: "--ui-muted-foreground" },
-  { name: "Border", variable: "--ui-border", use: "Dividers, outlines, and control boundaries" },
-  { name: "Tooltip", variable: "--ui-tooltip", use: "Transient contextual surfaces", foreground: "--ui-tooltip-foreground" },
-  { name: "Accent", variable: "--ui-accent", use: "Primary actions and selected states", foreground: "--ui-on-accent" },
-  { name: "Accent hover", variable: "--ui-accent-hover", use: "Primary action hover state", foreground: "--ui-on-accent" },
-  { name: "Accent link", variable: "--ui-accent-link", use: "Readable accent text; underline links", foreground: "--ui-background" },
-  { name: "Success", variable: "--ui-success-ink", use: "Success text and icons", foreground: "--ui-success-fill" },
-  { name: "Success fill", variable: "--ui-success-fill", use: "Success feedback background", foreground: "--ui-success-ink" },
-  { name: "Warning", variable: "--ui-warning-ink", use: "Warning text and icons", foreground: "--ui-warning-fill" },
-  { name: "Warning fill", variable: "--ui-warning-fill", use: "Warning feedback background", foreground: "--ui-warning-ink" },
-  { name: "Info", variable: "--ui-info-ink", use: "Information text and icons", foreground: "--ui-info-fill" },
-  { name: "Info fill", variable: "--ui-info-fill", use: "Information feedback background", foreground: "--ui-info-ink" },
-  { name: "Danger", variable: "--ui-danger", use: "Solid danger: confirming actions only", foreground: "--ui-on-danger" },
-  { name: "Danger hover", variable: "--ui-danger-hover", use: "Solid confirming-action hover fill", foreground: "--ui-on-danger" },
-  { name: "Danger ink", variable: "--ui-danger-ink", use: "Errors, invalid drafts and destructive labels", foreground: "--ui-danger-fill" },
-  { name: "Danger fill", variable: "--ui-danger-fill", use: "Danger feedback and outlined-action hover", foreground: "--ui-danger-ink" },
+  { name: "Background", variable: "--color-ui-background", use: "Application canvas", foreground: "--color-ui-foreground" },
+  { name: "Surface", variable: "--color-ui-surface", use: "Cards, dialogs, and raised regions", foreground: "--color-ui-surface-foreground" },
+  { name: "Muted", variable: "--color-ui-muted", use: "Subdued controls and secondary regions", foreground: "--color-ui-muted-foreground" },
+  { name: "Border", variable: "--color-ui-border", use: "Dividers, outlines, and control boundaries" },
+  { name: "Tooltip", variable: "--color-ui-tooltip", use: "Transient contextual surfaces", foreground: "--color-ui-tooltip-foreground" },
+  { name: "Accent", variable: "--color-ui-accent", use: "Primary actions and selected states", foreground: "--color-ui-on-accent" },
+  { name: "Accent hover", variable: "--color-ui-accent-hover", use: "Primary action hover state", foreground: "--color-ui-on-accent" },
+  { name: "Accent link", variable: "--color-ui-accent-link", use: "Readable accent text; underline links", foreground: "--color-ui-background" },
+  { name: "Success", variable: "--color-ui-success-ink", use: "Success text and icons", foreground: "--color-ui-success-fill" },
+  { name: "Success fill", variable: "--color-ui-success-fill", use: "Success feedback background", foreground: "--color-ui-success-ink" },
+  { name: "Warning", variable: "--color-ui-warning-ink", use: "Warning text and icons", foreground: "--color-ui-warning-fill" },
+  { name: "Warning fill", variable: "--color-ui-warning-fill", use: "Warning feedback background", foreground: "--color-ui-warning-ink" },
+  { name: "Info", variable: "--color-ui-info-ink", use: "Information text and icons", foreground: "--color-ui-info-fill" },
+  { name: "Info fill", variable: "--color-ui-info-fill", use: "Information feedback background", foreground: "--color-ui-info-ink" },
+  { name: "Danger", variable: "--color-ui-danger", use: "Solid danger: confirming actions only", foreground: "--color-ui-on-danger" },
+  { name: "Danger hover", variable: "--color-ui-danger-hover", use: "Solid confirming-action hover fill", foreground: "--color-ui-on-danger" },
+  { name: "Danger ink", variable: "--color-ui-danger-ink", use: "Errors, invalid drafts and destructive labels", foreground: "--color-ui-danger-fill" },
+  { name: "Danger fill", variable: "--color-ui-danger-fill", use: "Danger feedback and outlined-action hover", foreground: "--color-ui-danger-ink" },
 ];
 
 const chartTokens: ColorToken[] = [
@@ -163,7 +163,7 @@ export const FullSpectrum: Story = {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ui-accent">Design foundations</p>
           <h1 className="text-3xl font-semibold tracking-tight">Muted Tailwind spectrum</h1>
           <p className="text-sm leading-6 text-ui-muted-foreground">
-            Every standard Tailwind color family uses the shared muted treatment and provides every 50-step value from 50 through 950. Shared components should still consume semantic <code>--ui-*</code> roles unless a primitive color is part of their contract.
+            Every standard Tailwind color family uses the shared muted treatment and provides every 50-step value from 50 through 950. Shared components should still consume semantic <code>--color-ui-*</code> roles unless a primitive color is part of their contract.
           </p>
         </header>
         <div aria-label="Muted Tailwind color ramps" className="overflow-x-auto rounded-xl border border-ui-border bg-ui-surface p-5 shadow-sm" tabIndex={0}>

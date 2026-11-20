@@ -2,7 +2,7 @@
 
 Shared React and Tailwind CSS components for dprb-work products.
 
-The library contains controls proven in OLAF, feedback components extracted from Archmap, and reusable chat presentation extracted from CoEx. Product navigation, session lifecycle, service connections, model policy, and screenshot capture remain in consuming applications.
+The library contains reusable controls, feedback and chat presentation. Product navigation, session lifecycle, service connections, model policy and screenshot capture remain in consuming applications. [CONTEXT.md](CONTEXT.md) defines the visual language used here.
 
 ## Components
 
@@ -28,8 +28,13 @@ their dependencies unless they import those components:
 
 ## Use
 
-Install the package, then import its stylesheet once, before product styles, at
-the application entry point:
+Install `@dprb-work/ui-lib` from your configured package source:
+
+```bash
+corepack pnpm add @dprb-work/ui-lib react react-dom
+```
+
+Import its stylesheet once, before product styles, at the application entry point:
 
 ```tsx
 import "@dprb-work/ui-lib/styles.css";
@@ -69,16 +74,15 @@ returns its child unchanged when `label` is omitted or `false`. Shared controls
 accept `tooltip?: ReactNode | false`; `IconButton` and `CopyButton` use their
 accessible label by default, while `false` opts out. Do not pass native `title`
 to these controls.
- 
+
 ```tsx
-<TooltipProvider delayDuration={500} side="bottom" className="bg-slate-950 text-white">
+<TooltipProvider delayDuration={500} side="bottom" className="bg-ui-tooltip text-ui-tooltip-foreground">
   <App />
 </TooltipProvider>
 ```
 
-
 Tooltips are arrowless by default. Set `arrowClassName` on `Tooltip` to render
-and style an optional arrow, as Reporter does with `reporter-tooltip-arrow`.
+and style an optional arrow through a consumer-owned class.
 
 `Image` requires `alt`. It uses a nonempty `alt` as its default tooltip, retains
 that alt text for accessibility, and leaves decorative `alt=""` images
@@ -114,9 +118,9 @@ Consumers own domain formatting, captions, chart pairing, and surrounding
 workflow.
 
 The stylesheet ships Tailwind Preflight, the default light and dark application
-palette, and component utilities. The palette follows the baseline established
-in the OLAF visual builder: slate surfaces, teal actions, and rose destructive
-states. Add `.dark` to an ancestor or set `data-theme="dark"` on one.
+palette, and component utilities. Color roles describe intent, not a fixed hue;
+the accent, ten-color palette and status pairs are still being decided.
+Add `.dark` to an ancestor or set `data-theme="dark"` on one.
 Consumers may override these semantic variables at their application root:
 `--ui-background`, `--ui-foreground`, `--ui-surface`,
 `--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
@@ -124,6 +128,32 @@ Consumers may override these semantic variables at their application root:
 `--ui-success`, `--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`.
 `--ui-success` is the semantic success color. Product styles loaded after the
 package remain authoritative.
+
+### Styling and composition
+
+Use the existing UI component before writing replacement markup. Find controls
+in the [component list](#components), then inspect their stories in `src/components`
+or `src/chat`. Run the [Storybook catalog](#develop) to compare behavior and states.
+Compose controls and hooks around product content rather than copying their markup
+or adding a parallel primitive for a different visual treatment.
+
+Prefer Tailwind utilities for readable point-of-use layout, spacing, sizing and
+typography. Use semantic roles such as `bg-ui-surface`, `text-ui-foreground` and
+`border-ui-border`; do not substitute a hex value or a palette class such as
+`bg-slate-100` for a role. Raw palette values belong to palette definitions or
+explicit data-color contracts, not application emphasis or status.
+
+Use plain CSS for shared token definitions, pseudo-elements, complex selectors,
+structural geometry, keyframes and motion, or when one cohesive rule is clearer
+than utilities. Do not express the same declarations in both places. Keep
+utility names complete and statically detectable rather than assembling fragments.
+
+`src/styles.css` uses CSS-first Tailwind v4 through `@tailwindcss/vite`
+(the lockfile resolves both to 4.3.3), with no JavaScript theme config.
+Light/dark `--ui-*` properties hold application, tooltip, action, success/danger
+and chart roles. `@theme inline` maps the non-chart roles to `--color-ui-*`
+theme values and declares `--font-sans` and `--font-mono`; `src/palette.css`
+defines the raw `--color-*` ramps in `@theme static`.
 
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes
@@ -133,6 +163,13 @@ Use parent layout gaps for space between sibling components. Internal content
 padding belongs to the component; page gutters and safe areas belong to the
 consumer's container. A component must not add external top/bottom spacing to
 separate itself from its neighbors.
+
+Keep navigation, domain models, workflow policy and dense technical grids in the
+product. Local density must not shrink the library's phone-facing defaults.
+Root semantic-variable overrides and point-of-use classes may adapt presentation;
+preserve accessible names, keyboard behavior, focus, state semantics and theme
+contrast. Data-series colors remain distinct from action emphasis, even when
+their hues overlap.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
@@ -173,12 +210,12 @@ a controlled row of opaque `#rrggbb` color slots. Its public API is
 `disabled`, and `className`. Slot buttons are named `${label} ${index + 1}`
 (or `Color ${index + 1}` when no label is supplied), have 24px hit areas, and
 open their picker with click, Enter, or Space. Escape closes the picker and
-returns focus to its slot. The open slot is the selected slot.
+returns focus to its slot. The open slot is expanded, not selected.
 Consumers may bind swatch presentation to existing CSS tokens with
 `--ui-color-selector-1`, `--ui-color-selector-2`, and so on at the group.
 The controlled hex values still supply the picker; the optional CSS slots let
 charts, legends, and swatches inherit one palette without copying color values.
-Reporter maps these slots to its existing `--series-N` variables; consumers must
+Consumers may map these slots to their existing `--series-N` variables and must
 keep the painted colors consistent with the controlled hex values.
 
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
@@ -241,8 +278,8 @@ skip historical message rendering. Replace a message object when its content cha
 drafts, submission, model options, permission checks, and session lifecycle.
 The application container also owns width and page gutters.
 
-CoEx and Workbench consume this entry independently. Neither application is a
-dependency of the library or of the other application.
+Consuming applications use this entry independently; they are not dependencies
+of the library or of one another.
 
 ## Develop
 
@@ -253,24 +290,15 @@ corepack pnpm run dev
 
 Storybook is the component catalog and browser verification surface.
 
-The **Foundations / Accent candidates** story is a proposal, not a default change.
-Its four non-cyan options—indigo, warm amber, violet, and ink—reuse the existing
-accent, hover, on-accent, and chart-accent tokens. The story and catalog toolbar
-share Storybook globals, so a selection applies across the catalog without a
-second preferences store. Light and dark previews measure text-on-accent and
-accent-on-surface contrast from the rendered controls. **Current default**
-removes the preview attribute and restores the unchanged library palette.
-Only Storybook imports `.storybook/accent-candidates.css`; library builds do not.
+### Input, select and tab defaults
 
-### CoEx input, select and tab defaults
+`TextInput`, `NativeSelect` and `Tabs` own these defaults; consumers do not need a stylesheet override.
 
-CoEx uses the shared `TextInput`, `NativeSelect` and `Tabs` contracts. This is library behavior, not a CoEx stylesheet override.
-
-`TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and error treatment. Consumers own accessible labels, query state, routing and page layout. The recent-chat search uses this default.
+`TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and invalid-input treatment. Consumers own accessible labels, query state, routing and page layout.
 
 `NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density keeps the native control at 44px high, uses 0.875rem selected text, and places it close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
 
-`Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics. CoEx uses that composition for consolidated tabs in the overview title slot.
+`Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics.
 
 The affected shared stories and consumers were updated with these defaults. Preserve controlled and uncontrolled values, native form behavior, refs, labels, error descriptions, focus, disabled state, light/dark appearance and tab accessibility when changing these components. Do not add a parallel primitive for a style-only variation.
 

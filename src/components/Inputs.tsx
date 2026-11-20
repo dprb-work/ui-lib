@@ -51,14 +51,14 @@ export type SelectInputProps = {
 };
 
 const defaultClasses =
-  "h-7 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
+  "h-7 w-full rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const subtleClasses =
-  "h-7 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
+  "h-7 w-full border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 const textareaDefaultClasses =
-  "min-h-16 w-full rounded-none border-x-0 border-t-0 border-b border-ui-border bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground";
+  "min-h-16 w-full rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const textareaSubtleClasses =
-  "min-h-16 w-full border-x-0 border-t-0 border-b border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden transition-colors focus:border-ui-accent aria-invalid:border-ui-danger aria-invalid:text-ui-danger disabled:cursor-not-allowed disabled:text-ui-muted-foreground";
+  "min-h-16 w-full border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
@@ -264,7 +264,7 @@ export function SelectInput({
                   value={option.value}
                   disabled={option.disabled}
                   className={cn(
-                    "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-muted data-[highlighted]:text-ui-foreground",
+                    "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-hover-fill data-[highlighted]:text-ui-foreground active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
                     compact ? "text-xs" : "text-xs",
                   )}
                 >

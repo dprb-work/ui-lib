@@ -28,7 +28,7 @@ export function Switch({ label, className, tooltip, ref, ...switchProps }: Switc
       ref={ref}
       aria-label={label}
       className={cn(
-        "relative h-5 w-9 shrink-0 rounded-full bg-ui-border p-0.5 outline-hidden transition-colors data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ui-background disabled:cursor-not-allowed disabled:opacity-50",
+        "relative h-5 w-9 shrink-0 rounded-full bg-ui-border p-0.5 outline-hidden -outline-offset-2 [--ui-control-fill:var(--color-ui-border)] transition-colors enabled:hover:bg-ui-hover-fill enabled:active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-foreground)] data-[state=checked]:bg-ui-accent data-[state=checked]:hover:bg-ui-accent-hover data-[state=checked]:active:bg-ui-accent-press-fill data-[state=checked]:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
@@ -46,7 +46,7 @@ export function Checkbox({ label, className, tooltip, ref, ...checkboxProps }: C
       ref={ref}
       aria-label={label}
       className={cn(
-        "grid size-4 shrink-0 place-items-center rounded-xs border border-ui-border bg-ui-surface text-ui-on-accent outline-hidden data-[state=checked]:border-ui-accent data-[state=checked]:bg-ui-accent focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50",
+        "grid size-4 shrink-0 place-items-center rounded-xs border border-ui-border bg-ui-surface text-ui-on-accent outline-hidden -outline-offset-2 transition-colors enabled:hover:bg-ui-hover-fill enabled:active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] data-[state=checked]:border-ui-accent data-[state=checked]:bg-ui-accent data-[state=checked]:hover:bg-ui-accent-hover data-[state=checked]:active:bg-ui-accent-press-fill data-[state=checked]:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >

@@ -137,8 +137,19 @@ status, not one of the ten palette families.
 Pair every status with an icon and words; color alone does not communicate
 status. Links use the readable Green link role and stay underlined. Danger
 buttons use an outlined treatment by default. Reserve a solid danger button for
-the confirming step; consumers can apply
-`bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover` through `className`.
+the confirming step; consumers can apply the complete treatment through `className`:
+
+```tsx
+<Button
+  variant="danger"
+  className="bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover active:bg-[color-mix(in_srgb,var(--color-ui-danger-hover)_88%,black)] focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)]"
+>
+  Confirm deletion
+</Button>
+```
+
+The inside focus edge uses the filled button's on-danger color; the held-press
+fill stays dark enough for its label. Do not copy only the resting fill.
 The adopted anti-crowding rule is in [CONTEXT.md](CONTEXT.md#palette-roles):
 allow at most one primary action per view region, show success with an icon and
 words, and keep unrelated elements neutral. The ten-family selection and values
@@ -237,8 +248,12 @@ JavaScript theme config.
 `--color-ui-palette-*` stops, `--color-ui-series-1..10`, icon-text spacing and
 font stacks. Static emission keeps colors available to CSS and canvas readers
 even when a utility is not used. Dark selectors override those same properties.
-Only the readable accent and danger text specializations use `@theme inline`;
-they reference canonical role properties directly, so scoped overrides work.
+Readable accent and danger text specializations and derived interaction fills use
+`@theme inline`; they resolve canonical roles at the control so scoped overrides
+work. Hover and press fills mix the existing accent with the control's base;
+they do not introduce another authored palette or focus color. Filled accent
+and outlined danger controls have their own derived press fills to preserve
+their foreground contrast.
 The theme imports `src/palette.css` for the existing raw `--color-*` ramps;
 both authored files ship with the package. Products reference the public theme
 entry instead of copying either source.
@@ -258,6 +273,19 @@ Root semantic-variable overrides and point-of-use classes may adapt presentation
 preserve accessible names, keyboard behavior, focus, state semantics and theme
 contrast. Data-series colors remain distinct from action emphasis, even when
 their hues overlap.
+
+Shared controls own hover, held-press and keyboard-focus presentation. Fields
+use a 2px underline and faint tint; ordinary buttons use a 2px inside edge,
+and unfilled icon-only buttons use a tinted plate. Disabled controls fade.
+`Button` renders a spinner for `aria-busy={true}` or `aria-busy="true"` without
+implicitly disabling or fading the action; pass `disabled` separately when
+invocation is unavailable. Its icon-only content stays mounted in an internal
+wrapper while the spinner is visible. Consumer CSS must not assume the action
+SVG is a direct button child.
+
+Selected secondary buttons use the filled accent treatment. Persistent
+`aria-pressed` state is separate from temporary `:active` feedback. The
+**Foundations / States** story shows the controls in both themes.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
@@ -366,6 +394,10 @@ skip historical message rendering. Replace a message object when its content cha
 drafts, submission, model options, permission checks, and session lifecycle.
 The application container also owns width and page gutters.
 
+`ComposerSubmitButton` delegates its busy spinner to `Button`; it does not add
+a second spinner. While running, hover or keyboard focus reveals the available
+stop or queue action without fading or disabling the control.
+
 Consuming applications use this entry independently; they are not dependencies
 of the library or of one another.
 
@@ -388,7 +420,15 @@ Storybook is the component catalog and browser verification surface.
 
 `Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics.
 
-The affected shared stories and consumers were updated with these defaults. Preserve controlled and uncontrolled values, native form behavior, refs, labels, error descriptions, focus, disabled state, light/dark appearance and tab accessibility when changing these components. Do not add a parallel primitive for a style-only variation.
+The tab group spans its container and tabs share the width equally. It retains
+the rounded border and selected fill/bold text, with no selected underline.
+Consumers must delete copied fixed-width/flex and selected underline rules to
+receive these defaults. In particular, Reporter's `.tab-list button` and
+`[aria-selected="true"]` overrides currently own its underline and auto width;
+remove those overrides during the later consumer migration, not by adding
+library `!important` rules.
+
+Preserve controlled and uncontrolled values, native form behavior, refs, labels, error descriptions, focus, disabled state, light/dark appearance and tab accessibility when changing these components. Do not add a parallel primitive for a style-only variation. Consumer migration follows the library slices.
 
 ## Verify
 

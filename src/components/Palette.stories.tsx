@@ -116,7 +116,7 @@ function DangerExample() {
       <p>Red is status-only, outside the ten families. Error text, invalid fields, destructive menu items and badges share its readable ink.</p>
       <div className="flex flex-wrap items-center gap-3">
         <Dialog open={state === "confirming"} onOpenChange={(open) => setState(open ? "confirming" : "ready")} title="Delete this sample?" trigger={<Button variant="danger"><Trash2 aria-hidden="true" />Delete sample</Button>}>
-          {(close) => <div className="grid gap-4"><p>This permanently removes the sample in this example.</p><div className="flex flex-wrap gap-3"><Button variant="secondary" onClick={close}>Cancel</Button><Button variant="danger" className="bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover" onClick={() => setState("removed")}>Confirm deletion</Button></div></div>}
+          {(close) => <div className="grid gap-4"><p>This permanently removes the sample in this example.</p><div className="flex flex-wrap gap-3"><Button variant="secondary" onClick={close}>Cancel</Button><Button variant="danger" className="bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover active:bg-[color-mix(in_srgb,var(--color-ui-danger-hover)_88%,black)] focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)]" onClick={() => setState("removed")}>Confirm deletion</Button></div></div>}
         </Dialog>
         <Button variant="danger" disabled>Delete unavailable</Button>
         <DropdownMenu.Root>

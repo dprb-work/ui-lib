@@ -104,13 +104,23 @@ _Avoid_: Invalid as a synonym for an operation failure.
 
 #### Showing states
 
-This direction is confirmed after visual comparison; component changes are not
-yet shipped.
+The shared controls implement this confirmed direction. Compare the interactive
+light and dark examples in the catalog's **Foundations / States** story.
 
 - **Color says what it is:** selected or on uses the accent; status uses its role color.
 - **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on.
 - **Shape says where the keyboard is:** focus has no floating offset ring. Fields get a 2px accent underline and faint tint. Buttons get a 2px border inside the edge, using the on-accent color on filled buttons. Icon-only buttons get a small tinted plate behind the icon, leaving the icon's color free to mean on.
 - **Disabled is faded. Busy has a spinner, not fading. Invalid uses danger color plus words.**
+
+Tabs retain their rounded group border, selected fill and bold text. They have
+no selected underline; the group fills its container and tabs share its width
+equally. Keyboard focus remains separate from selection.
+
+Focus uses the existing readable accent role where contrast requires it, not
+a new palette stop. Filled controls use their on-color edge; unchecked switches
+use the foreground edge against their neutral track. A data-color swatch keeps
+its chosen paint and uses a contrasting inside edge. Native color-editor controls
+keep attached native focus geometry.
 
 ### Interactions
 

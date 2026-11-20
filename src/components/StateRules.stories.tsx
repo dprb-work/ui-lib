@@ -237,7 +237,7 @@ function expectInsideEdge(element: HTMLElement, expectedColor?: string) {
     }
   }
   expect(edges.some((edge) => edge.split(",")[3] !== "0"), "Keyboard focus must paint a visible 2px inside edge").toBe(true);
-  const scope = element.closest<HTMLElement>("section[data-theme]");
+  const scope = element.closest<HTMLElement>("[data-theme]");
   if (!scope) throw new Error("Focus probe must have a painted theme scope");
   const background = paintedBackground(element, scope);
   expect(edges.some((edge) => edge.split(",")[3] !== "0" && contrast(edge.split(",").map(Number), background) >= 3), "Actual inside focus paint must reach 3:1 against its rendered fill").toBe(true);
@@ -1363,9 +1363,9 @@ const ShippedPaletteDanger = composeStory(dangerStory, paletteMeta);
 function FilledDangerProbe({ theme, children }: { theme: Theme; children: ReactNode }) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   return (
-    <section ref={setContainer} data-theme={theme} aria-label={`${theme} shipped danger`} className="bg-ui-background p-4 text-sm text-ui-foreground">
+    <div ref={setContainer} data-theme={theme} data-testid={`${theme}-shipped-danger`} className="bg-ui-background p-4 text-sm text-ui-foreground">
       {container && <PortalProvider container={container}>{children}</PortalProvider>}
-    </section>
+    </div>
   );
 }
 
@@ -1374,7 +1374,7 @@ export const FilledDangerLight: Story = {
   play: async ({ canvasElement, args }) => {
     const { cdp, userEvent } = await browser();
     const session = cdp();
-    const scope = within(canvasElement).getByRole("region", { name: `${args.theme} shipped danger` });
+    const scope = within(canvasElement).getByTestId(`${args.theme}-shipped-danger`);
     const canvas = within(scope);
     await userEvent.click(canvas.getByRole("button", { name: "Delete sample" }));
     const dialog = await canvas.findByRole("dialog", { name: "Delete this sample?" });

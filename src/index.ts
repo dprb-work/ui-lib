@@ -8,6 +8,7 @@ export {
 } from "./components/Breadcrumbs";
 export { CodeViewport, type CodeViewportProps } from "./components/CodeViewport";
 export { ColorPicker, type ColorPickerProps } from "./components/ColorPicker";
+export { ColorSelector, type ColorSelectorProps } from "./components/ColorSelector";
 export { Badge, type BadgeProps, type BadgeTone } from "./components/Badge";
 export {
   Button,

@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { Dialog, Tabs, Tooltip } from "./Interactions";
 
@@ -62,5 +62,27 @@ describe("shared interactions", () => {
   test("tooltip retains the trigger's accessible name", () => {
     render(<Tooltip label="Inspect"><button type="button">Target</button></Tooltip>);
     expect(screen.getByRole("button", { name: "Target" })).toBeVisible();
+  });
+
+  test("tooltips wait 500 ms by default and remain available on keyboard focus", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<Tooltip label="Delayed help"><button type="button">Target</button></Tooltip>);
+      const target = screen.getByRole("button", { name: "Target" });
+
+      fireEvent.pointerMove(target, { pointerType: "mouse" });
+      await act(async () => { vi.advanceTimersByTime(499); });
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+      await act(async () => { vi.advanceTimersByTime(1); });
+      expect(screen.getByRole("tooltip", { name: "Delayed help" })).toBeVisible();
+
+      fireEvent.keyDown(target, { key: "Escape" });
+      act(() => target.focus());
+      expect(target).toHaveFocus();
+      await act(async () => { vi.advanceTimersByTime(500); });
+      expect(screen.getByRole("tooltip", { name: "Delayed help" })).toBeVisible();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

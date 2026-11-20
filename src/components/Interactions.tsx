@@ -173,7 +173,7 @@ export function TooltipProvider({
   sideOffset = 7,
   collisionPadding = 8,
   className,
-  delayDuration = 350,
+  delayDuration = 500,
   skipDelayDuration = 100,
   ...providerProps
 }: TooltipProviderProps) {
@@ -212,7 +212,7 @@ export function Tooltip({
       <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
       <RadixTooltip.Portal container={portalContainer}>
         <RadixTooltip.Content
-          className={cn(tooltipSurfaceClassName, defaults?.className, className)}
+          className={cn(tooltipSurfaceClassName, "ui-tooltip-motion", defaults?.className, className)}
           side={side ?? defaults?.side ?? "bottom"}
           sideOffset={defaults?.sideOffset ?? 7}
           collisionPadding={defaults?.collisionPadding ?? 8}
@@ -225,7 +225,7 @@ export function Tooltip({
   );
 
   return defaults ? tooltip : (
-    <RadixTooltip.Provider delayDuration={delayDuration ?? 350} skipDelayDuration={100}>
+    <RadixTooltip.Provider delayDuration={delayDuration ?? 500} skipDelayDuration={100}>
       {tooltip}
     </RadixTooltip.Provider>
   );

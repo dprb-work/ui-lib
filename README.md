@@ -10,7 +10,7 @@ The base entry point contains controls and interaction primitives:
 
 - `Button`, `IconButton`, `CopyButton`, `CopyableText`
 - `Checkbox`, `Switch`, `SegmentedControl`
-- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`
+- `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`, `ColorSelector`
 - `Image`, `Breadcrumbs`
 - `Badge`, `StatusPanel`, `ContentBlock`, `CodeViewport`
 - `Calendar`, `Fullscreen`
@@ -67,7 +67,9 @@ function Settings() {
 ```
 
 Wrap the application with `TooltipProvider` when a product needs one tooltip
-delay, placement, or visual treatment. `Tooltip` keeps its `label` API and
+delay, placement, or visual treatment. The default delay is 500 ms, including
+tooltips used without a provider. Tooltips fade in and out over 80 ms; that fade
+is disabled when reduced motion is requested. `Tooltip` keeps its `label` API and
 returns its child unchanged when `label` is omitted or `false`. Shared controls
 accept `tooltip?: ReactNode | false`; `IconButton` and `CopyButton` use their
 accessible label by default, while `false` opts out. Do not pass native `title`
@@ -201,6 +203,20 @@ syntax highlighting, line numbers, and streaming behavior.
 hex field. Invalid drafts stay in the field without changing the selected color.
 Supply `label` for the controls' accessible names. Compose it with `Popover`
 when selection should open on click; the consumer owns persistence.
+
+`ColorSelector` composes `Popover`, `ColorPicker`, and the shared `Tooltip` into
+a controlled row of opaque `#rrggbb` color slots. Its public API is
+`colors: readonly string[]`, `onValueChange(index, value)`, optional `label`,
+`disabled`, and `className`. Slot buttons are named `${label} ${index + 1}`
+(or `Color ${index + 1}` when no label is supplied), have 24px hit areas, and
+open their picker with click, Enter, or Space. Escape closes the picker and
+returns focus to its slot. The open slot is expanded, not selected.
+Consumers may bind swatch presentation to existing CSS tokens with
+`--ui-color-selector-1`, `--ui-color-selector-2`, and so on at the group.
+The controlled hex values still supply the picker; the optional CSS slots let
+charts, legends, and swatches inherit one palette without copying color values.
+Consumers may map these slots to their existing `--series-N` variables and must
+keep the painted colors consistent with the controlled hex values.
 
 Set `Dialog`'s `unstyled` prop when a consumer supplies its complete overlay,
 content, and title treatment through plain CSS.

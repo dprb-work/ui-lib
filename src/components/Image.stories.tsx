@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import { Image } from "./Image";
 
@@ -20,7 +20,9 @@ export const AltFallback: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.hover(canvas.getByRole("img", { name: "Repository activity preview" }));
-    await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Repository activity preview" })).toBeVisible();
+    const tooltip = await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Repository activity preview" });
+    await waitFor(() => expect(tooltip).toHaveStyle({ opacity: "1" }));
+    await expect(tooltip).toBeVisible();
   },
 };
 

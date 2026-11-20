@@ -3,7 +3,6 @@ import type { ComponentPropsWithRef, ReactNode } from "react";
 import { cn } from "../cn";
 
 export type StatusPanelProps = Omit<ComponentPropsWithRef<"section">, "title"> & {
-  eyebrow?: ReactNode;
   title: ReactNode;
   icon?: ReactNode;
   description?: ReactNode;
@@ -12,7 +11,6 @@ export type StatusPanelProps = Omit<ComponentPropsWithRef<"section">, "title"> &
 };
 
 export function StatusPanel({
-  eyebrow,
   title,
   icon,
   description,
@@ -26,20 +24,12 @@ export function StatusPanel({
     <section
       ref={ref}
       className={cn(
-        "mx-auto grid w-full max-w-2xl gap-3 rounded-lg border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground shadow-sm",
+        "mx-auto grid w-full max-w-2xl gap-3 rounded-lg border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground",
         tone === "danger" && "border-ui-danger",
         className,
       )}
       {...sectionProps}
     >
-      {eyebrow ? (
-        <p className={cn(
-          "m-0 text-xs font-semibold uppercase tracking-[0.12em] text-ui-muted-foreground",
-          tone === "danger" && "text-ui-danger",
-        )}>
-          {eyebrow}
-        </p>
-      ) : null}
       <h1 className="m-0 text-2xl font-semibold tracking-tight">
         {icon ? <span className="flex min-w-0 items-start gap-ui-icon-text"><span aria-hidden="true" className="shrink-0 [&_svg]:shrink-0">{icon}</span><span className="min-w-0">{title}</span></span> : title}
       </h1>

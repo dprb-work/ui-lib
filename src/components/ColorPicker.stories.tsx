@@ -19,7 +19,7 @@ function ColorPickerExample() {
   const [value, setValue] = useState("#4f46e5");
 
   return (
-    <div className="grid w-80 gap-6 rounded-xl border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground shadow-sm">
+    <div className="grid w-80 max-w-full gap-6 p-6">
       <ColorPicker label="Accent color" value={value} onValueChange={setValue} />
       <Button variant="secondary" onClick={() => setValue("#0f766e")}>
         Reset externally

@@ -16,9 +16,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Statuses: Story = {
   args: {
-    eyebrow: "Analysis",
     title: "No changed responsibilities",
-    description: "The snapshot is valid but contains no reviewable hunks.",
+    description: "The analysis snapshot is valid but contains no reviewable hunks.",
     actions: <Button variant="secondary">Choose another snapshot</Button>,
   },
   render: (args) => (
@@ -30,8 +29,7 @@ export const Statuses: Story = {
 
 export const ErrorStatus: Story = {
   args: {
-    eyebrow: "Analysis failed",
-    title: "The base revision is unavailable",
+    title: "Analysis failed: the base revision is unavailable",
     description: "Fetch the revision or choose another comparison before retrying.",
     tone: "danger",
     actions: (
@@ -51,7 +49,7 @@ export const ErrorStatus: Story = {
 export const Badges: Story = {
   args: { title: "Unused" },
   render: () => (
-    <div className="grid gap-4 rounded-xl border border-ui-border bg-ui-surface p-6 text-ui-surface-foreground shadow-sm">
+    <div className="grid gap-4 p-6">
       <p className="m-0 text-sm font-semibold">Status tones</p>
       <div className="flex flex-wrap gap-2">
         <Badge>Unknown</Badge>

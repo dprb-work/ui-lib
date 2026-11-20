@@ -221,6 +221,17 @@ icon-plus-text Radix menu entries. `StatusPanel` owns the gap between its
 optional icon and title, and input error messages own their decorative error
 icon. These components use the shared `--spacing-ui-icon-text` theme token through
 `gap-ui-icon-text`; callers provide content and do not add a second gap or a literal space.
+
+`Badge` preserves caller-supplied letter case and uses untracked 12px text by
+default. Its tone colors, status words and component-owned icon gap are unchanged.
+
+`StatusPanel` has no `eyebrow` prop. Move useful operation or scope context into
+`title` or `description`; the component retains its icon, status tone and recovery
+actions, without a static elevation shadow. For example, replace an
+`eyebrow="Analysis failed"` plus a generic title with
+`title="Analysis failed: the base revision is unavailable"`. Do not pass the
+removed prop or add a replacement preheading.
+
 ### Styling and composition
 
 Use the existing UI component before writing replacement markup. Find controls

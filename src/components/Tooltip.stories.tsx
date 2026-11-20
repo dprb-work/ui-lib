@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { cdp } from "@vitest/browser/context";
+import type {} from "@vitest/browser/providers/playwright";
 import { Copy, Search } from "lucide-react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
@@ -36,7 +38,9 @@ export const CustomArrow: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.hover(canvas.getByRole("button", { name: "With arrow" }));
-    await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Custom arrow presentation" })).toBeVisible();
+    const tooltip = await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Custom arrow presentation" });
+    await waitFor(() => expect(tooltip).toHaveStyle({ opacity: "1" }));
+    await expect(tooltip).toBeVisible();
   },
 };
 
@@ -53,7 +57,9 @@ export const Optional: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.hover(canvas.getByRole("button", { name: "Save" }));
-    await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Save the current draft" })).toBeVisible();
+    const tooltip = await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Save the current draft" });
+    await waitFor(() => expect(tooltip).toHaveStyle({ opacity: "1" }));
+    await expect(tooltip).toBeVisible();
     await userEvent.unhover(canvas.getByRole("button", { name: "Save" }));
     await userEvent.hover(canvas.getByRole("button", { name: "No tooltip" }));
     await waitFor(() => expect(within(canvasElement.ownerDocument.body).queryByRole("tooltip")).not.toBeInTheDocument());
@@ -76,7 +82,9 @@ export const AccessibleLabelFallback: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.hover(canvas.getByRole("button", { name: "Search" }));
-    await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Search" })).toBeVisible();
+    const tooltip = await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Search" });
+    await waitFor(() => expect(tooltip).toHaveStyle({ opacity: "1" }));
+    await expect(tooltip).toBeVisible();
   },
 };
 
@@ -106,5 +114,29 @@ export const NearBottomCollision: Story = {
     const canvas = within(canvasElement);
     await userEvent.hover(canvas.getByRole("button", { name: "Near bottom edge" }));
     await expect(await within(canvasElement.ownerDocument.body).findByRole("tooltip", { name: "Flips above when the bottom edge has no room" })).toHaveAttribute("data-side", "top");
+  },
+};
+
+export const ReducedMotionKeyboardFocus: Story = {
+  ...Optional,
+  // Browser-runner media emulation is not a catalog example.
+  tags: ["!dev", "!autodocs"],
+  play: async ({ canvasElement }) => {
+    const session = cdp();
+    await session.send("Emulation.setEmulatedMedia", {
+      features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+    });
+    try {
+      await expect(window.matchMedia("(prefers-reduced-motion: reduce)").matches).toBe(true);
+      await userEvent.tab();
+      await expect(within(canvasElement).getByRole("button", { name: "Save" })).toHaveFocus();
+      // No findByRole or waitFor: keyboard help must already be visible.
+      const tooltip = within(canvasElement.ownerDocument.body).getByRole("tooltip", { name: "Save the current draft" });
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip).toHaveStyle({ opacity: "1", animationName: "none" });
+      await expect(tooltip.getAnimations({ subtree: true })).toEqual([]);
+    } finally {
+      await session.send("Emulation.setEmulatedMedia", { features: [] });
+    }
   },
 };

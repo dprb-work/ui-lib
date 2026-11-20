@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Info, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import { Button } from "./Button";
 import { Dialog, Tabs, Tooltip } from "./Interactions";
@@ -91,7 +91,9 @@ export const Tooltips: Story = {
     const canvas = within(canvasElement);
     const body = within(canvasElement.ownerDocument.body);
     await userEvent.hover(canvas.getByRole("button", { name: "top" }));
-    await expect(await body.findByRole("tooltip", { name: "top tooltip" })).toBeVisible();
+    const tooltip = await body.findByRole("tooltip", { name: "top tooltip" });
+    await waitFor(() => expect(tooltip).toHaveStyle({ opacity: "1" }));
+    await expect(tooltip).toBeVisible();
   },
 };
 

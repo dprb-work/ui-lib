@@ -10,10 +10,10 @@ export type BadgeProps = ComponentPropsWithoutRef<"span"> & {
 
 const toneClasses: Record<BadgeTone, string> = {
   neutral: "bg-ui-muted text-ui-muted-foreground",
-  info: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
-  success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
-  warning: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  danger: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
+  info: "bg-ui-info-fill text-ui-info-ink",
+  success: "bg-ui-success-fill text-ui-success-ink",
+  warning: "bg-ui-warning-fill text-ui-warning-ink",
+  danger: "bg-ui-danger-fill text-ui-danger-ink",
 };
 
 export function Badge({ className, tone = "neutral", ...badgeProps }: BadgeProps) {

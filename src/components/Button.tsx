@@ -23,13 +23,13 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "border-ui-accent bg-ui-accent text-ui-on-accent hover:border-ui-accent-hover hover:bg-ui-accent-hover",
+    "border-ui-accent bg-ui-accent text-ui-on-accent hover:bg-ui-accent-hover",
   secondary:
     "border-ui-border bg-ui-surface text-ui-surface-foreground hover:bg-ui-muted",
   ghost:
     "border-transparent bg-transparent text-ui-muted-foreground hover:bg-ui-muted hover:text-ui-foreground",
   danger:
-    "border-ui-danger bg-ui-danger text-ui-on-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover focus-visible:ring-ui-danger",
+    "border-ui-danger-ink bg-transparent text-ui-danger hover:bg-ui-danger-fill focus-visible:ring-ui-danger",
 };
 
 export function Button({

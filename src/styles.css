@@ -10,6 +10,48 @@
 
 :root {
   color-scheme: light;
+  /* Only role-used stops ship; each paint has one editable value. */
+  --ui-palette-blue-50: oklch(0.9813 0.009149 250);
+  --ui-palette-blue-600: #6697c9;
+  --ui-palette-blue-650: #5688bc;
+  --ui-palette-blue-700: #457aaf;
+  --ui-palette-blue-750: #3b6793;
+  --ui-palette-blue-950: oklch(0.243201 0.03 250);
+  --ui-palette-amber-50: oklch(0.9813 0.017508 81.333);
+  --ui-palette-amber-600: #b48a52;
+  --ui-palette-amber-650: #a57c45;
+  --ui-palette-amber-700: #966d39;
+  --ui-palette-amber-750: #7e5c31;
+  --ui-palette-amber-950: oklch(0.243201 0.02511 74.276);
+  --ui-palette-green-50: oklch(0.9813 0.012407 164.808);
+  --ui-palette-green-600: #6ba181;
+  --ui-palette-green-650: #5a9372;
+  --ui-palette-green-750: #3d7053;
+  --ui-palette-green-950: oklch(0.243201 0.033535 161.816);
+  --ui-palette-violet-650: #8b77b7;
+  --ui-palette-violet-700: #7e69a9;
+  --ui-palette-rose-650: #a5767c;
+  --ui-palette-rose-700: #96686e;
+  --ui-palette-magenta-650: #a86e9b;
+  --ui-palette-magenta-700: #9a5f8e;
+  --ui-palette-olive-650: #828b44;
+  --ui-palette-slate-650: #76869d;
+  --ui-palette-slate-700: #67778f;
+  --ui-palette-copper-650: #b66f59;
+  --ui-palette-copper-700: #a8604a;
+  --ui-palette-cyan-650: #558f9b;
+
+  --ui-series-1: var(--ui-palette-blue-650);
+  --ui-series-2: var(--ui-palette-amber-650);
+  --ui-series-3: var(--ui-palette-green-650);
+  --ui-series-4: var(--ui-palette-violet-650);
+  --ui-series-5: var(--ui-palette-rose-650);
+  --ui-series-6: var(--ui-palette-magenta-650);
+  --ui-series-7: var(--ui-palette-olive-650);
+  --ui-series-8: var(--ui-palette-slate-650);
+  --ui-series-9: var(--ui-palette-copper-650);
+  --ui-series-10: var(--ui-palette-cyan-650);
+
   --ui-background: rgb(248 250 252);
   --ui-foreground: rgb(15 23 42);
   --ui-surface: rgb(255 255 255);
@@ -19,13 +61,23 @@
   --ui-border: rgb(203 213 225);
   --ui-tooltip: rgb(241 245 249);
   --ui-tooltip-foreground: rgb(15 23 42);
-  --ui-accent: rgb(14 116 144);
-  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, black);
-  --ui-on-accent: rgb(240 253 250);
-  --ui-success: var(--color-green-700);
-  --ui-danger: rgb(190 18 60);
-  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, black);
-  --ui-on-danger: rgb(255 241 242);
+  --ui-accent: var(--ui-palette-green-650);
+  --ui-accent-hover: var(--ui-palette-green-600);
+  --ui-accent-link: var(--ui-palette-green-750);
+  --ui-on-accent: rgb(15 23 42);
+  --ui-success: var(--ui-success-ink);
+  --ui-success-ink: var(--ui-palette-green-750);
+  --ui-success-fill: var(--ui-palette-green-50);
+  --ui-warning-ink: var(--ui-palette-amber-750);
+  --ui-warning-fill: var(--ui-palette-amber-50);
+  --ui-info-ink: var(--ui-palette-blue-750);
+  --ui-info-fill: var(--ui-palette-blue-50);
+  /* Status-only red: OKLCH hue 25deg, chroma .15, L .53 light / .57 dark. */
+  --ui-danger: #b2403d;
+  --ui-danger-hover: #a53332;
+  --ui-on-danger: #ffffff;
+  --ui-danger-ink: #b2403d;
+  --ui-danger-fill: #fceae8;
   --ui-chart-accent: var(--ui-accent);
   --ui-chart-surface: var(--ui-surface);
   --ui-chart-muted: var(--ui-muted-foreground);
@@ -43,16 +95,38 @@
   --ui-border: rgb(51 65 85);
   --ui-tooltip: rgb(30 41 59);
   --ui-tooltip-foreground: rgb(226 232 240);
-  --ui-accent: rgb(45 212 191);
-  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 88%, white);
+  --ui-series-1: var(--ui-palette-blue-700);
+  --ui-series-2: var(--ui-palette-amber-700);
+  --ui-series-3: var(--ui-palette-green-650);
+  --ui-series-4: var(--ui-palette-violet-700);
+  --ui-series-5: var(--ui-palette-rose-700);
+  --ui-series-6: var(--ui-palette-magenta-700);
+  --ui-series-7: var(--ui-palette-olive-650);
+  --ui-series-8: var(--ui-palette-slate-700);
+  --ui-series-9: var(--ui-palette-copper-700);
+  --ui-series-10: var(--ui-palette-cyan-650);
+  --ui-accent: var(--ui-palette-green-650);
+  --ui-accent-hover: var(--ui-palette-green-600);
+  --ui-accent-link: var(--ui-palette-green-600);
   --ui-on-accent: rgb(15 23 42);
-  --ui-success: var(--color-green-400);
-  --ui-danger: rgb(251 113 133);
-  --ui-danger-hover: color-mix(in oklab, var(--ui-danger) 88%, white);
-  --ui-on-danger: rgb(76 5 25);
+  --ui-success: var(--ui-success-ink);
+  --ui-success-ink: var(--ui-palette-green-600);
+  --ui-success-fill: var(--ui-palette-green-950);
+  --ui-warning-ink: var(--ui-palette-amber-600);
+  --ui-warning-fill: var(--ui-palette-amber-950);
+  --ui-info-ink: var(--ui-palette-blue-600);
+  --ui-info-fill: var(--ui-palette-blue-950);
+  --ui-danger: #c04c48;
+  --ui-danger-hover: #b64340;
+  --ui-on-danger: #ffffff;
+  --ui-danger-ink: #dc655f;
+  --ui-danger-fill: #321a18;
+  --ui-chart-accent: var(--ui-accent);
 }
 
 @theme inline {
+  --text-color-ui-accent: var(--ui-accent-link);
+  --text-color-ui-danger: var(--ui-danger-ink);
   --color-ui-background: var(--ui-background);
   --color-ui-foreground: var(--ui-foreground);
   --color-ui-surface: var(--ui-surface);
@@ -65,13 +139,23 @@
   --color-ui-accent: var(--ui-accent);
   --color-ui-accent-hover: var(--ui-accent-hover);
   --color-ui-on-accent: var(--ui-on-accent);
+  --color-ui-accent-link: var(--ui-accent-link);
   --color-ui-success: var(--ui-success);
+  --color-ui-success-ink: var(--ui-success-ink);
+  --color-ui-success-fill: var(--ui-success-fill);
+  --color-ui-warning-ink: var(--ui-warning-ink);
+  --color-ui-warning-fill: var(--ui-warning-fill);
+  --color-ui-info-ink: var(--ui-info-ink);
+  --color-ui-info-fill: var(--ui-info-fill);
   --color-ui-danger: var(--ui-danger);
   --color-ui-danger-hover: var(--ui-danger-hover);
   --color-ui-on-danger: var(--ui-on-danger);
+  --color-ui-danger-ink: var(--ui-danger-ink);
+  --color-ui-danger-fill: var(--ui-danger-fill);
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
+
 
 @layer base {
   body {

@@ -117,17 +117,40 @@ and menu keyboard behavior.
 Consumers own domain formatting, captions, chart pairing, and surrounding
 workflow.
 
-The stylesheet ships Tailwind Preflight, the default light and dark application
-palette, and component utilities. Color roles describe intent, not a fixed hue;
-the accent, ten-color palette and status pairs are still being decided.
+The stylesheet ships Tailwind Preflight, the current light and dark palette, and
+component utilities. Green is the accent and current success family. Warning
+uses Amber, info uses Blue, and danger is an independent red used only for
+status, not one of the ten palette families.
+Pair every status with an icon and words; color alone does not communicate
+status. Links use the readable Green link role and stay underlined. Danger
+buttons use an outlined treatment by default. Reserve a solid danger button for
+the confirming step; consumers can apply
+`bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover` through `className`.
+The proposed anti-crowding rule and open success-family question are in
+[CONTEXT.md](CONTEXT.md#palette-roles). Exact steps, saturation and the final
+ten-family selection await the owner's comparison; these are current values.
 Add `.dark` to an ancestor or set `data-theme="dark"` on one.
 Consumers may override these semantic variables at their application root:
 `--ui-background`, `--ui-foreground`, `--ui-surface`,
 `--ui-surface-foreground`, `--ui-muted`, `--ui-muted-foreground`,
 `--ui-border`, `--ui-accent`, `--ui-accent-hover`, `--ui-on-accent`,
-`--ui-success`, `--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`.
-`--ui-success` is the semantic success color. Product styles loaded after the
-package remain authoritative.
+`--ui-accent-link`, `--ui-success`,
+`--ui-danger`, `--ui-danger-hover`, and `--ui-on-danger`.
+`--ui-success` remains the readable success text color. Each status has
+`--ui-<status>-ink` and `--ui-<status>-fill` for readable text and its tinted
+background; `text-ui-danger` uses danger ink, not the solid confirming fill.
+`text-ui-accent` uses the readable link role; action fills retain `--ui-accent`.
+Override accent fill, hover, on-accent and link together and verify their contrast;
+an old accent fill with the new label color may be unreadable. Consumers with
+copied Tailwind theme mappings must remove or update those copies on adoption,
+including the readable `--text-color-ui-accent` and `--text-color-ui-danger`
+mappings. Product styles loaded after the package remain authoritative.
+
+Only palette stops used by roles ship: `650` for all ten families; `700` for
+Blue, Amber, Violet, Rose, Magenta, Slate and Copper; `600` and `750` for
+Green, Amber and Blue; and `50` and `950` for Green, Amber and Blue.
+`--ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose,
+Magenta, Olive, Slate, Copper and Cyan.
 
 ### Styling and composition
 
@@ -150,10 +173,11 @@ utility names complete and statically detectable rather than assembling fragment
 
 `src/styles.css` uses CSS-first Tailwind v4 through `@tailwindcss/vite`
 (the lockfile resolves both to 4.3.3), with no JavaScript theme config.
-Light/dark `--ui-*` properties hold application, tooltip, action, success/danger
-and chart roles. `@theme inline` maps the non-chart roles to `--color-ui-*`
-theme values and declares `--font-sans` and `--font-mono`; `src/palette.css`
-defines the raw `--color-*` ramps in `@theme static`.
+Light/dark `--ui-*` properties hold application, tooltip, action, status and
+chart roles. `@theme inline` maps the non-chart roles to `--color-ui-*`
+theme values and declares `--font-sans` and `--font-mono`.
+`src/styles.css` owns the used `--ui-palette-*` stops and `--ui-series-1..10`;
+`src/palette.css` retains the existing raw `--color-*` ramps in `@theme static`.
 
 The consuming component owns layout. Pass `className` at the usage site to change
 size, spacing, radius, color, or typography; conflict-aware Tailwind merging makes

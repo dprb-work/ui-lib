@@ -24,8 +24,17 @@ const semanticTokens: ColorToken[] = [
   { name: "Tooltip", variable: "--ui-tooltip", use: "Transient contextual surfaces", foreground: "--ui-tooltip-foreground" },
   { name: "Accent", variable: "--ui-accent", use: "Primary actions and selected states", foreground: "--ui-on-accent" },
   { name: "Accent hover", variable: "--ui-accent-hover", use: "Primary action hover state", foreground: "--ui-on-accent" },
-  { name: "Danger", variable: "--ui-danger", use: "Destructive actions and error emphasis", foreground: "--ui-on-danger" },
-  { name: "Danger hover", variable: "--ui-danger-hover", use: "Destructive action hover state", foreground: "--ui-on-danger" },
+  { name: "Accent link", variable: "--ui-accent-link", use: "Readable accent text; underline links", foreground: "--ui-background" },
+  { name: "Success", variable: "--ui-success-ink", use: "Success text and icons", foreground: "--ui-success-fill" },
+  { name: "Success fill", variable: "--ui-success-fill", use: "Success feedback background", foreground: "--ui-success-ink" },
+  { name: "Warning", variable: "--ui-warning-ink", use: "Warning text and icons", foreground: "--ui-warning-fill" },
+  { name: "Warning fill", variable: "--ui-warning-fill", use: "Warning feedback background", foreground: "--ui-warning-ink" },
+  { name: "Info", variable: "--ui-info-ink", use: "Information text and icons", foreground: "--ui-info-fill" },
+  { name: "Info fill", variable: "--ui-info-fill", use: "Information feedback background", foreground: "--ui-info-ink" },
+  { name: "Danger", variable: "--ui-danger", use: "Solid danger: confirming actions only", foreground: "--ui-on-danger" },
+  { name: "Danger hover", variable: "--ui-danger-hover", use: "Solid confirming-action hover fill", foreground: "--ui-on-danger" },
+  { name: "Danger ink", variable: "--ui-danger-ink", use: "Errors, invalid drafts and destructive labels", foreground: "--ui-danger-fill" },
+  { name: "Danger fill", variable: "--ui-danger-fill", use: "Danger feedback and outlined-action hover", foreground: "--ui-danger-ink" },
 ];
 
 const chartTokens: ColorToken[] = [
@@ -77,6 +86,7 @@ export const SemanticColors: Story = {
           <p className="text-sm leading-6 text-ui-muted-foreground">
             Semantic tokens keep components consistent across products and themes. Use the role that describes the job; avoid binding components to raw color values.
           </p>
+          <p className="text-sm text-ui-muted-foreground">See Foundations / Palette for the shipped ten-family series order and action/status comparisons.</p>
         </header>
 
         <TokenGroup

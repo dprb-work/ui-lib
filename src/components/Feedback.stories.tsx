@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { CircleCheck, CircleX, Info, TriangleAlert } from "lucide-react";
 
 import { Badge } from "./Badge";
 import { Button } from "./Button";
@@ -54,10 +55,10 @@ export const Badges: Story = {
       <p className="m-0 text-sm font-semibold">Status tones</p>
       <div className="flex flex-wrap gap-2">
         <Badge>Unknown</Badge>
-        <Badge tone="info">Running</Badge>
-        <Badge tone="success">Passed</Badge>
-        <Badge tone="warning">Watch</Badge>
-        <Badge tone="danger">Failed</Badge>
+        <Badge tone="info"><Info aria-hidden="true" size={12} />Running</Badge>
+        <Badge tone="success"><CircleCheck aria-hidden="true" size={12} />Passed</Badge>
+        <Badge tone="warning"><TriangleAlert aria-hidden="true" size={12} />Watch</Badge>
+        <Badge tone="danger"><CircleX aria-hidden="true" size={12} />Failed</Badge>
       </div>
     </div>
   ),

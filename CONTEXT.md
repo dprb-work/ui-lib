@@ -1,6 +1,6 @@
 # ui-lib visual language
 
-ui-lib owns reusable UI controls and their shared visual language. These words describe roles and states, not a chosen palette.
+ui-lib owns reusable UI controls and their shared visual language. These words describe roles and states; current palette values remain a proposal.
 
 ## Language
 
@@ -23,7 +23,8 @@ The highest-priority action in a local group, not a color.
 _Avoid_: Accent when describing action hierarchy.
 
 **Accent**:
-The interface emphasis color, separate from status and data identity.
+The interface emphasis color, separate from status and data identity. Green is
+the accent family.
 _Avoid_: Primary as a color name; any fixed hue as its definition.
 
 **Tone**:
@@ -33,6 +34,28 @@ _Avoid_: Hue, status, selected state.
 **Status**:
 A user-visible condition or outcome, such as running, failed or ready.
 _Avoid_: Tone, color, StatusPanel as the condition itself.
+
+### Palette roles
+
+Current status roles are success Green, warning Amber, info Blue, and
+danger independent red. Danger is status-only, not a family in the ten-color
+palette. Pair every status with an icon and words; color alone is not enough.
+
+The owner is considering sharing Green between primary actions and success,
+because a primary action is positive. This is not a final decision. The
+proposed anti-crowding rule is: at most one primary action per view region;
+show success with an icon and words; do not color unrelated elements green.
+The exact palette steps and saturation remain open pending a brightness
+comparison. Keep the success-family question unresolved: alternatives are
+moving success to another family or using different accent and success steps.
+Compare them side by side in one story: a primary button with a success badge,
+panel, and valid field in light and dark themes.
+
+Links use the readable Green link role and remain underlined. Danger buttons
+are outlined by default. Reserve a solid danger button for the confirming step;
+a consumer can apply `bg-ui-danger text-ui-on-danger hover:bg-ui-danger-hover`
+through `className`.
+
 
 ### States
 
@@ -74,8 +97,8 @@ _Avoid_: Invalid as a synonym for an operation failure.
 
 #### Showing states
 
-This is the adopted direction, not today's component behavior. Component changes
-follow in a later pull request, after visual confirmation alongside today's rings.
+This direction is confirmed after visual comparison; component changes are not
+yet shipped.
 
 - **Color says what it is:** selected or on uses the accent; status uses its role color.
 - **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on.

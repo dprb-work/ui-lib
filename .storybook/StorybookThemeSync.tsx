@@ -30,11 +30,8 @@ export function StorybookThemeSync({
     if (userTheme !== null) {
       writeStoredStorybookTheme(userTheme);
     }
-  }, [userTheme]);
-
-  useEffect(() => {
     initializeStorybookThemeState(defaultTheme);
-  }, [defaultTheme]);
+  }, [defaultTheme, userTheme]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;

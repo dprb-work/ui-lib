@@ -56,6 +56,9 @@ jobs:
       - name: Test CI classifier
         if: steps.routing.outputs.metadata_only != 'true'
         run: node --test scripts/ci-plan.node-test.mjs
+      - name: Check base dependency alignment
+        if: steps.routing.outputs.metadata_only != 'true'
+        run: python3 scripts/check_base_deps.py
       - id: plan
         if: steps.routing.outputs.metadata_only != 'true'
         env:
@@ -114,7 +117,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version-file: .node-version
       - name: Enable pnpm
         run: corepack enable
       - name: Install dependencies

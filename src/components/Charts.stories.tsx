@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 
-import { CartesianChart, DistributionChart, type DistributionView, type PlotRecord } from "../charts";
+import {
+  CartesianChart,
+  DistributionChart,
+  MultiSeriesLineChart,
+  type ChartSeries,
+  type DistributionView,
+  type PlotRecord,
+} from "../charts";
 
 const meta = {
   title: "Components/Charts",
@@ -100,5 +107,67 @@ export const Distributions: Story = {
         ))}
       </div>
     </StoryCanvas>
+  ),
+};
+
+const weeklyAllowanceDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const weeklyAllowanceSeries: ChartSeries[] = [
+  { id: "five-hour", label: "Five-hour window", values: [28, 41, 63, 54, 72, 39, 46] },
+  { id: "weekly-all", label: "Weekly all-models", values: [14, 29, 45, 58, 71, 79, 86] },
+  { id: "weekly-sonnet", label: "Weekly Sonnet", values: [9, 18, 27, 34, 48, 52, 61] },
+];
+
+const fleetAllowanceSeries: ChartSeries[] = [
+  ...weeklyAllowanceSeries,
+  { id: "batch-workers", label: "Batch workers", values: [18, 24, 31, null, 44, 38, 42] },
+  { id: "eval-runner", label: "Evaluation runner", values: [6, 12, 19, 25, 22, 16, 20] },
+];
+
+export const MultiSeriesLine: Story = {
+  render: () => (
+    <main className="min-h-screen bg-ui-background p-4 text-ui-foreground sm:p-8">
+      <section className="mx-auto grid max-w-4xl min-w-0 gap-4">
+        <h1 className="text-base font-semibold text-ui-foreground">
+          Weekly usage allowances
+        </h1>
+        <MultiSeriesLineChart
+          labels={weeklyAllowanceDays}
+          series={weeklyAllowanceSeries}
+          xLabel="Day"
+          yLabel="Allowance used"
+          unit="%"
+          min={0}
+          max={100}
+          tabsAriaLabel="Weekly usage allowances views"
+          tableCaption="Weekly usage allowances (%)"
+          ariaLabel="Weekly usage allowances across three windows from Monday to Sunday"
+        />
+      </section>
+    </main>
+  ),
+};
+
+export const MultiSeriesLineFiveSeries: Story = {
+  render: () => (
+    <main className="min-h-screen bg-ui-background p-4 text-ui-foreground sm:p-8">
+      <section className="mx-auto grid max-w-4xl min-w-0 gap-4">
+        <h1 className="text-base font-semibold text-ui-foreground">
+          Weekly usage allowances across five pools
+        </h1>
+        <MultiSeriesLineChart
+          labels={weeklyAllowanceDays}
+          series={fleetAllowanceSeries}
+          xLabel="Day"
+          yLabel="Allowance used"
+          unit="%"
+          min={0}
+          max={100}
+          tabsAriaLabel="Five-pool usage allowances views"
+          tableCaption="Weekly usage allowances across five pools (%)"
+          ariaLabel="Weekly usage allowances across five pools from Monday to Sunday"
+        />
+      </section>
+    </main>
   ),
 };

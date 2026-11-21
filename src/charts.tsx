@@ -9,8 +9,19 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, type RefObject } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
+import { cn } from "./cn";
+import { Tabs } from "./components/Interactions";
 import { tooltipSurfaceClassName } from "./components/tooltipStyles";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip);
@@ -18,13 +29,33 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, LineContro
 export type ChartHandle = { resize: () => void };
 export type PlotRecord = { label: string; value: number };
 export type DistributionView = "histogram" | "box" | "density" | "violin";
+type ChartTooltipPoint = {
+  raw: unknown;
+  datasetIndex?: number;
+  dataset?: { label?: string; borderColor?: unknown };
+};
 type ChartTooltipModel = {
   opacity: number;
   caretX: number;
   caretY: number;
   title: readonly string[];
-  dataPoints: readonly { raw: unknown }[];
+  dataPoints: readonly ChartTooltipPoint[];
 };
+
+export const SERIES_COLOR_TOKENS = [
+  "--color-ui-series-1",
+  "--color-ui-series-2",
+  "--color-ui-series-3",
+  "--color-ui-series-4",
+  "--color-ui-series-5",
+  "--color-ui-series-6",
+  "--color-ui-series-7",
+  "--color-ui-series-8",
+  "--color-ui-series-9",
+  "--color-ui-series-10",
+] as const;
+
+const SERIES_POINT_STYLES = ["circle", "rect", "triangle", "rectRot", "star", "crossRot"] as const;
 
 export type ChartPalette = {
   accent: string;
@@ -59,19 +90,32 @@ export type CartesianChartProps = PlotProps & {
   xLabel: string;
 };
 
-function cssColor(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const multiSeriesDefaultPalette: ChartPalette = {
+  accent: "--color-ui-series-1",
+  surface: "--color-ui-surface",
+  muted: "--color-ui-muted-foreground",
+  foreground: "--color-ui-foreground",
+  grid: "--color-ui-border",
+};
+
+function cssColor(name: string, element?: Element | null): string {
+  const target = element ?? document.documentElement;
+  return getComputedStyle(target).getPropertyValue(name).trim();
 }
 
-function resolvedChartTheme(overrides?: Partial<ChartPalette>) {
-  const variables = { ...defaultPalette, ...overrides };
+function resolvedChartTheme(
+  overrides?: Partial<ChartPalette>,
+  element?: Element | null,
+  basePalette: ChartPalette = defaultPalette,
+) {
+  const variables = { ...basePalette, ...overrides };
   return {
-    accent: cssColor(variables.accent),
-    surface: cssColor(variables.surface),
-    muted: cssColor(variables.muted),
-    foreground: cssColor(variables.foreground),
-    grid: cssColor(variables.grid),
-    fontFamily: cssColor("--font-sans") || "Inter, ui-sans-serif, system-ui, sans-serif",
+    accent: cssColor(variables.accent, element),
+    surface: cssColor(variables.surface, element),
+    muted: cssColor(variables.muted, element),
+    foreground: cssColor(variables.foreground, element),
+    grid: cssColor(variables.grid, element),
+    fontFamily: cssColor("--font-sans", element) || "Inter, ui-sans-serif, system-ui, sans-serif",
   };
 }
 
@@ -105,6 +149,14 @@ function updateChartTooltip(
   marker.style.backgroundColor = accent;
   valueElement.textContent = Number.isFinite(value) ? format(value) : String(raw ?? "");
 
+  positionTooltip(element, canvas, tooltip);
+}
+
+function positionTooltip(
+  element: HTMLDivElement,
+  canvas: HTMLCanvasElement,
+  tooltip: ChartTooltipModel,
+) {
   const host = element.parentElement;
   if (!host) return;
   element.style.opacity = "1";
@@ -121,6 +173,67 @@ function updateChartTooltip(
   element.style.transform = placeBelow
     ? "translate(-50%, 0.625rem)"
     : "translate(-50%, calc(-100% - 0.625rem))";
+}
+
+function updateMultiSeriesTooltip(
+  element: HTMLDivElement | null,
+  canvas: HTMLCanvasElement,
+  tooltip: ChartTooltipModel,
+  seriesColors: readonly string[],
+  format: (value: number) => string,
+) {
+  if (!element || tooltip.opacity === 0 || tooltip.dataPoints.length === 0) {
+    if (element) element.style.opacity = "0";
+    return;
+  }
+
+  const titleElement = element.children[0] as HTMLElement;
+  const rowsContainer = element.children[1] as HTMLElement;
+  titleElement.textContent = tooltip.title[0] ?? "";
+  const doc = element.ownerDocument;
+  rowsContainer.replaceChildren(
+    ...tooltip.dataPoints.map((point, index) => {
+      const row = doc.createElement("span");
+      row.className = "flex items-center gap-2 text-[0.6875rem]";
+
+      const marker = doc.createElement("span");
+      marker.className = "size-1.5 shrink-0 rounded-full";
+      const colorIndex = point.datasetIndex ?? index;
+      marker.style.backgroundColor =
+        typeof point.dataset?.borderColor === "string"
+          ? point.dataset.borderColor
+          : (seriesColors[colorIndex] ?? "");
+
+      const name = doc.createElement("span");
+      name.textContent = point.dataset?.label ?? "";
+
+      const valueElement = doc.createElement("span");
+      valueElement.className = "ml-auto font-medium tabular-nums";
+      const raw = point.raw;
+      const numeric = typeof raw === "number" ? raw : Number(raw);
+      valueElement.textContent = raw == null || !Number.isFinite(numeric) ? "—" : format(numeric);
+
+      row.append(marker, name, valueElement);
+      return row;
+    }),
+  );
+
+  positionTooltip(element, canvas, tooltip);
+}
+
+function MultiSeriesTooltipLayer({ tooltipRef }: { tooltipRef: RefObject<HTMLDivElement | null> }) {
+  return (
+    <div
+      ref={tooltipRef}
+      data-ui-chart-tooltip
+      data-side="top"
+      aria-hidden="true"
+      className={`${tooltipSurfaceClassName} pointer-events-none absolute left-0 top-0 z-10 grid min-w-36 gap-1 opacity-0 transition-opacity duration-100 motion-reduce:transition-none`}
+    >
+      <span className="font-medium" />
+      <span className="grid gap-0.5" />
+    </div>
+  );
 }
 
 function ChartTooltipLayer({ tooltipRef }: { tooltipRef: RefObject<HTMLDivElement | null> }) {
@@ -145,10 +258,29 @@ function chartA11y(ariaLabel?: string) {
   return ariaLabel ? { role: "img", "aria-label": ariaLabel } as const : { "aria-hidden": true } as const;
 }
 
-function watchTheme(render: () => void) {
+function watchTheme(render: () => void, element?: Element | null) {
   const observer = new MutationObserver(render);
-  observer.observe(document.documentElement, { attributes: true });
-  return observer;
+  const observed = new Set<Element>([document.documentElement]);
+  if (document.body) observed.add(document.body);
+  let current: Element | null = element ?? null;
+  while (current) {
+    observed.add(current);
+    current = current.parentElement;
+  }
+  for (const target of observed) {
+    observer.observe(target, { attributes: true, attributeFilter: ["class", "data-theme", "style"] });
+  }
+  const media =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-color-scheme: dark)")
+      : null;
+  media?.addEventListener("change", render);
+  return {
+    disconnect() {
+      observer.disconnect();
+      media?.removeEventListener("change", render);
+    },
+  };
 }
 
 export const CartesianChart = forwardRef<ChartHandle, CartesianChartProps>(function CartesianChart(props, ref) {
@@ -531,3 +663,415 @@ export const DistributionChart = forwardRef<ChartHandle, DistributionChartProps>
   const Component = view === "histogram" ? HistogramChart : view === "box" ? BoxPlot : view === "density" ? DensityChart : ViolinPlot;
   return <Component ref={ref} {...props} />;
 });
+
+export type ChartSeries = {
+  id?: string;
+  label: string;
+  values: readonly (number | null)[];
+  color?: string;
+};
+
+export type MultiSeriesLinePlotProps = {
+  labels: readonly string[];
+  series: readonly ChartSeries[];
+  xLabel: string;
+  yLabel: string;
+  unit?: string;
+  min?: number;
+  max?: number;
+  compact?: boolean;
+  showLegend?: boolean;
+  legendLabel?: string;
+  formatValue?: (value: number) => string;
+  className?: string;
+  plotClassName?: string;
+  legendClassName?: string;
+  palette?: Partial<ChartPalette>;
+  ariaLabel?: string;
+};
+
+export type MultiSeriesLineChartView = "graph" | "values";
+
+export type MultiSeriesLineChartProps = MultiSeriesLinePlotProps & {
+  id?: string;
+  tabsAriaLabel?: string;
+  tableCaption?: string;
+  view?: MultiSeriesLineChartView;
+  defaultView?: MultiSeriesLineChartView;
+  onViewChange?: (view: MultiSeriesLineChartView) => void;
+  graphActions?: ReactNode;
+  forceMount?: boolean;
+  tabsClassName?: string;
+  tabListClassName?: string;
+  tabTriggerClassName?: string;
+  tabPanelClassName?: string;
+  tableClassName?: string;
+};
+
+function seriesCssColor(item: ChartSeries, index: number): string {
+  const spec = item.color ?? SERIES_COLOR_TOKENS[index % SERIES_COLOR_TOKENS.length];
+  return spec.startsWith("--") ? `var(${spec})` : spec;
+}
+
+function resolveSeriesPaint(item: ChartSeries, index: number, element: Element | null): string {
+  const spec = item.color ?? SERIES_COLOR_TOKENS[index % SERIES_COLOR_TOKENS.length];
+  return spec.startsWith("--") ? cssColor(spec, element) : spec;
+}
+
+export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotProps>(
+  function MultiSeriesLinePlot(props, ref) {
+    const {
+      labels,
+      series,
+      xLabel,
+      yLabel,
+      unit,
+      min,
+      max,
+      compact = false,
+      showLegend,
+      legendLabel = "Series",
+      formatValue: customFormat,
+      className,
+      plotClassName,
+      legendClassName,
+      palette: paletteOverrides,
+      ariaLabel,
+    } = props;
+    const host = useRef<HTMLDivElement>(null);
+    const canvas = useRef<HTMLCanvasElement>(null);
+    const tooltip = useRef<HTMLDivElement>(null);
+    const chart = useRef<Chart | undefined>(undefined);
+    useImperativeHandle(ref, () => ({ resize: () => chart.current?.resize() }));
+
+    const shouldShowLegend = (showLegend ?? !compact) && series.length > 0;
+
+    useEffect(() => {
+      function renderChart() {
+        const canvasElement = canvas.current;
+        if (!canvasElement) return;
+        // Skip Chart.js instantiation in non-canvas test environments like jsdom.
+        if (!canvasElement.getContext("2d")) return;
+        chart.current?.destroy();
+
+        const scopeElement = host.current ?? canvasElement;
+        const palette = resolvedChartTheme(paletteOverrides, scopeElement, multiSeriesDefaultPalette);
+        const resolvedColors = series.map((item, index) => resolveSeriesPaint(item, index, scopeElement));
+        const format = customFormat ?? ((value: number) => formatValue(value, unit));
+
+        chart.current = new Chart(canvasElement, {
+          type: "line",
+          data: {
+            labels: [...labels],
+            datasets: series.map((item, index) => {
+              const color = resolvedColors[index] || palette.accent;
+              return {
+                label: item.label,
+                data: [...item.values],
+                backgroundColor: "transparent",
+                borderColor: color,
+                borderWidth: compact ? 2 : 2.5,
+                pointStyle: SERIES_POINT_STYLES[index % SERIES_POINT_STYLES.length],
+                pointBackgroundColor: palette.surface,
+                pointBorderColor: color,
+                pointBorderWidth: compact ? 1.5 : 2,
+                pointHoverRadius: 5,
+                pointRadius: compact ? 2.5 : 3.5,
+                clip: false,
+                tension: 0.24,
+              };
+            }),
+          },
+          options: {
+            animation: false,
+            maintainAspectRatio: false,
+            events: compact ? [] : undefined,
+            font: { family: palette.fontFamily, size: 12, lineHeight: 1.4 },
+            interaction: { intersect: false, mode: "index" },
+            layout: { padding: { top: 8, right: 8, bottom: 0, left: 4 } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: false,
+                external: compact
+                  ? undefined
+                  : ({ chart: activeChart, tooltip: model }) => {
+                      updateMultiSeriesTooltip(
+                        tooltip.current,
+                        activeChart.canvas,
+                        model,
+                        resolvedColors,
+                        format,
+                      );
+                    },
+              },
+            },
+            scales: {
+              x: {
+                border: { color: palette.grid },
+                grid: { display: false },
+                ticks: {
+                  color: palette.muted,
+                  display: !compact,
+                  autoSkip: true,
+                  autoSkipPadding: 12,
+                  maxRotation: 0,
+                  padding: 6,
+                },
+                title: {
+                  display: !compact,
+                  text: xLabel,
+                  color: palette.foreground,
+                  font: { weight: 600 },
+                  padding: { top: 6 },
+                },
+              },
+              y: {
+                min,
+                max,
+                border: { display: false },
+                grid: { color: palette.grid },
+                ticks: {
+                  color: palette.muted,
+                  display: !compact,
+                  maxTicksLimit: 6,
+                  padding: 6,
+                },
+                title: {
+                  display: !compact,
+                  text: unit ? `${yLabel} (${unit})` : yLabel,
+                  color: palette.foreground,
+                  font: { weight: 600 },
+                  padding: { bottom: 6 },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      renderChart();
+      const observer = watchTheme(renderChart, host.current);
+      if (!compact) {
+        window.addEventListener("beforeprint", renderChart);
+        window.addEventListener("afterprint", renderChart);
+      }
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("beforeprint", renderChart);
+        window.removeEventListener("afterprint", renderChart);
+        chart.current?.destroy();
+      };
+    }, [compact, customFormat, labels, max, min, paletteOverrides, series, unit, xLabel, yLabel]);
+
+    return (
+      <div ref={host} className={cn("grid min-w-0 grid-cols-1 gap-3", className)} data-ui-multi-series-plot="">
+        {shouldShowLegend && (
+          <ul
+            data-ui-chart-legend=""
+            aria-label={legendLabel}
+            className={cn(
+              "flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ui-foreground",
+              legendClassName,
+            )}
+          >
+            {series.map((item, index) => (
+              <li
+                key={item.id ?? `${item.label}-${index}`}
+                data-ui-chart-legend-item=""
+                className="inline-flex items-center gap-2 text-ui-foreground"
+              >
+                <span
+                  data-ui-chart-series-swatch=""
+                  aria-hidden="true"
+                  className="inline-block size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: seriesCssColor(item, index) }}
+                />
+                <span>{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div
+          className={cn("w-full min-w-0", compact ? "h-full" : "h-64 sm:h-72", plotClassName)}
+          data-ui-chart
+          {...chartA11y(ariaLabel)}
+        >
+          <canvas ref={canvas} className="block max-w-full" />
+          {!compact && <MultiSeriesTooltipLayer tooltipRef={tooltip} />}
+        </div>
+      </div>
+    );
+  },
+);
+
+const multiSeriesChartTabs = [
+  { value: "graph", label: "Graph" },
+  { value: "values", label: "Values" },
+] as const;
+
+export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChartProps>(
+  function MultiSeriesLineChart(props, ref) {
+    const {
+      id,
+      labels,
+      series,
+      xLabel,
+      yLabel,
+      unit,
+      min,
+      max,
+      compact = false,
+      showLegend,
+      legendLabel,
+      formatValue: customFormat,
+      className,
+      plotClassName,
+      legendClassName,
+      palette,
+      ariaLabel,
+      tabsAriaLabel,
+      tableCaption,
+      view: controlledView,
+      defaultView = "graph",
+      onViewChange,
+      graphActions,
+      forceMount = true,
+      tabsClassName,
+      tabListClassName,
+      tabTriggerClassName,
+      tabPanelClassName,
+      tableClassName,
+    } = props;
+
+    const [uncontrolledView, setUncontrolledView] = useState<MultiSeriesLineChartView>(defaultView);
+    const activeView = controlledView ?? uncontrolledView;
+    const plotRef = useRef<ChartHandle>(null);
+    useImperativeHandle(ref, () => ({ resize: () => plotRef.current?.resize() }));
+
+    const format = customFormat ?? ((value: number) => formatValue(value, unit));
+    const resolvedTableCaption = tableCaption ?? `${yLabel}${unit ? ` (${unit})` : ""} exact values`;
+
+    function handleViewChange(next: string) {
+      if (next !== "graph" && next !== "values") return;
+      if (controlledView === undefined) {
+        setUncontrolledView(next);
+      }
+      onViewChange?.(next);
+      if (next === "graph") {
+        requestAnimationFrame(() => plotRef.current?.resize());
+      }
+    }
+
+    return (
+      <div className={cn("min-w-0", className)} data-ui-multi-series-chart="">
+        <Tabs
+          id={id}
+          ariaLabel={tabsAriaLabel ?? `${yLabel} views`}
+          tabs={multiSeriesChartTabs}
+          value={activeView}
+          onValueChange={handleViewChange}
+          className={cn("min-w-0", tabsClassName)}
+          listClassName={cn("overflow-hidden", tabListClassName)}
+          triggerClassName={tabTriggerClassName}
+          panelClassName={cn("min-w-0 pt-2", tabPanelClassName)}
+          forceMount={forceMount}
+        >
+          {(tab) =>
+            tab.value === "graph" ? (
+              <div className="relative min-w-0">
+                <MultiSeriesLinePlot
+                  ref={plotRef}
+                  labels={labels}
+                  series={series}
+                  xLabel={xLabel}
+                  yLabel={yLabel}
+                  unit={unit}
+                  min={min}
+                  max={max}
+                  compact={compact}
+                  showLegend={showLegend}
+                  legendLabel={legendLabel}
+                  formatValue={customFormat}
+                  plotClassName={plotClassName}
+                  legendClassName={legendClassName}
+                  palette={palette}
+                  ariaLabel={ariaLabel}
+                />
+                {graphActions}
+              </div>
+            ) : (
+              <div
+                data-ui-chart-values-scroll=""
+                tabIndex={0}
+                role="region"
+                aria-label={resolvedTableCaption}
+                className="overflow-x-auto outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
+              >
+                <table
+                  data-ui-chart-values-table=""
+                  className={cn(
+                    "w-full border-collapse text-left text-sm text-ui-foreground",
+                    tableClassName,
+                  )}
+                >
+                  <caption className="sr-only">{resolvedTableCaption}</caption>
+                  <thead>
+                    <tr>
+                      <th
+                        scope="col"
+                        className="border-b border-ui-border px-2.5 py-2 text-left align-bottom font-semibold whitespace-nowrap text-ui-foreground sm:px-3"
+                      >
+                        {xLabel}
+                      </th>
+                      {series.map((item, index) => (
+                        <th
+                          key={item.id ?? `${item.label}-${index}`}
+                          scope="col"
+                          className="min-w-22 border-b border-ui-border px-2 py-2 text-right align-bottom leading-snug font-semibold text-ui-foreground sm:px-3"
+                        >
+                          <span className="inline-flex items-start justify-end gap-1.5 sm:gap-2">
+                            <span
+                              data-ui-chart-series-swatch=""
+                              aria-hidden="true"
+                              className="mt-1 inline-block size-2.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: seriesCssColor(item, index) }}
+                            />
+                            <span>{item.label}</span>
+                          </span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {labels.map((label, rowIndex) => (
+                      <tr key={`${label}-${rowIndex}`}>
+                        <th
+                          scope="row"
+                          className="border-b border-ui-border px-2.5 py-2 font-medium whitespace-nowrap text-ui-foreground sm:px-3"
+                        >
+                          {label}
+                        </th>
+                        {series.map((item, seriesIndex) => {
+                          const value = item.values[rowIndex];
+                          return (
+                            <td
+                              key={item.id ?? `${item.label}-${seriesIndex}`}
+                              className="border-b border-ui-border px-2.5 py-2 text-right whitespace-nowrap tabular-nums text-ui-foreground sm:px-3"
+                            >
+                              {value == null || !Number.isFinite(value) ? "—" : format(value)}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          }
+        </Tabs>
+      </div>
+    );
+  },
+);

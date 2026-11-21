@@ -23,7 +23,7 @@ their dependencies unless they import those components:
 | Entry point | Components | Required peer |
 | --- | --- | --- |
 | `@dprb-work/ui-lib/data-table` | `MatrixDataTable` | `@tanstack/react-table` |
-| `@dprb-work/ui-lib/charts` | `CartesianChart`, `DistributionChart` | `chart.js` |
+| `@dprb-work/ui-lib/charts` | `CartesianChart`, `DistributionChart`, `MultiSeriesLineChart`, `MultiSeriesLinePlot` | `chart.js` |
 | `@dprb-work/ui-lib/chat` | Composer, transcript, model controls, Markdown, code, diff and tool renderers | See chat dependencies below |
 
 ## Use
@@ -216,6 +216,12 @@ Blue, Amber, Violet, Rose, Magenta, Pearl and Copper in dark; `600` and `750`
 for Green, Amber and Blue; and `50` and `950` for Green, Amber and Blue.
 `--color-ui-series-1..10` follow this order: Blue, Amber, Green, Violet, Rose, Olive,
 Cyan, Magenta, Copper and Pearl. Utilities include `bg-ui-series-1` and `stroke-ui-series-1`.
+`MultiSeriesLineChart` plots one or more line series using `--color-ui-series-1..10`
+in order (wrapping modulo 10), pairs them with a neutral-text legend, and switches
+between the `Graph` and `Values` tabs using the shared full-width `Tabs` control.
+Import `MultiSeriesLinePlot` when a consumer needs the legend and canvas without
+the view tabs (for example compact sidebar previews or maximized dialogs).
+`SERIES_COLOR_TOKENS` exports the ten canonical series custom property names in order.
 Use `StatusMessage` for icon-plus-text status feedback and `MenuItem` for
 icon-plus-text Radix menu entries. `StatusPanel` owns the gap between its
 optional icon and title, and input error messages own their decorative error

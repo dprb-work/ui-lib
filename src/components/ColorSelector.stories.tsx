@@ -22,7 +22,7 @@ function InteractiveSelector() {
     setColors((current) => current.map((color, slot) => slot === index ? value : color));
 
   return (
-    <div className="grid gap-5 rounded-xl border border-ui-border bg-ui-surface p-5 text-ui-surface-foreground">
+    <div className="grid gap-5 p-5">
       <ColorSelector label="Series color" colors={colors} onValueChange={updateColor} />
       <div className="flex items-center gap-1" aria-label="Example selector states">
         <ColorSelector label="Hover example" colors={[initialColors[0]]} onValueChange={() => {}} className="[&>button:hover]:border-ui-foreground" />

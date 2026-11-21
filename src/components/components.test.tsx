@@ -111,8 +111,7 @@ describe("shared feedback", () => {
   test("status panel and badge preserve semantic content", () => {
     render(
       <StatusPanel
-        eyebrow="Snapshot rejected"
-        title="Review unavailable"
+        title="Snapshot rejected: review unavailable"
         description={<p>Invalid analysis payload.</p>}
         tone="danger"
         role="alert"

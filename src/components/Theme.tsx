@@ -3,6 +3,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from "react";
@@ -18,6 +19,7 @@ import {
   type ThemeMode,
   useTheme,
 } from "./theme-context";
+import { resolveSystemTheme, subscribeSystemTheme } from "./theme-system";
 
 export type ThemeProviderProps = {
   children: ReactNode;
@@ -34,7 +36,6 @@ export type ThemeSwitchProps = {
 };
 
 const defaultStorageKey = "dprb-work-theme";
-const systemThemeQuery = "(prefers-color-scheme: dark)";
 
 const themeOptions: readonly SegmentedControlOption<ThemeMode>[] = [
   { value: "system", label: "System" },
@@ -71,9 +72,6 @@ function storedMode(storageKey: string | null, fallback: ThemeMode): ThemeMode {
   }
 }
 
-function systemPrefersDark() {
-  return typeof window !== "undefined" && window.matchMedia(systemThemeQuery).matches;
-}
 
 export function ThemeProvider({
   children,
@@ -81,19 +79,12 @@ export function ThemeProvider({
   storageKey = defaultStorageKey,
 }: ThemeProviderProps) {
   const [mode, setModeState] = useState<ThemeMode>(() => storedMode(storageKey, defaultMode));
-  const [systemDark, setSystemDark] = useState(systemPrefersDark);
-  const resolvedMode: ResolvedThemeMode = mode === "system" ? (systemDark ? "dark" : "light") : mode;
+  const [systemTheme, setSystemTheme] = useState<ResolvedThemeMode>(resolveSystemTheme);
+  const resolvedMode: ResolvedThemeMode = mode === "system" ? systemTheme : mode;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const media = window.matchMedia(systemThemeQuery);
-    const updateSystemTheme = (event: MediaQueryListEvent | MediaQueryList) => setSystemDark(event.matches);
-    updateSystemTheme(media);
-    media.addEventListener("change", updateSystemTheme);
-    return () => media.removeEventListener("change", updateSystemTheme);
-  }, []);
+  useEffect(() => subscribeSystemTheme(setSystemTheme), []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     const previousTheme = root.dataset.theme;

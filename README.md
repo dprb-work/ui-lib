@@ -116,10 +116,12 @@ renderer. Chart tooltips remain chart-owned because Chart.js positions them
 against canvas data coordinates. They use the shared tooltip appearance tokens
 but do not inherit `TooltipProvider` defaults.
 
-`ThemeProvider` resolves `system` against `prefers-color-scheme`, applies the
-resolved `data-theme` and selected `data-theme-mode` to the document root, sets
+`ThemeProvider` resolves `system` against `prefers-color-scheme` with `"dark"`
+as the fallback when no system preference is available, applies the resolved
+`data-theme` and selected `data-theme-mode` to the document root, sets
 `color-scheme`, and owns persistence. Product code must not duplicate that
-lifecycle.
+lifecycle. Storybook follows the same system preference with a dark fallback
+while keeping explicit toolbar theme selections persisted across stories.
 
 Use `Popover` compound parts for non-modal disclosed content. The trigger owns
 its visible or ARIA label, and `PopoverContent` requires `aria-label` or

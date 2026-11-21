@@ -172,13 +172,23 @@ _Avoid_: One animation duration for every behavior.
 
 ## Visual language
 
-- Use the shared neutral background and distinct light or deep-dark content surfaces.
+- Use the shared background, surface, text and state roles for each theme. Dark mode uses its declared roles, not an inversion of light colors.
 - Put ordinary UI text in Inter/system sans and code identifiers in the declared monospace stack.
+- A heading names the content or task once.
+- Supporting text adds scope, a constraint, a consequence, or recovery, not a description of the interface.
+- Frames, badges, and numbers encode a relationship or state.
+- Examples start with the task's content or controls, not a marketing introduction.
+- Give a frame an object to bound. Do not wrap a component or section in a card just to separate it from its neighbors.
+- Group related controls with spacing, not nested decorative cards. Keep labels close to controls and larger gaps between unrelated groups.
+- Use badges for truthful status, category, count or recency. Number content only when order or references matter.
+- Use sentence case, preserving names and acronyms. Keep labels readable instead of using tiny, widely spaced uppercase text for emphasis.
 - Give primary actions one emphasis color; keep status tones and data categories separate.
 - Keep secondary text quieter without using color as the only hierarchy signal.
 - Use underlined fields; keep their labels and actionable error descriptions attached.
 - Let dense technical grids remain local; keep phone-facing targets usable.
 - Give buttons, panels, cards and pills the radii their roles already require.
-- Use borders to show structure and shadows to show actual elevation.
+- Use borders to show structure. Shadows mean actual elevation, as in a dialog or popover; static content does not gain a shadow by default.
 - Describe selection, disclosure, keyboard focus and work in progress as different states.
-- Use brief feedback motion; reserve spatial reveals for content that actually opens or moves.
+- Icons identify a control, object or status. Do not add icons or emoji just for decoration.
+- Do not add decorative gradients or glow to shared controls or examples.
+- Use motion only to explain a state or spatial change. Keep busy indicators and stable placeholders for real waits; do not delay ready content for an entrance animation or loading shimmer.

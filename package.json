@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.29.1",
+  "engines": {
+    "node": "24.22.3"
+  },
   "files": [
     "dist",
     "src/theme.css",
@@ -44,7 +47,8 @@
     "test:storybook": "vitest run --project=storybook",
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
-    "verify": "eslint . && tsc -b && vitest run --project=unit && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && pnpm run build"
+    "check:base-deps": "python3 scripts/check_base_deps.py",
+    "verify": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && pnpm run build"
   },
   "dependencies": {
     "clsx": "^2.1.1",

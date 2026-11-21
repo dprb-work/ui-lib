@@ -1,7 +1,7 @@
 const appChecks = ["verify"];
 const fullPaths = [
   /^\.github\//, /^\.storybook\//,
-  /^(?:package\.json|pnpm-lock\.yaml|eslint\.config\.js|tsconfig(?:\.[^/]+)?\.json|vite\.config\.ts|vitest\.config\.ts)$/,
+  /^(?:\.node-version|package\.json|pnpm-lock\.yaml|eslint\.config\.js|tsconfig(?:\.[^/]+)?\.json|vite\.config\.ts|vitest\.config\.ts)$/,
   /\.ya?ml$/,
 ];
 const knownPaths = [

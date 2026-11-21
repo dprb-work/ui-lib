@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import test from "node:test";
-
+import { fileURLToPath } from "node:url";
 import { aggregateSuccess, plan } from "./ci-plan.mjs";
 
 const appChecks = ["verify"];
@@ -50,9 +53,9 @@ test("known component source and test changes select the existing verify boundar
 });
 
 test("dependency and workflow inputs do not select docs-only work", () => {
-  for (const path of ["pnpm-lock.yaml", ".github/workflows/ci.yml"]) {
+  for (const path of [".node-version", "pnpm-lock.yaml", ".github/workflows/ci.yml"]) {
     const result = plan({ event: "pull_request", draft: false, paths: [path] });
-    assert.notEqual(result.tier, "docs");
+    assert.equal(result.tier, "full");
     assertChecks(result, appChecks);
   }
 });
@@ -99,4 +102,21 @@ test("required aggregate rejects selected failures and stale candidate or base",
   assert.equal(aggregateSuccess([], results, ...revision), false);
   assert.equal(aggregateSuccess(selected, results, "head-1", "head-2", "base-1", "base-1"), false);
   assert.equal(aggregateSuccess(selected, results, "head-1", "head-1", "base-1", "base-2"), false);
+});
+
+test("ui-lib declares Node 24.22.3 and passes base dependency drift check", () => {
+  const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+  const declared = readFileSync(join(repoRoot, ".node-version"), "utf8").trim();
+  assert.equal(declared, "24.22.3");
+  const output = execFileSync("python3", ["scripts/check_base_deps.py"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  assert.match(output, /24\.22\.3/);
+  const drifted = spawnSync(
+    "python3",
+    ["scripts/check_base_deps.py", "--expected-node", "24.19.0"],
+    { cwd: repoRoot, encoding: "utf8" },
+  );
+  assert.notEqual(drifted.status, 0);
 });

@@ -29,16 +29,22 @@ corepack pnpm run dev
 - `MatrixDataTable` owns both its static matrix and opt-in interactive table behavior. Consumers own domain columns, value formatting, surrounding figures and captions, chart pairing, and product workflows. Do not move those concerns into the table or remove the static mode without new evidence.
 - The parent owns layout. Components accept `className` for point-of-use presentation, and conflict-aware Tailwind merging makes consumer classes replace defaults without `!important`.
 - When a consumer exposes a credible shared-component candidate, document the concrete call sites and product-specific residue first. Suggest the hoist; do not perform it without that evidence and explicit scope.
-- Do not add compatibility aliases during extraction. Migrate all consumers in the same change.
+- When removing or extracting an API, inventory and migrate all callers in the same change. Move useful slot content into supported titles or descriptions before deleting the slot. Do not leave an ignored prop or compatibility alias.
 
 ## Styling
 
 - Follow [Styling and composition](README.md#styling-and-composition) for Tailwind versus plain CSS, role tokens, product-local density and consumer overrides.
 - `src/theme.css` is the authored theme entry: shared role values, light/dark overrides and Tailwind token metadata. It imports the raw ramps from `src/palette.css`. `src/styles.css` imports that theme and owns Preflight and runtime component CSS. Do not add a JavaScript theme config or copied token mappings.
 
+## Examples and review
+
+- Show the simplest realistic composition. Use concrete task content and action names rather than marketing copy.
+- For each added visible label or surface, state what new information or relationship it carries. Leave out repeated headings, control labels and ornamental wrappers.
+- Before adding a confirmation or notification to an example, name the risk protected or the change communicated. Keep necessary consent, consequential-action safeguards and recovery.
+
 ## Evidence
 
 - Unit tests cover behavior and accessibility contracts.
 - For UI changes, the pull request must show applicable hover, focus, selected, expanded, press feedback/toggle, disabled, busy and invalid states. Identify inapplicable states rather than inventing them.
-- Storybook examples and browser evidence must cover light and dark themes, a 390px-wide viewport and keyboard operation, including focus return for disclosed content where applicable.
+- Storybook examples and browser evidence must cover light and dark themes, wrapped content at 390px and desktop at 1440px. Compare label/control grouping and section gaps after text wraps. Check keyboard operation, including focus return for disclosed content where applicable.
 - Run the real Storybook in Chromium for visual changes; builds alone do not prove appearance. Documentation-only pull requests need wording and link checks, not new visual claims.

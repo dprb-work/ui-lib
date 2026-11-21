@@ -74,7 +74,7 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "jsdom",
-          exclude: [...configDefaults.exclude, "src/**/*.stories.tsx"],
+          exclude: [...configDefaults.exclude, "src/**/*.stories.tsx", "tests/**"],
           globals: true,
           setupFiles: "./src/test/setup.ts",
         },

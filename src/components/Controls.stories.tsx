@@ -46,7 +46,7 @@ type Story = StoryObj<typeof meta>;
 function Frame({ children, width = "w-auto" }: { children: ReactNode; width?: string }) {
   return (
     <div
-      className={`max-w-full p-6 ${width}`}
+      className={`max-w-[calc(100vw-2rem)] p-6 ${width}`}
     >
       {children}
     </div>

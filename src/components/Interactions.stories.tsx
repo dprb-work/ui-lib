@@ -33,7 +33,7 @@ const unusedArgs = {
 };
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <div className="grid w-full max-w-[34rem] gap-6 p-6">
+    <div className="grid w-[34rem] max-w-[calc(100vw-2rem)] gap-6 p-6">
       {children}
     </div>
   );

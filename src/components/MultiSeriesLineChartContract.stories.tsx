@@ -120,7 +120,7 @@ const meta = {
       const animations = graphTab.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
       await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
     });
-    expectInsideTabFocus(graphTab, normalized(getComputedStyle(scope).getPropertyValue("--color-ui-accent-link").trim()));
+    expectInsideTabFocus(graphTab, normalized(getComputedStyle(scope).getPropertyValue("--color-ui-on-accent").trim()));
 
     const chartCanvas = scope.querySelector<HTMLCanvasElement>("[data-ui-chart] canvas")!;
     const canvasBounds = chartCanvas.getBoundingClientRect();

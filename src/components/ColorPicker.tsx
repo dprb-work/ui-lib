@@ -67,15 +67,17 @@ export function ColorPicker({
   const [format, setFormat] = useState<ColorFormat>(hexColorFormat);
   const color = hexColorFormat.parse(value) ?? black;
   const [draft, setDraft] = useState(() => format.format(color));
-  // The value the draft stands for. A typed entry keeps its spelling until the value changes elsewhere.
-  const [draftValue, setDraftValue] = useState(value);
+  // `seenValue` is the last `value` prop; `emittedValue` is the color this draft last reported.
+  // A typed entry keeps its spelling until `value` changes to something the draft did not report.
+  const [seenValue, setSeenValue] = useState(value);
+  const [emittedValue, setEmittedValue] = useState<string | null>(null);
   const nameId = useId();
   const errorId = useId();
   const draftIsValid = format.parse(draft) !== undefined;
 
-  if (value !== draftValue) {
-    setDraftValue(value);
-    setDraft(format.format(color));
+  if (value !== seenValue) {
+    setSeenValue(value);
+    if (value !== emittedValue) setDraft(format.format(color));
   }
 
   const handleDraftChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +85,7 @@ export function ColorPicker({
     const parsed = format.parse(event.target.value);
     if (!parsed) return;
     const next = toHexColor(parsed);
-    setDraftValue(next);
+    setEmittedValue(next);
     if (next !== value) onValueChange(next);
   };
 
@@ -91,7 +93,7 @@ export function ColorPicker({
     const next = colorFormats.find((entry) => entry.id === event.target.value) ?? hexColorFormat;
     setFormat(next);
     setDraft(next.format(color));
-    setDraftValue(value);
+    setEmittedValue(null);
   };
 
   return (

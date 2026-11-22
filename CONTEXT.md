@@ -108,7 +108,7 @@ The shared controls implement this confirmed direction. Compare the interactive
 light and dark examples in the catalog's **Foundations / States** story.
 
 - **Color says what it is:** selected or on uses the accent; status uses its role color.
-- **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on. An outlined danger button is the exception: hover and press fill it with solid danger. Open option lists highlight the active option with a neutral tint, not the accent.
+- **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on. An outlined danger button is the exception: hover and press fill it with solid danger. Open option lists highlight the active option with a neutral tint, not the accent, and mark keyboard focus with a thin neutral inside edge.
 - **Shape says where the keyboard is:** focus has no floating offset ring. Fields get a 2px accent underline and faint tint. Buttons get a 2px border inside the edge, using the on-accent color on filled buttons. Icon-only buttons get a small tinted plate behind the icon, leaving the icon's color free to mean on.
 - **Disabled is faded. Busy has a spinner, not fading. Invalid colors only the field's underline, in danger.** Whether an explanation appears below it is the application's choice.
 

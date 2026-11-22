@@ -322,7 +322,8 @@ field's paint. Pass `error` to show an explanation, or only `aria-invalid`
 
 Open option lists (`SelectInput`, and `NativeSelect` where the browser supports
 `appearance: base-select`) inset their options by 4px and round them. The
-option under the pointer or keyboard takes a neutral highlight, not the accent.
+option under the pointer or keyboard takes a neutral highlight, not the accent;
+keyboard focus adds a thin neutral inside edge.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout

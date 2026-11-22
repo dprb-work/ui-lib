@@ -31,7 +31,7 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border-transparent bg-transparent text-ui-muted-foreground hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
   // Outlined at rest; hover and press fill with solid danger and switch to on-danger ink.
   danger:
-    "border-ui-danger-ink bg-transparent text-ui-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover hover:text-ui-on-danger active:border-ui-danger-press-fill active:bg-ui-danger-press-fill active:text-ui-on-danger focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-danger-ink)] hover:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)]",
+    "border-ui-danger-ink bg-transparent text-ui-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover hover:text-ui-on-danger active:border-ui-danger-press-fill active:bg-ui-danger-press-fill active:text-ui-on-danger focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-danger-ink)] hover:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)] active:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)]",
 };
 
 // A pressed secondary toggle keeps ordinary ink on an accent-tinted fill with an accent edge,
@@ -65,6 +65,8 @@ export function Button({
         sizeClasses[size],
         toggleOn ? toggleOnClasses : variantClasses[variant],
         iconOnly && variant !== "primary" && "focus-visible:border-ui-accent-link focus-visible:bg-ui-press-fill focus-visible:shadow-none",
+        // The icon plate must not replace the solid red that carries on-danger ink.
+        iconOnly && variant === "danger" && "hover:focus-visible:border-ui-on-danger hover:focus-visible:bg-ui-danger-hover active:focus-visible:border-ui-on-danger active:focus-visible:bg-ui-danger-press-fill",
         selected && (variant === "ghost" || (iconOnly && variant !== "primary")) && "text-ui-accent",
         className,
       )}

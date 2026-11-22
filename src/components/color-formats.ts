@@ -74,7 +74,9 @@ function fromLinear(value: number): number {
 }
 
 function parseNumber(text: string): number | undefined {
-  return numberPattern.test(text) ? Number(text) : undefined;
+  // A long enough digit string parses to Infinity, which the color math would turn into NaN channels.
+  const value = numberPattern.test(text) ? Number(text) : Number.NaN;
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function parsePercent(text: string): number | undefined {

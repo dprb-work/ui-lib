@@ -263,9 +263,9 @@ export function SelectInput({
                   key={option.value}
                   value={option.value}
                   disabled={option.disabled}
-                  // The neutral highlight alone marks the active option for pointer and keyboard, as in the
-                  // native picker; Radix focuses options on pointer move, so an accent edge would follow the pointer.
-                  className="relative flex h-7 cursor-default select-none items-center rounded-md px-7 pr-2 [font-family:inherit] text-xs outline-hidden [--ui-feedback-tint:var(--color-ui-foreground)] [--ui-control-fill:var(--color-ui-surface)] data-[disabled]:opacity-50 data-[highlighted]:bg-ui-hover-fill data-[highlighted]:text-ui-foreground data-[highlighted]:active:bg-ui-press-fill"
+                  // A neutral fill and a thin neutral inside edge mark the active option, as in the native picker.
+                  // Radix focuses options on pointer move, so an accent edge would follow the pointer.
+                  className="relative flex h-7 cursor-default select-none items-center rounded-md px-7 pr-2 [font-family:inherit] text-xs outline-hidden [--ui-feedback-tint:var(--color-ui-foreground)] [--ui-control-fill:var(--color-ui-surface)] data-[disabled]:opacity-50 data-[highlighted]:bg-ui-hover-fill data-[highlighted]:text-ui-foreground data-[highlighted]:active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_1px_var(--color-ui-muted-foreground)]"
                 >
                   <Select.ItemIndicator className="absolute left-2 inline-flex items-center">
                     <Check aria-hidden="true" className="size-3" strokeWidth={2.5} />

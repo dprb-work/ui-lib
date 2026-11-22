@@ -45,6 +45,7 @@
     "lint": "eslint .",
     "test": "vitest run --project=unit",
     "test:storybook": "vitest run --project=storybook",
+    "test:visual": "playwright test",
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
     "check:base-deps": "python3 scripts/check_base_deps.py",

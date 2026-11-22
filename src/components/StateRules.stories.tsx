@@ -19,6 +19,7 @@ import { Tabs } from "./Interactions";
 import { NativeSelect } from "./NativeSelect";
 import paletteMeta, { Danger as dangerStory } from "./Palette.stories";
 import { PortalProvider } from "./portal-context";
+import statesMeta, { SharedControls as sharedControlsStory } from "./States.stories";
 import { SegmentedControl } from "./SegmentedControl";
 
 const themes = ["light", "dark"] as const;
@@ -33,6 +34,7 @@ function SelectionProbe() {
   const [segment, setSegment] = useState("one");
   return (
     <>
+      <Button>Primary control</Button>
       <Button variant="secondary" aria-pressed={pressed} onClick={() => setPressed(!pressed)}>Toggle choice</Button>
       <IconButton label="Selected icon" aria-pressed={pressed} onClick={() => setPressed(!pressed)} tooltip={false}><Search aria-hidden="true" /></IconButton>
       <Tabs ariaLabel="State tabs" value={tab} onValueChange={setTab} tabs={options.map((option) => ({ value: option.value, label: `Tab ${option.label}` }))}>
@@ -89,7 +91,7 @@ function Fields({ theme, invalid = false }: { theme: Theme; invalid?: boolean })
   );
 }
 
-function StateProbe({ theme, kind }: { theme: Theme; kind: "buttons" | "fields" | "invalid" | "availability" | "selection" | "composer" | "overrides" | "textarea" }) {
+function StateProbe({ theme, kind }: { theme: Theme; kind: "buttons" | "fields" | "invalid" | "invalid-no-message" | "availability" | "selection" | "composer" | "overrides" | "textarea" }) {
   return (
     <section data-theme={theme} aria-label={`${theme} state rules`} className="grid w-[390px] max-w-full gap-4 bg-ui-background p-4 text-sm text-ui-foreground">
       <h2>{theme} state rules</h2>
@@ -103,6 +105,13 @@ function StateProbe({ theme, kind }: { theme: Theme; kind: "buttons" | "fields" 
         <IconButton label="Selected icon" aria-pressed="true" tooltip={false}><Search aria-hidden="true" /></IconButton>
       </>}
       {(kind === "fields" || kind === "invalid") && <Fields theme={theme} invalid={kind === "invalid"} />}
+      {kind === "invalid-no-message" && <>
+        <TextInput aria-label="Invalid Text" aria-invalid="true" defaultValue="Draft" />
+        <NumberInput aria-label="Invalid Number" aria-invalid="true" defaultValue={2} />
+        <TextareaInput aria-label="Invalid Textarea" aria-invalid="true" defaultValue="Draft notes" />
+        <NativeSelect aria-label="Invalid Native select" aria-invalid="true" defaultValue="one"><option value="one">One</option></NativeSelect>
+        <SelectInput label="Invalid Select" invalid defaultValue="one" options={options} />
+      </>}
       {kind === "availability" && <>
         <Button>Available action</Button>
         <Button disabled>Disabled action</Button>
@@ -289,10 +298,10 @@ export const ButtonFocus: Story = {
       for (const name of ["Primary action", "Secondary action", "Danger action", "Selected action"]) {
         const button = canvas.getByRole("button", { name });
         await keyboardFocus(button);
-        expectInsideEdge(button, name === "Primary action" || name === "Selected action" ? role(button, "on-accent") : undefined);
+        expectInsideEdge(button, name === "Primary action" ? role(button, "on-accent") : undefined);
         if (name === "Danger action") expect(paint(button, "color")).toBe(role(button, "danger-ink"));
         if (name === "Selected action") {
-          expect(paint(button)).toBe(role(button, "accent"));
+          expectAccent(color(getComputedStyle(button).borderColor), button);
           expect(paint(button, "color")).toBe(role(button, "on-accent"));
         }
       }
@@ -365,11 +374,92 @@ export const InvalidFocus: Story = {
         await expect(input).toHaveAccessibleDescription(errorWords);
         expect(getComputedStyle(input).borderBottomWidth).toBe("2px");
         expect([role(input, "danger"), role(input, "danger-ink")]).toContain(paint(input, "borderBottomColor"));
-        expect(paint(input, "color")).toBe(role(input, "danger-ink"));
         expectNoOutsideRing(input);
         const descriptions = (input.getAttribute("aria-describedby") ?? "").split(/\s+/).map((id) => document.getElementById(id));
         expect(descriptions.some((description) => description?.textContent === errorWords)).toBe(true);
         for (const description of descriptions) if (description?.textContent === errorWords) await expect(description).toBeVisible();
+      }
+    }
+  },
+};
+
+async function checkFieldGeometry(canvasElement: HTMLElement, width: number) {
+  await browser(width);
+  const scopeList = themes.map((theme) => within(canvasElement).getByRole("region", { name: `${theme} geometry fields` }));
+  for (const scope of scopeList) {
+    await within(scope).getByTestId("pointer-parking").focus();
+    for (const name of fieldNames) {
+      const input = field(scope, name);
+      const rest = getComputedStyle(input);
+      const restRadii = [rest.borderTopLeftRadius, rest.borderTopRightRadius, rest.borderBottomLeftRadius, rest.borderBottomRightRadius];
+      expect(restRadii[0]).toBe(restRadii[1]);
+      expect(Number.parseFloat(restRadii[0]!)).toBeGreaterThanOrEqual(4);
+      expect([restRadii[2], restRadii[3]]).toEqual(["0px", "0px"]);
+      expect(rest.fontSize, `${name} font size`).toBe("14px");
+      expect(Number.parseFloat(rest.paddingBottom), `${name} line spacing`).toBeLessThanOrEqual(2);
+      if (name !== "Textarea") {
+        expect(input.getBoundingClientRect().height, `${name} border-box height`).toBe(28);
+        const contentHeight = input.getBoundingClientRect().height
+          - Number.parseFloat(rest.paddingTop) - Number.parseFloat(rest.paddingBottom)
+          - Number.parseFloat(rest.borderTopWidth) - Number.parseFloat(rest.borderBottomWidth);
+        expect(contentHeight, `${name} content box matches its line height`).toBe(Number.parseFloat(rest.lineHeight));
+      }
+      await keyboardFocus(input);
+      const focused = getComputedStyle(input);
+      expect([focused.borderTopLeftRadius, focused.borderTopRightRadius, focused.borderBottomLeftRadius, focused.borderBottomRightRadius]).toEqual(restRadii);
+      expectNoOutsideRing(input);
+      input.blur();
+    }
+    for (const [name, control] of [
+      ["Native compact", within(scope).getByRole("combobox", { name: "Compact native select" })],
+      ["Select compact", within(scope).getByRole("combobox", { name: "Compact select" })],
+    ] as const) {
+      expect(control.getBoundingClientRect().height, `${name} is no taller than standard`).toBeLessThanOrEqual(28);
+    }
+    for (const name of ["Default growing notes", "Subtle growing notes"]) {
+      const textarea = within(scope).getByRole("textbox", { name });
+      expect(getComputedStyle(textarea).resize).toBe("none");
+      expect(Number.parseFloat(getComputedStyle(textarea).paddingBottom)).toBeLessThanOrEqual(2);
+    }
+  }
+}
+
+function GeometryFields({ theme }: { theme: Theme }) {
+  return <section data-theme={theme} aria-label={`${theme} geometry fields`} className="grid w-full gap-2 bg-ui-background p-4 text-sm text-ui-foreground">
+    <button type="button" data-testid="pointer-parking">Geometry start</button>
+    <TextInput aria-label="Text" defaultValue="Draft" />
+    <NumberInput aria-label="Number" defaultValue={2} />
+    <TextareaInput aria-label="Textarea" defaultValue="Draft notes" />
+    <NativeSelect aria-label="Native select" defaultValue="one"><option value="one">One</option></NativeSelect>
+    <NativeSelect aria-label="Compact native select" density="compact" defaultValue="one"><option value="one">One</option></NativeSelect>
+    <SelectInput label="Select" defaultValue="one" options={options} />
+    <SelectInput label="Compact select" density="compact" defaultValue="one" options={options} />
+    <TextareaInput aria-label="Default growing notes" defaultValue="Short note" />
+    <TextareaInput aria-label="Subtle growing notes" appearance="subtle" defaultValue="Short note" />
+  </section>;
+}
+
+export const FieldGeometry390: Story = {
+  render: () => <>{themes.map((theme) => <GeometryFields key={theme} theme={theme} />)}</>,
+  play: async ({ canvasElement }) => checkFieldGeometry(canvasElement, 390),
+};
+
+export const FieldGeometry1440: Story = {
+  ...FieldGeometry390,
+  play: async ({ canvasElement }) => checkFieldGeometry(canvasElement, 1440),
+};
+
+export const InvalidWithoutMessage: Story = {
+  render: () => <BothThemes kind="invalid-no-message" />,
+  play: async ({ canvasElement }) => {
+    await browser();
+    for (const scope of scopes(canvasElement)) {
+      for (const name of fieldNames) {
+        const input = field(scope, `Invalid ${name}`);
+        await expect(input).toHaveAttribute("aria-invalid", "true");
+        expect([role(input, "danger"), role(input, "danger-ink")]).toContain(paint(input, "borderBottomColor"));
+        expect(within(scope).queryByText(errorWords)).not.toBeInTheDocument();
+        await expect(input).not.toHaveAccessibleDescription();
       }
     }
   },
@@ -430,36 +520,36 @@ export const PersistentSelection: Story = {
       for (const control of [canvas.getByRole("button", { name: "Selected icon" }), canvas.getByRole("tab", { name: "Tab One" }), canvas.getByRole("button", { name: "Segment One" })]) {
         await userEvent.hover(canvas.getByTestId("pointer-parking"));
         await keyboardFocus(control);
-        expectSelectionInk(control);
+        expectPersistentSelectionInk(control);
         expectNoOutsideRing(control);
         await userEvent.hover(control);
         await settled(control);
-        expectSelectionInk(control);
+        expectPersistentSelectionInk(control);
         await userEvent.hover(canvas.getByTestId("pointer-parking"));
         await settled(control);
-        expectSelectionInk(control);
+        expectPersistentSelectionInk(control);
       }
       await expect(toggle).toHaveAttribute("aria-pressed", "true");
       await keyboardFocus(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
+      const toggleSize = toggle.getBoundingClientRect();
+      const toggleOn = paintedBackground(toggle, scope);
+      const primary = canvas.getByRole("button", { name: "Primary control" });
+      expect(distance(toggleOn, paintedBackground(primary, scope))).toBeGreaterThan(20);
+      expect(distance(toggleOn, rgba(role(toggle, "accent")))).toBeGreaterThan(20);
       expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-      expectInsideEdge(toggle, role(toggle, "on-accent"));
-      await userEvent.hover(toggle);
-      await settled(toggle);
-      expectAccent(paint(toggle), toggle);
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-      await userEvent.hover(canvas.getByTestId("pointer-parking"));
-      await settled(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
+      expect(contrast(rgba(paint(toggle, "color")), toggleOn)).toBeGreaterThanOrEqual(4.5);
+      expectAccent(color(getComputedStyle(toggle).borderColor), toggle);
+      expectInsideEdge(toggle);
       await userEvent.keyboard(" ");
       await expect(toggle).toHaveAttribute("aria-pressed", "false");
-      await settled(toggle);
-      expect(paint(toggle, "color")).not.toBe(role(toggle, "accent-link"));
+      const toggleOff = paintedBackground(toggle, scope);
+      expect(distance(toggleOn, toggleOff)).toBeGreaterThan(20);
+      expect(toggle.getBoundingClientRect().width).toBe(toggleSize.width);
+      expect(toggle.getBoundingClientRect().height).toBe(toggleSize.height);
       await userEvent.keyboard(" ");
       await expect(toggle).toHaveAttribute("aria-pressed", "true");
-      await settled(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
+      expect(toggle.getBoundingClientRect().width).toBe(toggleSize.width);
+      expect(toggle.getBoundingClientRect().height).toBe(toggleSize.height);
 
       const firstTab = canvas.getByRole("tab", { name: "Tab One" });
       await keyboardFocus(firstTab);
@@ -477,7 +567,15 @@ export const PersistentSelection: Story = {
       await expect(nextSegment).toHaveAttribute("aria-pressed", "true");
       await expect(nextSegment).toHaveFocus();
       await settled(nextSegment);
-      expectAccent(paint(nextSegment, "color"), nextSegment);
+      expectSelectionInk(nextSegment);
+      const segmentTrack = canvas.getByRole("group", { name: "State segments" });
+      const segmentIndicator = Array.from(segmentTrack.children).find((child) => child.getAttribute("role") !== "button") as HTMLElement | undefined;
+      expect(segmentIndicator).toBeDefined();
+      expect(paint(segmentIndicator!)).toBe(role(nextSegment, "accent"));
+      const selectedSegmentRect = nextSegment.getBoundingClientRect();
+      const indicatorRect = segmentIndicator!.getBoundingClientRect();
+      expect(Math.abs(indicatorRect.left - selectedSegmentRect.left)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(indicatorRect.width - selectedSegmentRect.width)).toBeLessThanOrEqual(0.5);
 
       for (const control of [canvas.getByRole("checkbox", { name: "Checked choice" }), canvas.getByRole("switch", { name: "Enabled choice" })]) {
         await keyboardFocus(control);
@@ -699,6 +797,15 @@ function expectTint(element: HTMLElement, scope: HTMLElement, percentage: number
   expect(distance(paintedBackground(element, scope), expected), `${percentage}% accent tint over its actual base`).toBeLessThanOrEqual(2);
 }
 
+function expectTintOverBase(element: HTMLElement, percentage: number, base: number[]) {
+  const scope = element.closest<HTMLElement>("[data-theme]");
+  if (!scope) throw new Error("Selected fill must belong to a painted theme scope");
+  const accent = rgba(getComputedStyle(scope).getPropertyValue("--color-ui-accent"));
+  const expected = base.slice(0, 3).map((channel, index) => Math.round(channel * (1 - percentage / 100) + accent[index]! * percentage / 100)).concat(255);
+  const actual = composite(rgba(getComputedStyle(element).backgroundColor), base);
+  expect(distance(actual, expected), `${percentage}% accent tint over selected fill`).toBeLessThanOrEqual(2);
+}
+
 export const SubtleTextareaGrowth: Story = {
   render: () => <BothThemes kind="textarea" />,
   play: async ({ canvasElement }) => {
@@ -775,7 +882,7 @@ export const SelectionTrackFeedback: Story = {
         await userEvent.hover(canvas.getByTestId("pointer-parking"));
         await settled(control);
         const trackPaint = paintedBackground(track, scope);
-        const selectedSurface = rgba(getComputedStyle(scope).getPropertyValue("--color-ui-surface"));
+        const selectedSurface = rgba(role(control, "accent"));
         await userEvent.hover(control);
         await settled(control);
         const hovered = paintedBackground(control, scope);
@@ -784,7 +891,7 @@ export const SelectionTrackFeedback: Story = {
         expect(distance(hovered, trackPaint), "Unselected hover must be visible against the actual muted track").toBeGreaterThan(2);
         expect(contrast(hovered, trackPaint), "Track feedback stays faint").toBeLessThan(1.7);
         if (scope.dataset.theme === "dark") {
-          expect(distance(hovered, selectedSurface), "Unselected hover must move away from the selected surface, not impersonate it").toBeGreaterThan(distance(trackPaint, selectedSurface));
+          expect(distance(hovered, selectedSurface), "Unselected hover must remain distinguishable from the selected accent").toBeGreaterThan(distance(trackPaint, selectedSurface));
         }
         const point = topLevelPoint(control);
         await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
@@ -796,17 +903,17 @@ export const SelectionTrackFeedback: Story = {
           const pressBase = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true" ? selectedSurface : trackPaint;
           const pressed = composite(rgba(getComputedStyle(control).backgroundColor), pressBase);
           expect(distance(pressed, trackPaint), "Held press strengthens actual track feedback").toBeGreaterThan(distance(hovered, trackPaint) + 1);
-          expectTint(control, scope, 16, pressBase);
+          expectTintOverBase(control, 16, pressBase);
           expectSelectionInk(within(tabList).getByRole("tab", { selected: true }));
-          expectAccent(paint(within(segments).getByRole("button", { pressed: true }), "color"), segments);
+          expectSelectionInk(within(segments).getByRole("button", { pressed: true }));
         } finally {
           await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
         }
         await settled(track);
         const releasedBase = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true" ? selectedSurface : trackPaint;
-        expectTint(control, scope, 8, releasedBase);
+        expectTintOverBase(control, 8, releasedBase);
         expectSelectionInk(within(tabList).getByRole("tab", { selected: true }));
-        expectAccent(paint(within(segments).getByRole("button", { pressed: true }), "color"), segments);
+        expectSelectionInk(within(segments).getByRole("button", { pressed: true }));
       }
     }
   },
@@ -903,6 +1010,7 @@ function expectTabsPresentation(scope: HTMLElement) {
   expect(Number(selectedStyle.fontWeight), "Selected tab remains bold").toBeGreaterThanOrEqual(600);
   expect(Number(selectedStyle.fontWeight), "Selection remains typographically distinct").toBeGreaterThan(Number(getComputedStyle(inactive).fontWeight));
   expectSelectionInk(selected);
+  expect(paint(inactive, "color")).toBe(role(inactive, "muted-foreground"));
 
   // Account for the existing moving selected plate as well as a direct trigger fill.
   // Geometry, not a CSS class or a private indicator attribute, identifies painted layers.
@@ -922,7 +1030,7 @@ function expectTabsPresentation(scope: HTMLElement) {
     expect(rect.width >= selectedRect.width / 2 && rect.height <= 3, "Do not retain a separate selected underline").toBe(false);
   }
   selectedPaint = composite(rgba(selectedStyle.backgroundColor), selectedPaint);
-  expect(selectedPaint.join(","), "Keep the selected surface fill").toBe(role(selected, "surface"));
+  expect(selectedPaint.join(","), "Selected tab indicator uses accent fill").toBe(role(selected, "accent"));
   expect(selectedPaint).not.toEqual(paintedBackground(list, scope));
   for (const tab of tabs) {
     const style = getComputedStyle(tab);
@@ -980,13 +1088,18 @@ export const GraphDataTabs1440: Story = {
 };
 
 function expectSelectionInk(control: HTMLElement) {
-  // Owner correction: Graph/Data tabs retain neutral labels, fill and bold.
-  // Other persistent choices continue to use accent ink.
-  if (control.getAttribute("role") === "tab") {
-    expect(paint(control, "color")).toBe(role(control, "foreground"));
-  } else {
-    expectAccent(paint(control, "color"), control);
+  expect(paint(control, "color")).toBe(role(control, "on-accent"));
+  expect(contrast(rgba(paint(control, "color")), rgba(role(control, "accent")))).toBeGreaterThanOrEqual(4.5);
+}
+
+function expectPersistentSelectionInk(control: HTMLElement) {
+  if (control.getAttribute("role") === "tab" || control.parentElement?.getAttribute("role") === "group") {
+    expectSelectionInk(control);
+    return;
   }
+  const icon = control.querySelector("svg");
+  expect(icon).not.toBeNull();
+  expectAccent(paint(icon!, "color"), control);
 }
 
 function CalendarStateProbe({ theme }: { theme: Theme }) {
@@ -1415,4 +1528,267 @@ export const FilledDangerLight: Story = {
 export const FilledDangerDark: Story = {
   ...FilledDangerLight,
   args: { theme: "dark" },
+};
+function expectKnobCentered(knob: HTMLElement, track: HTMLElement, tolerancePx: number) {
+  const knobRect = knob.getBoundingClientRect();
+  const trackRect = track.getBoundingClientRect();
+  const painted = { left: knobRect.left, right: knobRect.right, top: knobRect.top, bottom: knobRect.bottom };
+  for (const shadow of shadows(getComputedStyle(knob))) {
+    if (shadow.includes("inset")) continue;
+    const ink = shadow.match(/(?:rgba?|oklch|oklab|color|hsl|lab|lch)\([^)]*\)/)?.[0];
+    if (!ink || rgba(ink)[3] === 0) continue;
+    const [offsetX = 0, offsetY = 0, blur = 0, spread = 0] = shadowLengths(shadow);
+    painted.left = Math.min(painted.left, knobRect.left + offsetX - blur - spread);
+    painted.right = Math.max(painted.right, knobRect.right + offsetX + blur + spread);
+    painted.top = Math.min(painted.top, knobRect.top + offsetY - blur - spread);
+    painted.bottom = Math.max(painted.bottom, knobRect.bottom + offsetY + blur + spread);
+  }
+  const paintedCenterY = (painted.top + painted.bottom) / 2;
+  const trackCenterY = (trackRect.top + trackRect.bottom) / 2;
+  expect(Math.abs(paintedCenterY - trackCenterY), "Switch knob is centered on the cross axis").toBeLessThanOrEqual(tolerancePx);
+  const crossAxisGap = (trackRect.height - (painted.bottom - painted.top)) / 2;
+  const mainAxisGap = Math.min(painted.left - trackRect.left, trackRect.right - painted.right);
+  expect(Math.abs(mainAxisGap - crossAxisGap), "Switch knob is concentric with the nearer rounded track end").toBeLessThanOrEqual(tolerancePx);
+}
+
+async function checkSwitchKnobCentered(canvasElement: HTMLElement, width: number) {
+  await browser(width);
+  for (const scope of scopes(canvasElement)) {
+    const canvas = within(scope);
+    for (const [name, checked] of [["Inactive choice", false], ["Enabled choice", true]] as const) {
+      const control = canvas.getByRole("switch", { name });
+      await expect(control).toHaveAttribute("aria-checked", String(checked));
+      await settled(control);
+      expectKnobCentered(control.firstElementChild as HTMLElement, control, 0.5);
+    }
+  }
+}
+
+export const SwitchKnobCentered390: Story = {
+  render: () => <BothThemes kind="selection" />,
+  play: async ({ canvasElement }) => checkSwitchKnobCentered(canvasElement, 390),
+};
+
+export const SwitchKnobCentered1440: Story = {
+  ...SwitchKnobCentered390,
+  play: async ({ canvasElement }) => checkSwitchKnobCentered(canvasElement, 1440),
+};
+
+function tabIndicator(list: HTMLElement, trigger: HTMLElement) {
+  const target = trigger.getBoundingClientRect();
+  return Array.from(list.children).find((child) => {
+    if (child.getAttribute("role") === "tab") return false;
+    const rect = child.getBoundingClientRect();
+    return rect.width > 0 && rect.height >= target.height - 2;
+  }) as HTMLElement | undefined;
+}
+
+async function animationFrame() {
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function sampleTabTransition(trigger: HTMLElement, indicator: HTMLElement, previousLeft: number | null) {
+  let lastLeft = previousLeft;
+  for (let frame = 0; frame < 16; frame += 1) {
+    await animationFrame();
+    const backgroundAlpha = rgba(getComputedStyle(trigger).backgroundColor)[3]! / 255;
+    expect(backgroundAlpha, "Trigger fill must not obscure the moving selected indicator").toBeLessThanOrEqual(0.25);
+    const currentLeft = indicator.getBoundingClientRect().left;
+    if (lastLeft !== null) expect(currentLeft + 0.5, "Selected indicator moves monotonically toward the destination").toBeGreaterThanOrEqual(lastLeft);
+    lastLeft = currentLeft;
+  }
+  return lastLeft;
+}
+
+function SegmentSwitchProbe({ theme }: { theme: Theme }) {
+  const [value, setValue] = useState("one");
+  return <section data-theme={theme} aria-label={`${theme} segment animation`} className="w-full bg-ui-background p-4 text-sm text-ui-foreground">
+    <SegmentedControl
+      ariaLabel={`${theme} segment animation`}
+      value={value}
+      onValueChange={setValue}
+      options={[{ value: "one", label: "Segment One" }, { value: "two", label: "Segment Two" }]}
+    />
+  </section>;
+}
+
+export const TabSwitchFeedback: Story = {
+  render: () => <TabsLayoutProbe />,
+  play: async ({ canvasElement }) => {
+    const { cdp, userEvent } = await browser();
+    const session = cdp();
+    for (const theme of themes) {
+      const scope = within(canvasElement).getByRole("region", { name: `${theme} graph and data` });
+      const canvas = within(scope);
+      const list = canvas.getByRole("tablist", { name: "Graph and data" });
+      const graph = within(list).getByRole("tab", { name: "Graph" });
+      const data = within(list).getByRole("tab", { name: "Data" });
+      const indicator = tabIndicator(list, graph);
+      expect(indicator).toBeDefined();
+      await userEvent.hover(data);
+      await sampleTabTransition(data, indicator!, null);
+      const point = topLevelPoint(data);
+      await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
+      let lastLeft: number | null = indicator!.getBoundingClientRect().left;
+      try {
+        lastLeft = await sampleTabTransition(data, indicator!, lastLeft);
+      } finally {
+        await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
+      }
+      await expect(data).toHaveAttribute("aria-selected", "true");
+      await sampleTabTransition(data, indicator!, lastLeft);
+      const finalIndicator = indicator!.getBoundingClientRect();
+      const selected = data.getBoundingClientRect();
+      expect(Math.abs(finalIndicator.left - selected.left)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(finalIndicator.width - selected.width)).toBeLessThanOrEqual(0.5);
+    }
+  },
+};
+
+export const SegmentSwitchFeedback: Story = {
+  render: () => <>{themes.map((theme) => <SegmentSwitchProbe key={theme} theme={theme} />)}</>,
+  play: async ({ canvasElement }) => {
+    const { cdp, userEvent } = await browser();
+    const session = cdp();
+    for (const theme of themes) {
+      const scope = within(canvasElement).getByRole("region", { name: `${theme} segment animation` });
+      const track = within(scope).getByRole("group", { name: `${theme} segment animation` });
+      const first = within(track).getByRole("button", { name: "Segment One" });
+      const destination = within(track).getByRole("button", { name: "Segment Two" });
+      const indicator = tabIndicator(track, first);
+      expect(indicator).toBeDefined();
+      await userEvent.hover(destination);
+      await sampleTabTransition(destination, indicator!, null);
+      const point = topLevelPoint(destination);
+      await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
+      let lastLeft: number | null = indicator!.getBoundingClientRect().left;
+      try {
+        lastLeft = await sampleTabTransition(destination, indicator!, lastLeft);
+      } finally {
+        await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
+      }
+      await expect(destination).toHaveAttribute("aria-pressed", "true");
+      await sampleTabTransition(destination, indicator!, lastLeft);
+      const finalIndicator = indicator!.getBoundingClientRect();
+      const selected = destination.getBoundingClientRect();
+      expect(Math.abs(finalIndicator.left - selected.left)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(finalIndicator.width - selected.width)).toBeLessThanOrEqual(0.5);
+    }
+  },
+};
+
+const SharedControls = composeStory(sharedControlsStory, statesMeta);
+
+export const PortaledColorPickerThemes: Story = {
+  render: () => <SharedControls />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const theme of themes) {
+      const scope = within(canvasElement).getByRole("region", { name: `${theme} shared control states` });
+      const trigger = within(scope).getByRole("button", { name: `${theme} data color 1` });
+      await userEvent.click(trigger);
+      const picker = await within(document.body).findByRole("dialog");
+      expect(paint(picker)).toBe(role(scope, "surface"));
+      expect(paint(picker, "color")).toBe(role(scope, "surface-foreground"));
+      await userEvent.keyboard("{Escape}");
+    }
+  },
+};
+
+export const PortaledSelectThemes: Story = {
+  render: () => <SharedControls />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const theme of themes) {
+      const scope = within(canvasElement).getByRole("region", { name: `${theme} shared control states` });
+      const select = within(scope).getByRole("combobox", { name: "Shared choice" });
+      await userEvent.click(select);
+      const listbox = await within(document.body).findByRole("listbox");
+      expect(paint(listbox)).toBe(role(scope, "surface"));
+      expect(paint(listbox, "color")).toBe(role(scope, "surface-foreground"));
+      await userEvent.keyboard("{Escape}");
+    }
+  },
+};
+function InvalidComparisonProbe({ theme }: { theme: Theme }) {
+  return <section data-theme={theme} aria-label={`${theme} invalid comparison`} className="grid w-full gap-3 bg-ui-background p-4 text-sm text-ui-foreground">
+    <button type="button" data-testid="pointer-parking">Invalid comparison start</button>
+    <Fields theme={theme} />
+    <Fields theme={theme} invalid />
+  </section>;
+}
+
+export const InvalidFieldStateComparison: Story = {
+  render: () => <>{themes.map((theme) => <InvalidComparisonProbe key={theme} theme={theme} />)}</>,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const theme of themes) {
+      const scope = within(canvasElement).getByRole("region", { name: `${theme} invalid comparison` });
+      const canvas = within(scope);
+      await userEvent.hover(canvas.getByTestId("pointer-parking"));
+      for (const name of fieldNames) {
+        const valid = field(scope, name);
+        const invalid = field(scope, `Invalid ${name}`);
+        const expectMatchingState = (state: string, validBackground: number[], invalidBackground: number[]) => {
+          expect(distance(invalidBackground, validBackground), `${name} ${state} background remains unchanged when invalid`).toBeLessThanOrEqual(2);
+          expect(paint(invalid, "color"), `${name} ${state} text keeps normal ink`).toBe(paint(valid, "color"));
+          expect([role(invalid, "danger"), role(invalid, "danger-ink")], `${name} ${state} underline uses danger`).toContain(paint(invalid, "borderBottomColor"));
+        };
+        expectMatchingState("rest", paintedBackground(valid, scope), paintedBackground(invalid, scope));
+        await userEvent.hover(valid);
+        await settled(valid);
+        const validHover = paintedBackground(valid, scope);
+        await userEvent.hover(invalid);
+        await settled(invalid);
+        expectMatchingState("hover", validHover, paintedBackground(invalid, scope));
+        await keyboardFocus(valid);
+        const validFocus = paintedBackground(valid, scope);
+        await keyboardFocus(invalid);
+        expectMatchingState("focus", validFocus, paintedBackground(invalid, scope));
+      }
+    }
+  },
+};
+
+function SegmentGeometryProbe({ theme }: { theme: Theme }) {
+  const [value, setValue] = useState("one");
+  return <section data-theme={theme} aria-label={`${theme} segment geometry`} className="w-full bg-ui-background p-4 text-sm text-ui-foreground">
+    <SegmentedControl
+      ariaLabel={`${theme} segment geometry`}
+      value={value}
+      onValueChange={setValue}
+      options={[{ value: "one", label: "Segment One" }, { value: "two", label: "Segment Two" }]}
+    />
+  </section>;
+}
+
+async function checkSegmentedGeometry(canvasElement: HTMLElement, width: number) {
+  await browser(width);
+  for (const theme of themes) {
+    const scope = within(canvasElement).getByRole("region", { name: `${theme} segment geometry` });
+    const track = within(scope).getByRole("group", { name: `${theme} segment geometry` });
+    const selected = within(track).getByRole("button", { pressed: true });
+    const unselected = within(track).getByRole("button", { pressed: false });
+    await settled(track);
+    expect(paint(track)).toBe(role(track, "muted"));
+    expect(paint(unselected, "color")).toBe(role(unselected, "muted-foreground"));
+    expectSelectionInk(selected);
+    const indicator = tabIndicator(track, selected);
+    expect(indicator).toBeDefined();
+    expect(paint(indicator!)).toBe(role(selected, "accent"));
+    const indicatorRect = indicator!.getBoundingClientRect();
+    const selectedRect = selected.getBoundingClientRect();
+    expect(Math.abs(indicatorRect.left - selectedRect.left)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(indicatorRect.width - selectedRect.width)).toBeLessThanOrEqual(0.5);
+  }
+}
+
+export const SegmentedControlGeometry390: Story = {
+  render: () => <>{themes.map((theme) => <SegmentGeometryProbe key={theme} theme={theme} />)}</>,
+  play: async ({ canvasElement }) => checkSegmentedGeometry(canvasElement, 390),
+};
+
+export const SegmentedControlGeometry1440: Story = {
+  ...SegmentedControlGeometry390,
+  play: async ({ canvasElement }) => checkSegmentedGeometry(canvasElement, 1440),
 };

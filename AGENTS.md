@@ -8,10 +8,13 @@ Read [CONTEXT.md](CONTEXT.md) before changes and use its words in code comments,
 
 ```bash
 corepack pnpm install
+git config core.hooksPath .githooks
 corepack pnpm run verify
 corepack pnpm run build
 corepack pnpm run dev
 ```
+
+The routed pre-push hook is the local gate: it runs `verify`, including the Storybook browser tests, for every non-prose push. Ready pull requests run only `verify:fast` on the hosted runner; [docs/ci.md](docs/ci.md) owns the routing.
 
 ## Component boundary
 

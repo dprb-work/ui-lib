@@ -454,6 +454,11 @@ Preserve controlled and uncontrolled values, native form behavior, refs, labels,
 ```bash
 corepack pnpm run verify
 corepack pnpm run build
+git config core.hooksPath .githooks
 ```
 
-`verify` runs ESLint, strict TypeScript, unit tests, browser-backed Storybook tests, and the library build.
+`verify` runs the base dependency check, ESLint, strict TypeScript, unit tests,
+the library build and browser-backed Storybook tests. `verify:fast` omits the
+Storybook tests; it is the hosted check for ready pull requests. The routed
+pre-push hook runs `verify` for non-prose changes; [CI checks](docs/ci.md)
+owns the routing.

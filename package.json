@@ -48,7 +48,8 @@
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
     "check:base-deps": "python3 scripts/check_base_deps.py",
-    "verify": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && pnpm run build"
+    "verify:fast": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && pnpm run build",
+    "verify": "pnpm run verify:fast && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook"
   },
   "dependencies": {
     "clsx": "^2.1.1",

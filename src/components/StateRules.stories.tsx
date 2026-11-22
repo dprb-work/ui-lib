@@ -533,11 +533,13 @@ export const DisabledAndBusy: Story = {
   },
 };
 
-export const PersistentSelection: Story = {
+// One story per theme: both themes in one play reach Vitest's 15s test limit.
+export const PersistentSelectionLight: Story = {
   render: () => <BothThemes kind="selection" />,
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const { userEvent } = await browser();
     for (const scope of scopes(canvasElement)) {
+      if (scope.dataset.theme !== args.theme) continue;
       const canvas = within(scope);
       const toggle = canvas.getByRole("button", { name: "Toggle choice" });
       for (const control of [canvas.getByRole("button", { name: "Selected icon" }), canvas.getByRole("tab", { name: "Tab One" }), canvas.getByRole("button", { name: "Segment One" })]) {
@@ -631,6 +633,11 @@ export const PersistentSelection: Story = {
       }
     }
   },
+};
+
+export const PersistentSelectionDark: Story = {
+  ...PersistentSelectionLight,
+  args: { theme: "dark" },
 };
 
 type ViewportRect = { left: number; top: number; width: number; height: number };
@@ -2241,6 +2248,7 @@ export const ColorPickerEditing: Story = {
     await expect(slotField).toHaveValue("18 52 86");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(slot).toHaveFocus());
+    await settled(slot);
     expect(paint(slot), "The slot paints the color chosen in its picker").toBe(color("#123456"));
   },
 };
@@ -2264,47 +2272,69 @@ async function paintedPixels(session: CDPSession, element: HTMLElement, margin: 
   return { data: context.getImageData(0, 0, bitmap.width, bitmap.height).data, width: bitmap.width, left, top, scale: bitmap.width / width };
 }
 
-function trackCoverage(pixel: number[], track: number[], others: number[][]): number {
+type PixelPaint = { coverage: number; knob: boolean };
+
+function trackCoverage(pixel: number[], track: number[], knob: number[], page: number[]): PixelPaint {
   // Project onto the segment toward the track paint from whichever other paint (knob or page) explains the pixel best.
-  let best = { coverage: 0, residual: Number.POSITIVE_INFINITY };
-  for (const other of others) {
+  let best = { coverage: 0, residual: Number.POSITIVE_INFINITY, knob: false };
+  for (const other of [knob, page]) {
     const axis = [0, 1, 2].map((index) => track[index]! - other[index]!);
     const offset = [0, 1, 2].map((index) => pixel[index]! - other[index]!);
     const span = axis.reduce((sum, value) => sum + value * value, 0);
     const coverage = Math.min(1, Math.max(0, offset.reduce((sum, value, index) => sum + value * axis[index]!, 0) / span));
     const residual = Math.hypot(...offset.map((value, index) => value - coverage * axis[index]!));
-    if (residual < best.residual) best = { coverage, residual };
+    if (residual < best.residual) best = { coverage, residual, knob: other === knob };
   }
-  return best.coverage;
+  return { coverage: best.coverage, knob: best.knob };
 }
 
 async function paintedKnobGaps(session: CDPSession, control: HTMLElement, scope: HTMLElement) {
-  const knob = control.firstElementChild as HTMLElement;
   const pixels = await paintedPixels(session, control, 3);
   const track = role(control, control.getAttribute("aria-checked") === "true" ? "accent" : "border").split(",").map(Number);
-  const others = [role(control, "surface").split(",").map(Number), paintedBackground(control.parentElement!, scope)];
-  const coverageAt = (x: number, y: number) => {
+  const knob = role(control, "surface").split(",").map(Number);
+  const page = paintedBackground(control.parentElement!, scope);
+  const paintAt = (x: number, y: number) => {
     const offset = (y * pixels.width + x) * 4;
-    return trackCoverage(Array.from(pixels.data.slice(offset, offset + 3)), track, others);
+    return trackCoverage(Array.from(pixels.data.slice(offset, offset + 3)), track, knob, page);
   };
-  const knobRect = topLevelRect(knob.getBoundingClientRect());
-  const trackRect = topLevelRect(control.getBoundingClientRect());
-  const centerX = (knobRect.left + knobRect.width / 2 - pixels.left) * pixels.scale;
-  const centerY = (knobRect.top + knobRect.height / 2 - pixels.top) * pixels.scale;
   const rows = pixels.data.length / 4 / pixels.width;
+  // Locate the knob from paint, not from an element box: the centroid of knob paint inside the pill,
+  // at least one device pixel in from its edge so the track's anti-aliased rim never counts as knob.
+  const trackRect = topLevelRect(control.getBoundingClientRect());
+  const radius = trackRect.height * pixels.scale / 2;
+  const axisY = (trackRect.top - pixels.top) * pixels.scale + radius;
+  const axisStart = (trackRect.left - pixels.left) * pixels.scale + radius;
+  const axisEnd = (trackRect.left + trackRect.width - pixels.left) * pixels.scale - radius;
+  let weight = 0;
+  let sumX = 0;
+  let sumY = 0;
+  for (let y = 0; y < rows; y += 1) {
+    for (let x = 0; x < pixels.width; x += 1) {
+      const nearestX = Math.min(axisEnd, Math.max(axisStart, x + 0.5));
+      if (Math.hypot(x + 0.5 - nearestX, y + 0.5 - axisY) > radius - 1) continue;
+      const paint = paintAt(x, y);
+      if (!paint.knob) continue;
+      weight += 1 - paint.coverage;
+      sumX += (1 - paint.coverage) * (x + 0.5);
+      sumY += (1 - paint.coverage) * (y + 0.5);
+    }
+  }
+  expect(weight, "The switch paints a knob inside its track").toBeGreaterThan(0);
+  const centerX = sumX / weight;
+  const centerY = sumY / weight;
   let top = 0;
   let bottom = 0;
   for (let y = 0; y < rows; y += 1) {
-    if (y + 0.5 < centerY) top += coverageAt(Math.floor(centerX), y);
-    else if (y + 0.5 > centerY) bottom += coverageAt(Math.floor(centerX), y);
+    if (y + 0.5 < centerY) top += paintAt(Math.floor(centerX), y).coverage;
+    else if (y + 0.5 > centerY) bottom += paintAt(Math.floor(centerX), y).coverage;
   }
   let start = 0;
   let end = 0;
   for (let x = 0; x < pixels.width; x += 1) {
-    if (x + 0.5 < centerX) start += coverageAt(x, Math.floor(centerY));
-    else if (x + 0.5 > centerX) end += coverageAt(x, Math.floor(centerY));
+    if (x + 0.5 < centerX) start += paintAt(x, Math.floor(centerY)).coverage;
+    else if (x + 0.5 > centerX) end += paintAt(x, Math.floor(centerY)).coverage;
   }
-  const nearerEnd = knobRect.left + knobRect.width / 2 < trackRect.left + trackRect.width / 2 ? start : end;
+  const nearerEnd = centerX < (axisStart + axisEnd) / 2 ? start : end;
   return { top, bottom, end: nearerEnd };
 }
 

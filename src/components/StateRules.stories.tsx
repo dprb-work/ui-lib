@@ -187,6 +187,29 @@ function paintedBackground(element: Element, scope: HTMLElement): number[] {
   return composite(rgba(getComputedStyle(element).backgroundColor), base);
 }
 
+function selectedIndicatorBase(track: HTMLElement, trigger: HTMLElement, scope: HTMLElement) {
+  const triggerRect = trigger.getBoundingClientRect();
+  const centerX = triggerRect.left + triggerRect.width / 2;
+  const centerY = triggerRect.top + triggerRect.height / 2;
+  let background = paintedBackground(track, scope);
+  let found = false;
+  for (const child of Array.from(track.children)) {
+    if (child === trigger || ["tab", "button"].includes(child.getAttribute("role") ?? "")) continue;
+    const rect = child.getBoundingClientRect();
+    const fill = rgba(getComputedStyle(child).backgroundColor);
+    if (fill[3] === 0 || rect.height < triggerRect.height - 2 || centerX < rect.left || centerX > rect.right || centerY < rect.top || centerY > rect.bottom) continue;
+    background = composite(fill, background);
+    found = true;
+  }
+  expect(found, "Selected trigger is backed by a painted indicator").toBe(true);
+  return background;
+}
+
+function expectTranslucentTrigger(trigger: HTMLElement, state: string) {
+  const alpha = rgba(getComputedStyle(trigger).backgroundColor)[3]! / 255;
+  expect(alpha, `${state} trigger fill remains translucent`).toBeLessThanOrEqual(0.25);
+}
+
 function luminance(channels: number[]): number {
   return channels.slice(0, 3).map((channel) => {
     const linear = channel / 255;
@@ -891,25 +914,29 @@ export const SelectionTrackFeedback: Story = {
         await userEvent.hover(canvas.getByTestId("pointer-parking"));
         await settled(control);
         const trackPaint = paintedBackground(track, scope);
-        const selectedSurface = role(control, "surface").split(",").map(Number);
+        const surfacePaint = role(control, "surface").split(",").map(Number);
         await userEvent.hover(control);
         await settled(control);
+        expectTranslucentTrigger(control, "Unselected hover");
         const hovered = paintedBackground(control, scope);
-        const hoverBase = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true" ? selectedSurface : trackPaint;
+        const selectedBeforeHover = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true";
+        const hoverBase = selectedBeforeHover ? selectedIndicatorBase(track, control, scope) : trackPaint;
         expectTint(control, scope, 8, hoverBase);
         expect(distance(hovered, trackPaint), "Unselected hover must be visible against the actual muted track").toBeGreaterThan(2);
         expect(contrast(hovered, trackPaint), "Track feedback stays faint").toBeLessThan(1.7);
         if (scope.dataset.theme === "dark") {
-          expect(distance(hovered, selectedSurface), "Unselected hover must remain distinguishable from the selected accent").toBeGreaterThan(distance(trackPaint, selectedSurface));
+          expect(distance(hovered, surfacePaint), "Unselected hover remains distinguishable from the surface").toBeGreaterThan(distance(trackPaint, surfacePaint));
         }
         const point = topLevelPoint(control);
         await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
         try {
           expect(control.matches(":active")).toBe(true);
           await settled(track);
+          expectTranslucentTrigger(control, "Unselected press");
           // Native selection timing differs: Tabs select on pointer-down,
           // segments on release. The selected indicator becomes the painted base.
-          const pressBase = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true" ? selectedSurface : trackPaint;
+          const selectedWhilePressed = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true";
+          const pressBase = selectedWhilePressed ? selectedIndicatorBase(track, control, scope) : trackPaint;
           const pressed = composite(rgba(getComputedStyle(control).backgroundColor), pressBase);
           expect(distance(pressed, trackPaint), "Held press strengthens actual track feedback").toBeGreaterThan(distance(hovered, trackPaint) + 1);
           expectTintOverBase(control, 16, pressBase);
@@ -919,10 +946,41 @@ export const SelectionTrackFeedback: Story = {
           await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
         }
         await settled(track);
-        const releasedBase = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true" ? selectedSurface : trackPaint;
+        const selectedAfterRelease = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true";
+        const releasedBase = selectedAfterRelease ? selectedIndicatorBase(track, control, scope) : trackPaint;
         expectTintOverBase(control, 8, releasedBase);
         expectSelectionInk(within(tabList).getByRole("tab", { selected: true }));
         expectSelectionInk(within(segments).getByRole("button", { pressed: true }));
+        expect(selectedAfterRelease, "A real pointer click selects the trigger").toBe(true);
+        await userEvent.hover(canvas.getByTestId("pointer-parking"));
+        await settled(track);
+        const selectedBase = selectedIndicatorBase(track, control, scope);
+        const restPaint = composite(rgba(getComputedStyle(control).backgroundColor), selectedBase);
+        await userEvent.hover(control);
+        await settled(track);
+        expectTranslucentTrigger(control, "Selected hover");
+        const hoveredPaint = composite(rgba(getComputedStyle(control).backgroundColor), selectedBase);
+        expect(distance(hoveredPaint, restPaint), "Selected hover visibly changes paint over the actual indicator").toBeGreaterThan(2);
+        expect(contrast(paint(control, "color").split(",").map(Number), hoveredPaint), "Selected hover text stays readable").toBeGreaterThanOrEqual(4.5);
+        const selectedPoint = topLevelPoint(control);
+        await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...selectedPoint, button: "left", buttons: 1, clickCount: 1 });
+        try {
+          expect(control.matches(":active")).toBe(true);
+          await settled(track);
+          expectTranslucentTrigger(control, "Selected press");
+          const pressedPaint = composite(rgba(getComputedStyle(control).backgroundColor), selectedBase);
+          expect(distance(pressedPaint, restPaint), "Selected press strengthens selected hover").toBeGreaterThan(distance(hoveredPaint, restPaint) + 1);
+          expect(contrast(paint(control, "color").split(",").map(Number), pressedPaint), "Selected press text stays readable").toBeGreaterThanOrEqual(4.5);
+        } finally {
+          await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...selectedPoint, button: "left", buttons: 0, clickCount: 1 });
+        }
+        await settled(track);
+        if (track === segments) {
+          await userEvent.hover(canvas.getByTestId("pointer-parking"));
+          await settled(track);
+          await keyboardFocus(control);
+          expectInsideEdge(control, undefined, selectedIndicatorBase(track, control, scope));
+        }
       }
     }
   },

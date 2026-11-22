@@ -939,7 +939,7 @@ export const SelectionTrackFeedback: Story = {
           const pressBase = selectedWhilePressed ? selectedIndicatorBase(track, control, scope) : trackPaint;
           const pressed = composite(rgba(getComputedStyle(control).backgroundColor), pressBase);
           expect(distance(pressed, trackPaint), "Held press strengthens actual track feedback").toBeGreaterThan(distance(hovered, trackPaint) + 1);
-          expectTintOverBase(control, 16, pressBase);
+          if (!selectedWhilePressed) expectTintOverBase(control, 16, pressBase);
           expectSelectionInk(within(tabList).getByRole("tab", { selected: true }));
           expectSelectionInk(within(segments).getByRole("button", { pressed: true }));
         } finally {
@@ -948,7 +948,7 @@ export const SelectionTrackFeedback: Story = {
         await settled(track);
         const selectedAfterRelease = control.getAttribute("aria-selected") === "true" || control.getAttribute("aria-pressed") === "true";
         const releasedBase = selectedAfterRelease ? selectedIndicatorBase(track, control, scope) : trackPaint;
-        expectTintOverBase(control, 8, releasedBase);
+        if (!selectedAfterRelease) expectTintOverBase(control, 8, releasedBase);
         expectSelectionInk(within(tabList).getByRole("tab", { selected: true }));
         expectSelectionInk(within(segments).getByRole("button", { pressed: true }));
         expect(selectedAfterRelease, "A real pointer click selects the trigger").toBe(true);

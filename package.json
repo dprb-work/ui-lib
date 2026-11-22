@@ -47,7 +47,7 @@
     "test:storybook": "vitest run --project=storybook",
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
-    "check:base-deps": "python3 scripts/check_base_deps.py",
+    "check:base-deps": "python3 scripts/check_base_deps.py && node --test scripts/check-base-deps.node-test.mjs",
     "verify": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && pnpm run build"
   },
   "dependencies": {

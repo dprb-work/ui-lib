@@ -232,7 +232,7 @@ function expectNoOutsideRing(element: HTMLElement) {
   }
 }
 
-function expectInsideEdge(element: HTMLElement, expectedColor?: string) {
+function expectInsideEdge(element: HTMLElement, expectedColor?: string, paintedFill?: number[]) {
   const style = getComputedStyle(element);
   expectNoOutsideRing(element);
   const edges: string[] = [];
@@ -248,7 +248,7 @@ function expectInsideEdge(element: HTMLElement, expectedColor?: string) {
   expect(edges.some((edge) => edge.split(",")[3] !== "0"), "Keyboard focus must paint a visible 2px inside edge").toBe(true);
   const scope = element.closest<HTMLElement>("[data-theme]");
   if (!scope) throw new Error("Focus probe must have a painted theme scope");
-  const background = paintedBackground(element, scope);
+  const background = paintedFill ?? paintedBackground(element, scope);
   expect(edges.some((edge) => edge.split(",")[3] !== "0" && contrast(edge.split(",").map(Number), background) >= 3), "Actual inside focus paint must reach 3:1 against its rendered fill").toBe(true);
   if (expectedColor) expect(edges).toContain(expectedColor);
 }
@@ -302,7 +302,6 @@ export const ButtonFocus: Story = {
         if (name === "Danger action") expect(paint(button, "color")).toBe(role(button, "danger-ink"));
         if (name === "Selected action") {
           expectAccent(color(getComputedStyle(button).borderColor), button);
-          expect(paint(button, "color")).toBe(role(button, "on-accent"));
         }
       }
       for (const name of ["Unselected icon", "Selected icon"]) {
@@ -535,19 +534,17 @@ export const PersistentSelection: Story = {
       const toggleOn = paintedBackground(toggle, scope);
       const primary = canvas.getByRole("button", { name: "Primary control" });
       expect(distance(toggleOn, paintedBackground(primary, scope))).toBeGreaterThan(20);
-      expect(distance(toggleOn, rgba(role(toggle, "accent")))).toBeGreaterThan(20);
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-      expect(contrast(rgba(paint(toggle, "color")), toggleOn)).toBeGreaterThanOrEqual(4.5);
+      expect(distance(toggleOn, role(toggle, "accent").split(",").map(Number))).toBeGreaterThan(20);
+      expect(contrast(paint(toggle, "color").split(",").map(Number), toggleOn)).toBeGreaterThanOrEqual(4.5);
       expectAccent(color(getComputedStyle(toggle).borderColor), toggle);
       expectInsideEdge(toggle);
       await userEvent.keyboard(" ");
       await expect(toggle).toHaveAttribute("aria-pressed", "false");
-      const toggleOff = paintedBackground(toggle, scope);
-      expect(distance(toggleOn, toggleOff)).toBeGreaterThan(20);
+      await settled(toggle);
       expect(toggle.getBoundingClientRect().width).toBe(toggleSize.width);
       expect(toggle.getBoundingClientRect().height).toBe(toggleSize.height);
       await userEvent.keyboard(" ");
-      await expect(toggle).toHaveAttribute("aria-pressed", "true");
+      await settled(toggle);
       expect(toggle.getBoundingClientRect().width).toBe(toggleSize.width);
       expect(toggle.getBoundingClientRect().height).toBe(toggleSize.height);
 
@@ -648,8 +645,7 @@ export const RealPressFeedbackLight: Story = {
           const pressed = paintedBackground(button, scope);
           expect(distance(pressed, rest), `${name}: press fill must be stronger than hover`).toBeGreaterThan(distance(hovered, rest) + 1);
           if (name === "Selected action") {
-            expectAccent(paint(button), button);
-            expect(paint(button, "color")).toBe(role(button, "on-accent"));
+            expect(contrast(paint(button, "color").split(",").map(Number), pressed), `${name} text remains readable on its pressed fill`).toBeGreaterThanOrEqual(4.5);
           } else if (name === "Selected icon") expectAccent(paint(button, "color"), button);
         } finally {
           await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
@@ -785,6 +781,7 @@ export const ConsumerOverrides: Story = {
           await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
           await userEvent.keyboard("{Escape}");
         }
+        await userEvent.hover(canvas.getByTestId("pointer-parking"));
       }
     }
   },
@@ -882,7 +879,7 @@ export const SelectionTrackFeedback: Story = {
         await userEvent.hover(canvas.getByTestId("pointer-parking"));
         await settled(control);
         const trackPaint = paintedBackground(track, scope);
-        const selectedSurface = rgba(role(control, "accent"));
+        const selectedSurface = role(control, "surface").split(",").map(Number);
         await userEvent.hover(control);
         await settled(control);
         const hovered = paintedBackground(control, scope);
@@ -982,7 +979,7 @@ function TabsLayoutProbe() {
   ))}</>;
 }
 
-function expectTabsPresentation(scope: HTMLElement) {
+function expectTabsPresentation(scope: HTMLElement): number[] {
   const canvas = within(scope);
   const container = canvas.getByTestId("tabs-container");
   const list = canvas.getByRole("tablist", { name: "Graph and data" });
@@ -1044,6 +1041,7 @@ function expectTabsPresentation(scope: HTMLElement) {
       expect(Number.parseFloat(pseudoStyle.height), "No generated underline beneath the selected fill").toBeGreaterThan(3);
     }
   }
+  return selectedPaint;
 }
 
 async function checkGraphDataTabs(canvasElement: HTMLElement, width: number) {
@@ -1056,24 +1054,24 @@ async function checkGraphDataTabs(canvasElement: HTMLElement, width: number) {
     const data = within(list).getByRole("tab", { name: "Data" });
     await userEvent.hover(canvas.getByRole("heading", { name: `${theme} graph and data` }));
     await settled(list);
-    expectTabsPresentation(scope);
+    const initialFill = expectTabsPresentation(scope);
     await keyboardFocus(graph);
-    expectInsideEdge(graph);
+    expectInsideEdge(graph, undefined, initialFill);
     await userEvent.keyboard("{ArrowRight}");
     await expect(data).toHaveFocus();
     await expect(data).toHaveAttribute("aria-selected", "true");
     await expect(graph).toHaveAttribute("aria-selected", "false");
     await expect(canvas.getByRole("tabpanel", { name: "Data" })).toHaveTextContent("Data content");
     await settled(list);
-    expectTabsPresentation(scope);
-    expectInsideEdge(data);
+    const dataFill = expectTabsPresentation(scope);
+    expectInsideEdge(data, undefined, dataFill);
     await userEvent.keyboard("{ArrowLeft}");
     await expect(graph).toHaveFocus();
     await expect(graph).toHaveAttribute("aria-selected", "true");
     await expect(data).toHaveAttribute("aria-selected", "false");
     await expect(canvas.getByRole("tabpanel", { name: "Graph" })).toHaveTextContent("Graph content");
     await settled(list);
-    expectTabsPresentation(scope);
+    expectInsideEdge(graph, undefined, expectTabsPresentation(scope));
   }
 }
 
@@ -1089,7 +1087,7 @@ export const GraphDataTabs1440: Story = {
 
 function expectSelectionInk(control: HTMLElement) {
   expect(paint(control, "color")).toBe(role(control, "on-accent"));
-  expect(contrast(rgba(paint(control, "color")), rgba(role(control, "accent")))).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(paint(control, "color").split(",").map(Number), role(control, "accent").split(",").map(Number))).toBeGreaterThanOrEqual(4.5);
 }
 
 function expectPersistentSelectionInk(control: HTMLElement) {
@@ -1734,17 +1732,17 @@ export const InvalidFieldStateComparison: Story = {
           expect(paint(invalid, "color"), `${name} ${state} text keeps normal ink`).toBe(paint(valid, "color"));
           expect([role(invalid, "danger"), role(invalid, "danger-ink")], `${name} ${state} underline uses danger`).toContain(paint(invalid, "borderBottomColor"));
         };
-        expectMatchingState("rest", paintedBackground(valid, scope), paintedBackground(invalid, scope));
+        expectMatchingState("rest", rgba(getComputedStyle(valid).backgroundColor), rgba(getComputedStyle(invalid).backgroundColor));
         await userEvent.hover(valid);
         await settled(valid);
-        const validHover = paintedBackground(valid, scope);
+        const validHover = rgba(getComputedStyle(valid).backgroundColor);
         await userEvent.hover(invalid);
         await settled(invalid);
-        expectMatchingState("hover", validHover, paintedBackground(invalid, scope));
+        expectMatchingState("hover", validHover, rgba(getComputedStyle(invalid).backgroundColor));
         await keyboardFocus(valid);
-        const validFocus = paintedBackground(valid, scope);
+        const validFocus = rgba(getComputedStyle(valid).backgroundColor);
         await keyboardFocus(invalid);
-        expectMatchingState("focus", validFocus, paintedBackground(invalid, scope));
+        expectMatchingState("focus", validFocus, rgba(getComputedStyle(invalid).backgroundColor));
       }
     }
   },

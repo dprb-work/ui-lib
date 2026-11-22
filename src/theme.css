@@ -124,12 +124,13 @@
   --color-ui-danger-fill: #321a18;
 }
 
-/* Resolve text ink and interaction tints at the control, not at the theme root. */
+/* Resolve text ink and interaction tints at the control, not at the theme root.
+   A control painted with the accent sets --ui-feedback-tint so its hover and press stay visible. */
 @theme inline {
   --text-color-ui-accent: var(--color-ui-accent-link);
   --text-color-ui-danger: var(--color-ui-danger-ink);
-  --color-ui-hover-fill: color-mix(in srgb, var(--color-ui-accent) var(--ui-hover-weight, 8%), var(--ui-control-fill, var(--color-ui-surface)));
-  --color-ui-press-fill: color-mix(in srgb, var(--color-ui-accent) var(--ui-press-weight, 16%), var(--ui-control-fill, var(--color-ui-surface)));
+  --color-ui-hover-fill: color-mix(in srgb, var(--ui-feedback-tint, var(--color-ui-accent)) var(--ui-hover-weight, 8%), var(--ui-control-fill, var(--color-ui-surface)));
+  --color-ui-press-fill: color-mix(in srgb, var(--ui-feedback-tint, var(--color-ui-accent)) var(--ui-press-weight, 16%), var(--ui-control-fill, var(--color-ui-surface)));
   --color-ui-accent-press-fill: color-mix(in srgb, var(--color-ui-accent-hover) 88%, white);
   --color-ui-danger-press-fill: color-mix(in srgb, var(--color-ui-danger-fill) 97%, var(--color-ui-danger-ink));
 }

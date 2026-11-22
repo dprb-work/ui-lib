@@ -57,9 +57,10 @@ function createRepo(change) {
 }
 
 function createFakePnpm(root, status = 0) {
-  const bin = join(root, "bin");
+  const invocationRoot = mkdtempSync(join(root, "hook-invocation-"));
+  const bin = join(invocationRoot, "bin");
   mkdirSync(bin);
-  const logPath = join(root, "pnpm-argv.txt");
+  const logPath = join(invocationRoot, "pnpm-argv.txt");
   const executable = join(bin, "pnpm");
   writeFileSync(
     executable,

@@ -1,7 +1,8 @@
 import { composeStory, type Meta, type StoryObj } from "@storybook/react-vite";
-import { Search } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { expect, waitFor, within } from "storybook/test";
+import { expect, fireEvent, waitFor, within } from "storybook/test";
+import type { CDPSession, UserEvent } from "@vitest/browser/context";
 import type {} from "@vitest/browser/providers/playwright";
 
 import { ComposerFrame } from "../chat/composer/ComposerFrame";
@@ -632,10 +633,10 @@ export const PersistentSelection: Story = {
   },
 };
 
-function topLevelPoint(element: HTMLElement): { x: number; y: number } {
-  const rect = element.getBoundingClientRect();
-  let x = rect.left + rect.width / 2;
-  let y = rect.top + rect.height / 2;
+type ViewportRect = { left: number; top: number; width: number; height: number };
+
+function topLevelRect(rect: ViewportRect): ViewportRect {
+  let { left, top, width, height } = rect;
   let current: Window = window;
   while (current.frameElement) {
     const frameElement = current.frameElement;
@@ -646,11 +647,18 @@ function topLevelPoint(element: HTMLElement): { x: number; y: number } {
     // Vitest scales its iframe to fit the runner; CDP takes top-level viewport coordinates.
     const scaleX = frame.width / (current.innerWidth + leftBorder + Number.parseFloat(style.borderRightWidth));
     const scaleY = frame.height / (current.innerHeight + topBorder + Number.parseFloat(style.borderBottomWidth));
-    x = frame.left + (x + leftBorder) * scaleX;
-    y = frame.top + (y + topBorder) * scaleY;
+    left = frame.left + (left + leftBorder) * scaleX;
+    top = frame.top + (top + topBorder) * scaleY;
+    width *= scaleX;
+    height *= scaleY;
     current = current.parent;
   }
-  return { x, y };
+  return { left, top, width, height };
+}
+
+function topLevelPoint(element: HTMLElement): { x: number; y: number } {
+  const rect = topLevelRect(element.getBoundingClientRect());
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
 export const RealPressFeedbackLight: Story = {
@@ -1384,7 +1392,7 @@ export const NativeColorEditorFocus: Story = {
       const scope = within(canvasElement).getByRole("region", { name: `${theme} shipped controls` });
       const canvas = within(scope);
       const well = canvas.getByLabelText(`${theme} channel editor color well`);
-      const preview = canvas.getByRole("img", { name: `${theme} channel editor preview` });
+      expect(canvas.queryByRole("img", { name: `${theme} channel editor preview` }), "The color well is the picker's only swatch, with no separate preview").toBeNull();
       const channels = [
         [well, "#c2410c"],
         [canvas.getByRole("slider", { name: `${theme} channel editor Red channel` }), "194"],
@@ -1398,7 +1406,6 @@ export const NativeColorEditorFocus: Story = {
         expectAttachedNativeFocus(control, restingPaint);
         await expect(control).toHaveValue(value);
         await expect(well).toHaveValue("#c2410c");
-        expect(paint(preview)).toBe(color("#c2410c"));
       }
       const blue = canvas.getByRole("slider", { name: `${theme} channel editor Blue channel` });
       await expect(blue).toHaveFocus();
@@ -1597,49 +1604,757 @@ export const FilledDangerDark: Story = {
   ...FilledDangerLight,
   args: { theme: "dark" },
 };
-function expectKnobCentered(knob: HTMLElement, track: HTMLElement, tolerancePx: number) {
-  const knobRect = knob.getBoundingClientRect();
-  const trackRect = track.getBoundingClientRect();
-  const painted = { left: knobRect.left, right: knobRect.right, top: knobRect.top, bottom: knobRect.bottom };
-  for (const shadow of shadows(getComputedStyle(knob))) {
-    if (shadow.includes("inset")) continue;
-    const ink = shadow.match(/(?:rgba?|oklch|oklab|color|hsl|lab|lch)\([^)]*\)/)?.[0];
-    if (!ink || rgba(ink)[3] === 0) continue;
-    const [offsetX = 0, offsetY = 0, blur = 0, spread = 0] = shadowLengths(shadow);
-    painted.left = Math.min(painted.left, knobRect.left + offsetX - blur - spread);
-    painted.right = Math.max(painted.right, knobRect.right + offsetX + blur + spread);
-    painted.top = Math.min(painted.top, knobRect.top + offsetY - blur - spread);
-    painted.bottom = Math.max(painted.bottom, knobRect.bottom + offsetY + blur + spread);
-  }
-  const paintedCenterY = (painted.top + painted.bottom) / 2;
-  const trackCenterY = (trackRect.top + trackRect.bottom) / 2;
-  expect(Math.abs(paintedCenterY - trackCenterY), "Switch knob is centered on the cross axis").toBeLessThanOrEqual(tolerancePx);
-  const crossAxisGap = (trackRect.height - (painted.bottom - painted.top)) / 2;
-  const mainAxisGap = Math.min(painted.left - trackRect.left, trackRect.right - painted.right);
-  expect(Math.abs(mainAxisGap - crossAxisGap), "Switch knob is concentric with the nearer rounded track end").toBeLessThanOrEqual(tolerancePx);
+const pickerOptions = [{ value: "one", label: "One" }, { value: "two", label: "Two" }, { value: "three", label: "Three" }];
+const corners = ["TopLeft", "TopRight", "BottomLeft", "BottomRight"] as const;
+const colorFormats = [["hex", "Hex"], ["rgb", "RGB"], ["hsl", "HSL"], ["oklch", "OKLCH"]] as const;
+type ColorFormat = (typeof colorFormats)[number][0];
+const colorReferences: ReadonlyArray<Record<ColorFormat, string>> = [
+  { hex: "#4c88c5", rgb: "76 136 197", hsl: "210 51% 54%", oklch: "0.613 0.112 250.5" },
+  { hex: "#c2410c", rgb: "194 65 12", hsl: "17 88% 40%", oklch: "0.553 0.174 38.4" },
+  { hex: "#123456", rgb: "18 52 86", hsl: "210 65% 20%", oklch: "0.319 0.072 251.2" },
+  { hex: "#808080", rgb: "128 128 128", hsl: "0 0% 50%", oklch: "0.600 0.000 0" },
+];
+// Every onValueChange call, keyed by "<theme> <picker label>"; each play clears it before acting.
+const colorChanges = new Map<string, string[]>();
+const switchZooms = [1, 1.25, 1.5, 1.75, 2];
+const switchOffsets = [0, 0.3, 0.5, 0.7];
+// A host page large enough that Vitest does not scale the 1440px frame; scaling would resample the paint under test.
+const unscaledHost = { width: 1700, height: 1000 };
+// A solid red fill's red channel exceeds green and blue by about 100 in both themes; a tint or neutral stays far below 60.
+const solidRedMargin = 60;
+
+type RoundTwoKind = "inset" | "options" | "danger" | "color" | "switch";
+const roundTwoRegions: Record<RoundTwoKind, string> = {
+  inset: "field inset",
+  options: "option lists",
+  danger: "danger actions",
+  color: "color picker",
+  switch: "painted switches",
+};
+
+function InsetFields() {
+  return <>
+    <TextInput aria-label="Inset text" defaultValue="Draft" />
+    <TextInput aria-label="Inset subtle text" appearance="subtle" defaultValue="Draft" />
+    <NumberInput aria-label="Inset number" defaultValue={2} />
+    <TextareaInput aria-label="Inset textarea" defaultValue="Draft notes" />
+    <NativeSelect aria-label="Inset native select" defaultValue="one">
+      {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </NativeSelect>
+    <NativeSelect aria-label="Inset compact native select" density="compact" defaultValue="one">
+      {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </NativeSelect>
+    <SelectInput label="Inset select" defaultValue="one" options={options} />
+    <SelectInput label="Inset compact select" density="compact" defaultValue="one" options={options} />
+    <TextInput aria-label="Inset search" type="search" defaultValue="Draft" />
+  </>;
 }
 
-async function checkSwitchKnobCentered(canvasElement: HTMLElement, width: number) {
+function OptionLists({ theme }: { theme: Theme }) {
+  return <form aria-label={`${theme} option form`} className="grid gap-4" onSubmit={(event) => event.preventDefault()}>
+    <NativeSelect aria-label="Native choice" name="native-choice" defaultValue="one">
+      {pickerOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </NativeSelect>
+    <SelectInput label="Custom choice" defaultValue="one" options={pickerOptions} />
+  </form>;
+}
+
+function DangerActions() {
+  return <div className="flex items-center gap-4">
+    <Button variant="danger">Delete draft</Button>
+    <IconButton variant="danger" size="large" label="Delete file" tooltip={false}><Trash2 aria-hidden="true" /></IconButton>
+    {/* The press fill is an inline derived theme color with no runtime variable; this swatch paints it in the section's theme. */}
+    <span aria-hidden="true" data-testid="danger-press-reference" className="size-4 bg-ui-danger-press-fill" />
+  </div>;
+}
+
+function recordColor(key: string, value: string) {
+  colorChanges.set(key, [...(colorChanges.get(key) ?? []), value]);
+}
+
+function ColorPickers({ theme }: { theme: Theme }) {
+  const [value, setValue] = useState("#4c88c5");
+  const [slots, setSlots] = useState(["#4c88c5", "#c2410c"]);
+  return <>
+    <div className="w-80 max-w-full">
+      <ColorPicker label="Accent color" value={value} onValueChange={(next) => { recordColor(`${theme} Accent color`, next); setValue(next); }} />
+    </div>
+    <div className="flex flex-wrap gap-2">
+      {colorReferences.map(({ hex }) => <Button key={hex} variant="secondary" onClick={() => setValue(hex)}>Use {hex}</Button>)}
+    </div>
+    <div className="w-80 max-w-full">
+      <ColorPicker label="Locked color" value="#808080" disabled onValueChange={(next) => recordColor(`${theme} Locked color`, next)} />
+    </div>
+    <ColorSelector
+      label="Series color"
+      colors={slots}
+      onValueChange={(index, next) => {
+        recordColor(`${theme} Series color ${index + 1}`, next);
+        setSlots((current) => current.map((entry, slot) => slot === index ? next : entry));
+      }}
+    />
+  </>;
+}
+
+function PaintedSwitches() {
+  // Chromium implements Windows display scaling as layout zoom; CSS zoom reproduces that snapping path.
+  return <div className="flex flex-wrap items-start gap-3">
+    {switchZooms.flatMap((zoom) => switchOffsets.map((offset) => (
+      <div key={`${zoom}-${offset}`} style={{ zoom }}>
+        <div className="flex gap-2" style={{ marginTop: `${offset}px` }}>
+          <Switch label={`Zoom ${zoom} offset ${offset} on`} defaultChecked tooltip={false} />
+          <Switch label={`Zoom ${zoom} offset ${offset} off`} tooltip={false} />
+        </div>
+      </div>
+    )))}
+  </div>;
+}
+
+function RoundTwoSection({ theme, kind }: { theme: Theme; kind: RoundTwoKind }) {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  return (
+    <section ref={setContainer} data-theme={theme} aria-label={`${theme} ${roundTwoRegions[kind]}`} className="grid w-full gap-4 bg-ui-background p-4 text-sm text-ui-foreground">
+      <button type="button" data-testid="pointer-parking" className="justify-self-start">Interaction start</button>
+      {container && <PortalProvider container={container}>
+        {kind === "inset" && <InsetFields />}
+        {kind === "options" && <OptionLists theme={theme} />}
+        {kind === "danger" && <DangerActions />}
+        {kind === "color" && <ColorPickers theme={theme} />}
+        {kind === "switch" && <PaintedSwitches />}
+      </PortalProvider>}
+    </section>
+  );
+}
+
+function RoundTwoThemes({ kind }: { kind: RoundTwoKind }) {
+  return <>{themes.map((theme) => <RoundTwoSection key={theme} theme={theme} kind={kind} />)}</>;
+}
+
+function roundTwoScopes(canvasElement: HTMLElement, kind: RoundTwoKind): HTMLElement[] {
+  return themes.map((theme) => within(canvasElement).getByRole("region", { name: `${theme} ${roundTwoRegions[kind]}` }));
+}
+
+function textRect(container: Element, text: string): DOMRect | undefined {
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node.textContent?.trim() !== text) continue;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const rect = range.getBoundingClientRect();
+    if (rect.width > 0) return rect;
+  }
+  return undefined;
+}
+
+function verticalCenter(rect: DOMRect): number {
+  return rect.top + rect.height / 2;
+}
+
+function length(value: string): number {
+  return Number.parseFloat(value) || 0;
+}
+
+function greenLean(paint: number[]): number {
+  return paint[1]! - (paint[0]! + paint[2]!) / 2;
+}
+
+function expectCalmHighlight(fill: number[], surface: number[], label: string) {
+  // The accent is Green; a neutral highlight keeps the surface's green lean instead of tinting toward it.
+  expect(Math.abs(greenLean(fill) - greenLean(surface)), `${label} is neutral, not accent-tinted`).toBeLessThanOrEqual(1.5);
+  expect(distance(fill, surface), `${label} is visible on the popup surface`).toBeGreaterThanOrEqual(15);
+}
+
+const insetFields = [
+  ["textbox", "Inset text", 8],
+  ["textbox", "Inset subtle text", 8],
+  ["spinbutton", "Inset number", 8],
+  ["textbox", "Inset textarea", 8],
+  ["combobox", "Inset native select", 8],
+  ["combobox", "Inset compact native select", 4],
+] as const;
+
+async function checkFieldInset(canvasElement: HTMLElement, width: number) {
   await browser(width);
-  for (const scope of scopes(canvasElement)) {
+  for (const scope of roundTwoScopes(canvasElement, "inset")) {
     const canvas = within(scope);
-    for (const [name, checked] of [["Inactive choice", false], ["Enabled choice", true]] as const) {
-      const control = canvas.getByRole("switch", { name });
-      await expect(control).toHaveAttribute("aria-checked", String(checked));
-      await settled(control);
-      expectKnobCentered(control.firstElementChild as HTMLElement, control, 0.5);
+    for (const [kind, name, inset] of insetFields) {
+      const style = getComputedStyle(await canvas.findByRole(kind, { name }));
+      expect(length(style.borderLeftWidth) + length(style.paddingLeft), `${name} text starts ${inset}px from its left edge`).toBe(inset);
+    }
+    for (const [name, inset] of [["Inset select", 8], ["Inset compact select", 4]] as const) {
+      const trigger = canvas.getByRole("combobox", { name });
+      const text = textRect(trigger, "One");
+      expect(text, `${name} shows its selected value`).toBeDefined();
+      expect(Math.abs(text!.left - trigger.getBoundingClientRect().left - inset), `${name} selected value starts ${inset}px from its left edge`).toBeLessThanOrEqual(0.5);
+    }
+    const search = canvas.getByRole("searchbox", { name: "Inset search" });
+    const searchRect = search.getBoundingClientRect();
+    // Find the magnifier by geometry: the graphic painted inside the field box.
+    const icon = Array.from(scope.querySelectorAll("svg")).map((graphic) => graphic.getBoundingClientRect()).find((rect) => rect.width > 0
+      && rect.left >= searchRect.left && rect.right <= searchRect.right && rect.top >= searchRect.top && rect.bottom <= searchRect.bottom);
+    expect(icon, "Search field shows its magnifier inside the field").toBeDefined();
+    expect(Math.abs(icon!.left - searchRect.left - 8), "Search magnifier starts 8px from the field's left edge").toBeLessThanOrEqual(0.5);
+    const searchStyle = getComputedStyle(search);
+    const textStart = searchRect.left + length(searchStyle.borderLeftWidth) + length(searchStyle.paddingLeft);
+    expect(textStart - icon!.right, "Search text starts at least 6px after the magnifier").toBeGreaterThanOrEqual(6);
+    for (const control of [
+      canvas.getByRole("textbox", { name: "Inset text" }),
+      canvas.getByRole("textbox", { name: "Inset subtle text" }),
+      canvas.getByRole("spinbutton", { name: "Inset number" }),
+      canvas.getByRole("combobox", { name: "Inset native select" }),
+      canvas.getByRole("combobox", { name: "Inset select" }),
+      search,
+    ]) {
+      expect(control.getBoundingClientRect().height, `${control.getAttribute("aria-label")} keeps its 28px field height`).toBe(28);
     }
   }
 }
 
+export const FieldTextInset390: Story = {
+  render: () => <RoundTwoThemes kind="inset" />,
+  play: async ({ canvasElement }) => checkFieldInset(canvasElement, 390),
+};
+
+export const FieldTextInset1440: Story = {
+  ...FieldTextInset390,
+  play: async ({ canvasElement }) => checkFieldInset(canvasElement, 1440),
+};
+
+async function openCustomList(userEvent: UserEvent, trigger: HTMLElement, scope: HTMLElement): Promise<HTMLElement> {
+  await userEvent.click(trigger);
+  return within(scope).findByRole("listbox");
+}
+
+async function closeCustomList(userEvent: UserEvent, scope: HTMLElement) {
+  await userEvent.keyboard("{Escape}");
+  await waitFor(() => expect(within(scope).queryByRole("listbox")).not.toBeInTheDocument());
+}
+
+async function openNativePicker(userEvent: UserEvent, select: HTMLSelectElement) {
+  await userEvent.click(select);
+  await waitFor(() => {
+    for (const option of Array.from(select.options)) {
+      expect(option.getBoundingClientRect().height, "Opening the native select shows its options in the page").toBeGreaterThan(0);
+    }
+  });
+}
+
+async function closeNativePicker(userEvent: UserEvent, select: HTMLSelectElement) {
+  await userEvent.keyboard("{Escape}");
+  await waitFor(() => expect(select.matches(":open"), "Escape closes the native picker").toBe(false));
+}
+
+function nativePickerBox(select: HTMLSelectElement) {
+  // The picker is a user-agent part with no DOM box: its border box is the options' margin boxes plus its own padding and border.
+  const picker = getComputedStyle(select, "::picker(select)");
+  const boxes = Array.from(select.options).map((option) => {
+    const rect = option.getBoundingClientRect();
+    const style = getComputedStyle(option);
+    return { left: rect.left - length(style.marginLeft), right: rect.right + length(style.marginRight), top: rect.top - length(style.marginTop), bottom: rect.bottom + length(style.marginBottom) };
+  });
+  return {
+    left: Math.min(...boxes.map((box) => box.left)) - length(picker.paddingLeft) - length(picker.borderLeftWidth),
+    right: Math.max(...boxes.map((box) => box.right)) + length(picker.paddingRight) + length(picker.borderRightWidth),
+    top: Math.min(...boxes.map((box) => box.top)) - length(picker.paddingTop) - length(picker.borderTopWidth),
+    bottom: Math.max(...boxes.map((box) => box.bottom)) + length(picker.paddingBottom) + length(picker.borderBottomWidth),
+  };
+}
+
+function expectOptionsInset(optionElements: HTMLElement[], box: { left: number; right: number; top: number; bottom: number }, list: string) {
+  for (const [index, option] of optionElements.entries()) {
+    const rect = option.getBoundingClientRect();
+    expect(rect.left - box.left, `${list} option sits at least 4px inside the list's left edge`).toBeGreaterThanOrEqual(4);
+    expect(box.right - rect.right, `${list} option sits at least 4px inside the list's right edge`).toBeGreaterThanOrEqual(4);
+    if (index === 0) expect(rect.top - box.top, `${list} first option sits at least 4px below the list's top edge`).toBeGreaterThanOrEqual(4);
+    if (index === optionElements.length - 1) expect(box.bottom - rect.bottom, `${list} last option sits at least 4px above the list's bottom edge`).toBeGreaterThanOrEqual(4);
+    const style = getComputedStyle(option);
+    for (const corner of corners) {
+      expect(length(style[`border${corner}Radius`]), `${list} option ${corner} corner is rounded at least 6px`).toBeGreaterThanOrEqual(6);
+    }
+  }
+}
+
+async function nativeHoverFill(userEvent: UserEvent, select: HTMLSelectElement, value: string) {
+  const option = Array.from(select.options).find((entry) => entry.value === value)!;
+  await userEvent.hover(option);
+  await settled(option);
+  const surface = rgba(getComputedStyle(select, "::picker(select)").backgroundColor);
+  return { option, surface, fill: composite(rgba(getComputedStyle(option).backgroundColor), surface) };
+}
+
+async function checkNativePicker(canvasElement: HTMLElement, width: number) {
+  const { userEvent } = await browser(width);
+  expect(CSS.supports("appearance", "base-select"), "The test browser supports the customizable select picker").toBe(true);
+  for (const scope of roundTwoScopes(canvasElement, "options")) {
+    const canvas = within(scope);
+    const select = await canvas.findByRole("combobox", { name: "Native choice" }) as HTMLSelectElement;
+    expect(select.tagName, "Native choice stays a native select").toBe("SELECT");
+    const customList = await openCustomList(userEvent, canvas.getByRole("combobox", { name: "Custom choice" }), scope);
+    const customStyle = getComputedStyle(within(customList).getAllByRole("option")[0]!);
+    const customRadii = corners.map((corner) => customStyle[`border${corner}Radius`]);
+    await closeCustomList(userEvent, scope);
+
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    await openNativePicker(userEvent, select);
+    const optionElements = Array.from(select.options);
+    expect(color(getComputedStyle(select, "::picker(select)").backgroundColor), "Native picker paints the surface role").toBe(role(select, "surface"));
+    for (const option of optionElements) {
+      expect(paint(option, "color"), "Native picker text uses the surface-foreground role").toBe(role(select, "surface-foreground"));
+      const style = getComputedStyle(option);
+      expect(corners.map((corner) => style[`border${corner}Radius`]), "Native option radius matches the custom option radius").toEqual(customRadii);
+    }
+    expectOptionsInset(optionElements, nativePickerBox(select), "Native picker");
+
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(select).toHaveValue("two"));
+    await waitFor(() => expect(select.matches(":open"), "Enter closes the native picker").toBe(false));
+    await expect(select).toHaveFocus();
+    expect(new FormData(select.form!).get("native-choice"), "The chosen option is the form value").toBe("two");
+
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    await openNativePicker(userEvent, select);
+    const { option, surface, fill } = await nativeHoverFill(userEvent, select, "three");
+    expectCalmHighlight(fill, surface, "Hovered native option");
+    expect(contrast(rgba(getComputedStyle(option).color), fill), "Hovered native option text reaches 4.5:1").toBeGreaterThanOrEqual(4.5);
+    await closeNativePicker(userEvent, select);
+  }
+}
+
+export const NativeSelectPicker390: Story = {
+  render: () => <RoundTwoThemes kind="options" />,
+  play: async ({ canvasElement }) => checkNativePicker(canvasElement, 390),
+};
+
+export const NativeSelectPicker1440: Story = {
+  ...NativeSelectPicker390,
+  play: async ({ canvasElement }) => checkNativePicker(canvasElement, 1440),
+};
+
+async function checkCustomOptionList(canvasElement: HTMLElement, width: number) {
+  const { cdp, userEvent } = await browser(width);
+  const session = cdp();
+  for (const scope of roundTwoScopes(canvasElement, "options")) {
+    const canvas = within(scope);
+    const trigger = await canvas.findByRole("combobox", { name: "Custom choice" });
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    const listbox = await openCustomList(userEvent, trigger, scope);
+    const surface = paintedBackground(listbox, scope);
+    expectOptionsInset(within(listbox).getAllByRole("option"), listbox.getBoundingClientRect(), "Custom list");
+    const target = within(listbox).getByRole("option", { name: "Three" });
+    await userEvent.hover(target);
+    await settled(target);
+    const hovered = composite(rgba(getComputedStyle(target).backgroundColor), surface);
+    expectCalmHighlight(hovered, surface, "Hovered custom option");
+    expect(contrast(rgba(getComputedStyle(target).color), hovered), "Hovered custom option text reaches 4.5:1").toBeGreaterThanOrEqual(4.5);
+    const point = topLevelPoint(target);
+    await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
+    try {
+      expect(target.matches(":active"), "Real pointer-down must reach CSS :active").toBe(true);
+      await settled(target);
+      const pressed = composite(rgba(getComputedStyle(target).backgroundColor), surface);
+      expectCalmHighlight(pressed, surface, "Pressed custom option");
+      expect(distance(pressed, surface), "Held custom option press is stronger than hover").toBeGreaterThan(distance(hovered, surface) + 1);
+    } finally {
+      await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
+    }
+    await waitFor(() => expect(within(scope).queryByRole("listbox")).not.toBeInTheDocument());
+    await expect(trigger).toHaveTextContent("Three");
+
+    const select = canvas.getByRole("combobox", { name: "Native choice" }) as HTMLSelectElement;
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    await openNativePicker(userEvent, select);
+    const native = await nativeHoverFill(userEvent, select, "three");
+    expect(distance(native.fill, hovered), "Native and custom option lists paint the same hover highlight").toBeLessThanOrEqual(2);
+    await closeNativePicker(userEvent, select);
+  }
+}
+
+export const SelectOptionList390: Story = {
+  render: () => <RoundTwoThemes kind="options" />,
+  play: async ({ canvasElement }) => checkCustomOptionList(canvasElement, 390),
+};
+
+export const SelectOptionList1440: Story = {
+  ...SelectOptionList390,
+  play: async ({ canvasElement }) => checkCustomOptionList(canvasElement, 1440),
+};
+
+export const DangerOutlineToSolid: Story = {
+  render: () => <RoundTwoThemes kind="danger" />,
+  play: async ({ canvasElement }) => {
+    const { cdp, userEvent } = await browser();
+    const session = cdp();
+    for (const scope of roundTwoScopes(canvasElement, "danger")) {
+      const canvas = within(scope);
+      for (const name of ["Delete draft", "Delete file"]) {
+        const button = await canvas.findByRole("button", { name });
+        const ink = name === "Delete file" ? button.querySelector("svg") : button;
+        expect(ink, `${name} paints its ink`).not.toBeNull();
+        button.blur();
+        await userEvent.hover(canvas.getByTestId("pointer-parking"));
+        await settled(button);
+        const rest = paintedBackground(button, scope);
+        expect(rest, `${name} rest has no fill of its own`).toEqual(paintedBackground(button.parentElement!, scope));
+        expect(color(getComputedStyle(button).borderTopColor), `${name} rest border uses the danger-ink role`).toBe(role(button, "danger-ink"));
+        expect(paint(ink!, "color"), `${name} rest ink uses the danger-ink role`).toBe(role(button, "danger-ink"));
+
+        await userEvent.hover(button);
+        await settled(button);
+        const hovered = paintedBackground(button, scope);
+        expect(hovered.join(","), `${name} hover fills with the solid danger-hover role`).toBe(role(button, "danger-hover"));
+        expect(paint(ink!, "color"), `${name} hover ink uses the on-danger role`).toBe(role(button, "on-danger"));
+        const edge = getComputedStyle(button).borderTopColor;
+        expect(color(edge) === role(button, "danger") || distance(composite(rgba(edge), hovered), hovered) <= 2, `${name} hover border is the danger role or invisible on the fill`).toBe(true);
+        expect(contrast(rgba(getComputedStyle(ink!).color), hovered), `${name} hover ink reaches 4.5:1`).toBeGreaterThanOrEqual(4.5);
+
+        const point = topLevelPoint(button);
+        await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
+        try {
+          expect(button.matches(":active"), "Real pointer-down must reach CSS :active").toBe(true);
+          await settled(button);
+          const pressed = paintedBackground(button, scope);
+          expect(pressed, `${name} press fills with the danger-press-fill paint`).toEqual(paintedBackground(canvas.getByTestId("danger-press-reference"), scope));
+          expect(rgba(getComputedStyle(button).backgroundColor)[3], `${name} press fill is solid`).toBe(255);
+          expect(pressed[0]! - Math.max(pressed[1]!, pressed[2]!), `${name} press fill stays red`).toBeGreaterThan(solidRedMargin);
+          expect(paint(ink!, "color"), `${name} press ink uses the on-danger role`).toBe(role(button, "on-danger"));
+          expect(contrast(rgba(getComputedStyle(ink!).color), pressed), `${name} press ink reaches 4.5:1`).toBeGreaterThanOrEqual(4.5);
+          expect(distance(pressed, rest), `${name} press is stronger than hover`).toBeGreaterThan(distance(hovered, rest) + 1);
+          expect(distance(pressed, hovered), `${name} press stays distinguishable from hover`).toBeGreaterThan(2);
+        } finally {
+          await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
+        }
+      }
+    }
+  },
+};
+
+function colorChangesOf(key: string): string[] {
+  return colorChanges.get(key) ?? [];
+}
+
+function formatChooser(group: HTMLElement, label: string): HTMLSelectElement {
+  const chooser = within(group).queryByRole("combobox", { name: `${label} format` });
+  expect(chooser, `${label} has a format chooser`).not.toBeNull();
+  return chooser as HTMLSelectElement;
+}
+
+function valueField(group: HTMLElement, label: string, format: ColorFormat): HTMLInputElement {
+  const field = within(group).queryByRole("textbox", { name: `${label} ${format} value` });
+  expect(field, `${label} has a ${format} value field`).not.toBeNull();
+  return field as HTMLInputElement;
+}
+
+function channels(hex: string): number[] {
+  return [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16));
+}
+
+async function expectPickerStructure(group: HTMLElement, label: string, value: string) {
+  const picker = within(group);
+  const name = textRect(group, label);
+  expect(name, `${label} shows its visible name`).toBeDefined();
+  const field = valueField(group, label, "hex");
+  const fieldRect = field.getBoundingClientRect();
+  expect(fieldRect.left, `${label} value field sits right of the visible name`).toBeGreaterThanOrEqual(name!.right);
+  expect(Math.abs(verticalCenter(fieldRect) - verticalCenter(name!)), `${label} value field shares the visible name's line`).toBeLessThanOrEqual(2);
+  const chooser = formatChooser(group, label);
+  const chooserRect = chooser.getBoundingClientRect();
+  expect(Math.abs(verticalCenter(chooserRect) - verticalCenter(name!)), `${label} format chooser shares the visible name's line`).toBeLessThanOrEqual(2);
+  expect(chooser.tagName, `${label} format chooser is a native select`).toBe("SELECT");
+  expect(Array.from(chooser.options).map((option) => [option.value, option.text]), `${label} offers Hex, RGB, HSL and OKLCH`).toEqual(colorFormats.map(([format, text]) => [format, text]));
+  await expect(chooser).toHaveValue("hex");
+  expect(picker.getAllByRole("textbox"), `${label} has exactly one text field`).toHaveLength(1);
+
+  const well = picker.getByLabelText(`${label} color well`);
+  await expect(well).toHaveAttribute("type", "color");
+  await expect(well).toHaveValue(value);
+  for (const element of [group, ...Array.from(group.querySelectorAll<HTMLElement>("*"))]) {
+    if (element === well) continue;
+    expect(paint(element), `${label}: only the color well paints the chosen color`).not.toBe(color(value));
+  }
+  const groupStyle = getComputedStyle(group);
+  const contentWidth = group.clientWidth - length(groupStyle.paddingLeft) - length(groupStyle.paddingRight);
+  const wellRect = well.getBoundingClientRect();
+  expect(wellRect.width, `${label} swatch spans at least 90% of the picker width`).toBeGreaterThanOrEqual(contentWidth * 0.9);
+  expect(wellRect.height, `${label} swatch is at least 32px tall`).toBeGreaterThanOrEqual(32);
+  expect(document.elementFromPoint(wellRect.left + wellRect.width / 2, wellRect.top + wellRect.height / 2), `${label}: clicking the swatch reaches the native color input`).toBe(well);
+  const walker = document.createTreeWalker(group, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    expect(node.textContent?.toLowerCase().includes(value), `${label} shows its hex value only in the field`).toBe(false);
+  }
+  for (const channel of ["Red", "Green", "Blue"]) {
+    await expect(picker.getByRole("slider", { name: `${label} ${channel} channel` })).toBeEnabled();
+  }
+  return { firstLineTop: Math.min(name!.top, chooserRect.top, fieldRect.top), firstLine: [name!, chooserRect, fieldRect] };
+}
+
+async function checkColorPickerLayout(canvasElement: HTMLElement, width: number) {
+  const { userEvent } = await browser(width);
+  for (const scope of roundTwoScopes(canvasElement, "color")) {
+    const canvas = within(scope);
+    await expectPickerStructure(await canvas.findByRole("group", { name: "Accent color" }), "Accent color", "#4c88c5");
+
+    const slot = canvas.getByRole("button", { name: "Series color 1" });
+    slot.scrollIntoView({ block: "center" });
+    await userEvent.click(slot);
+    const dialog = await within(scope).findByRole("dialog", { name: "Series color 1 picker" });
+    const { firstLineTop, firstLine } = await expectPickerStructure(within(dialog).getByRole("group", { name: "Series color 1" }), "Series color 1", "#4c88c5");
+    const dialogRect = dialog.getBoundingClientRect();
+    expect(firstLineTop - dialogRect.top, "Picker's first line sits at least 16px below the popover's top edge").toBeGreaterThanOrEqual(16);
+    if (width === 390) {
+      const dialogStyle = getComputedStyle(dialog);
+      expect(dialogRect.left >= 0 && dialogRect.top >= 0 && dialogRect.right <= window.innerWidth && dialogRect.bottom <= window.innerHeight, "Color popover stays inside the 390px viewport").toBe(true);
+      for (const rect of firstLine) {
+        expect(rect.left, "Picker's first line stays inside the popover's left edge").toBeGreaterThanOrEqual(dialogRect.left + length(dialogStyle.borderLeftWidth));
+        expect(rect.right, "Picker's first line stays inside the popover's right edge").toBeLessThanOrEqual(dialogRect.right - length(dialogStyle.borderRightWidth));
+      }
+      expect(dialog.scrollWidth, "Color popover does not overflow horizontally").toBeLessThanOrEqual(dialog.clientWidth);
+    }
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(slot).toHaveFocus());
+    await expect(dialog).not.toBeInTheDocument();
+  }
+}
+
+export const ColorPickerLayout390: Story = {
+  render: () => <RoundTwoThemes kind="color" />,
+  play: async ({ canvasElement }) => checkColorPickerLayout(canvasElement, 390),
+};
+
+export const ColorPickerLayout1440: Story = {
+  ...ColorPickerLayout390,
+  play: async ({ canvasElement }) => checkColorPickerLayout(canvasElement, 1440),
+};
+
+export const ColorPickerFormats: Story = {
+  render: () => <RoundTwoThemes kind="color" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    colorChanges.clear();
+    const [scope] = roundTwoScopes(canvasElement, "color");
+    const canvas = within(scope!);
+    const group = await canvas.findByRole("group", { name: "Accent color" });
+    const chooser = formatChooser(group, "Accent color");
+    let current: ColorFormat = "hex";
+    for (const [index, reference] of colorReferences.entries()) {
+      if (index > 0) {
+        await userEvent.click(canvas.getByRole("button", { name: `Use ${reference.hex}` }));
+        await expect(valueField(group, "Accent color", current), `An external change to ${reference.hex} shows in the ${current} format`).toHaveValue(reference[current]);
+      }
+      for (const [format] of colorFormats) {
+        await userEvent.selectOptions(chooser, format);
+        current = format;
+        await expect(valueField(group, "Accent color", format), `${reference.hex} in ${format}`).toHaveValue(reference[format]);
+        expect(colorChangesOf("light Accent color"), "Choosing a format keeps the color").toEqual([]);
+      }
+    }
+    const locked = canvas.getByRole("group", { name: "Locked color" });
+    for (const control of [
+      within(locked).getByLabelText("Locked color color well"),
+      formatChooser(locked, "Locked color"),
+      valueField(locked, "Locked color", "hex"),
+      ...["Red", "Green", "Blue"].map((channel) => within(locked).getByRole("slider", { name: `Locked color ${channel} channel` })),
+    ]) {
+      await expect(control).toBeDisabled();
+    }
+  },
+};
+
+const colorEntries: ReadonlyArray<{ format: ColorFormat; entry: string; expected: string; exact: boolean }> = [
+  { format: "hex", entry: "#123456", expected: "#123456", exact: true },
+  { format: "hex", entry: "#ABCDEF", expected: "#abcdef", exact: true },
+  { format: "rgb", entry: "18 52 86", expected: "#123456", exact: true },
+  { format: "rgb", entry: "rgb(18 52 86)", expected: "#123456", exact: true },
+  { format: "rgb", entry: "rgb(18, 52, 86)", expected: "#123456", exact: true },
+  { format: "hsl", entry: "210 65% 20%", expected: "#123456", exact: false },
+  { format: "hsl", entry: "hsl(210 65% 20%)", expected: "#123456", exact: false },
+  { format: "oklch", entry: "0.319 0.072 251.2", expected: "#123456", exact: false },
+  { format: "oklch", entry: "oklch(0.319 0.072 251.2)", expected: "#123456", exact: false },
+  { format: "oklch", entry: "31.9% 0.072 251.2", expected: "#123456", exact: false },
+  { format: "oklch", entry: "oklch(31.9% 0.072 251.2)", expected: "#123456", exact: false },
+];
+
+async function expectInvalidDraft(field: HTMLInputElement, entry: string) {
+  await expect(field, `${entry} is marked invalid`).toHaveAttribute("aria-invalid", "true");
+  const explanations = (field.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean).map((id) => document.getElementById(id));
+  expect(explanations.some((explanation) => explanation && explanation.textContent?.trim() && visible(explanation)), `${entry} has a visible explanation`).toBe(true);
+}
+
+export const ColorPickerEditing: Story = {
+  render: () => <RoundTwoThemes kind="color" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    colorChanges.clear();
+    const [scope] = roundTwoScopes(canvasElement, "color");
+    const canvas = within(scope!);
+    const key = "light Accent color";
+    const group = await canvas.findByRole("group", { name: "Accent color" });
+    for (const { format, entry, expected, exact } of colorEntries) {
+      // Start from a different color so each entry's change is observable.
+      await userEvent.click(canvas.getByRole("button", { name: "Use #c2410c" }));
+      await userEvent.selectOptions(formatChooser(group, "Accent color"), format);
+      const field = valueField(group, "Accent color", format);
+      const before = colorChangesOf(key).length;
+      await userEvent.clear(field);
+      await userEvent.type(field, entry);
+      const recorded = colorChangesOf(key);
+      expect(recorded.length, `${entry} calls onValueChange`).toBeGreaterThan(before);
+      const last = recorded.at(-1)!;
+      expect(last, `${entry} reports a lowercase #rrggbb`).toMatch(/^#[0-9a-f]{6}$/);
+      if (exact) {
+        expect(last, `${entry} reports the exact color`).toBe(expected);
+      } else {
+        for (const [index, channel] of channels(last).entries()) {
+          expect(Math.abs(channel - channels(expected)[index]!), `${entry} reports ${expected} within 2 per channel, got ${last}`).toBeLessThanOrEqual(2);
+        }
+      }
+      if (format !== "hex") await expect(field, `${entry} stays as typed`).toHaveValue(entry);
+    }
+
+    const well = within(group).getByLabelText("Accent color color well");
+    fireEvent.input(well, { target: { value: "#808080" } });
+    await waitFor(() => expect(colorChangesOf(key).at(-1), "Changing the color well updates the color").toBe("#808080"));
+    await expect(well).toHaveValue("#808080");
+
+    for (const { format, entry, reset } of [{ format: "rgb", entry: "18 52", reset: "#c2410c" }, { format: "hex", entry: "#12", reset: "#808080" }] as const) {
+      await userEvent.click(canvas.getByRole("button", { name: `Use ${reset}` }));
+      await userEvent.selectOptions(formatChooser(group, "Accent color"), format);
+      const field = valueField(group, "Accent color", format);
+      const before = colorChangesOf(key).length;
+      await userEvent.clear(field);
+      await userEvent.type(field, entry);
+      await expectInvalidDraft(field, entry);
+      expect(colorChangesOf(key), `${entry} does not change the color`).toHaveLength(before);
+    }
+
+    const slot = canvas.getByRole("button", { name: "Series color 2" });
+    slot.scrollIntoView({ block: "center" });
+    await userEvent.click(slot);
+    const dialog = await within(scope!).findByRole("dialog", { name: "Series color 2 picker" });
+    const slotGroup = within(dialog).getByRole("group", { name: "Series color 2" });
+    await userEvent.selectOptions(formatChooser(slotGroup, "Series color 2"), "rgb");
+    const slotField = valueField(slotGroup, "Series color 2", "rgb");
+    await expect(slotField).toHaveValue("194 65 12");
+    await userEvent.clear(slotField);
+    await userEvent.type(slotField, "18 52 86");
+    expect(colorChangesOf("light Series color 2").at(-1), "The popover picker reports the typed color").toBe("#123456");
+    await expect(slotField).toHaveValue("18 52 86");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(slot).toHaveFocus());
+    expect(paint(slot), "The slot paints the color chosen in its picker").toBe(color("#123456"));
+  },
+};
+
+type PaintedPixels = { data: Uint8ClampedArray; width: number; left: number; top: number; scale: number };
+
+async function paintedPixels(session: CDPSession, element: HTMLElement, margin: number): Promise<PaintedPixels> {
+  const rect = topLevelRect(element.getBoundingClientRect());
+  const left = Math.floor(rect.left - margin);
+  const top = Math.floor(rect.top - margin);
+  const width = Math.ceil(rect.left + rect.width + margin) - left;
+  const height = Math.ceil(rect.top + rect.height + margin) - top;
+  const { data: png } = await session.send("Page.captureScreenshot", { format: "png", clip: { x: left, y: top, width, height, scale: 1 } });
+  const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${png}`)).blob());
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("Canvas pixel decoding is unavailable");
+  context.drawImage(bitmap, 0, 0);
+  return { data: context.getImageData(0, 0, bitmap.width, bitmap.height).data, width: bitmap.width, left, top, scale: bitmap.width / width };
+}
+
+function trackCoverage(pixel: number[], track: number[], others: number[][]): number {
+  // Project onto the segment toward the track paint from whichever other paint (knob or page) explains the pixel best.
+  let best = { coverage: 0, residual: Number.POSITIVE_INFINITY };
+  for (const other of others) {
+    const axis = [0, 1, 2].map((index) => track[index]! - other[index]!);
+    const offset = [0, 1, 2].map((index) => pixel[index]! - other[index]!);
+    const span = axis.reduce((sum, value) => sum + value * value, 0);
+    const coverage = Math.min(1, Math.max(0, offset.reduce((sum, value, index) => sum + value * axis[index]!, 0) / span));
+    const residual = Math.hypot(...offset.map((value, index) => value - coverage * axis[index]!));
+    if (residual < best.residual) best = { coverage, residual };
+  }
+  return best.coverage;
+}
+
+async function paintedKnobGaps(session: CDPSession, control: HTMLElement, scope: HTMLElement) {
+  const knob = control.firstElementChild as HTMLElement;
+  const pixels = await paintedPixels(session, control, 3);
+  const track = role(control, control.getAttribute("aria-checked") === "true" ? "accent" : "border").split(",").map(Number);
+  const others = [role(control, "surface").split(",").map(Number), paintedBackground(control.parentElement!, scope)];
+  const coverageAt = (x: number, y: number) => {
+    const offset = (y * pixels.width + x) * 4;
+    return trackCoverage(Array.from(pixels.data.slice(offset, offset + 3)), track, others);
+  };
+  const knobRect = topLevelRect(knob.getBoundingClientRect());
+  const trackRect = topLevelRect(control.getBoundingClientRect());
+  const centerX = (knobRect.left + knobRect.width / 2 - pixels.left) * pixels.scale;
+  const centerY = (knobRect.top + knobRect.height / 2 - pixels.top) * pixels.scale;
+  const rows = pixels.data.length / 4 / pixels.width;
+  let top = 0;
+  let bottom = 0;
+  for (let y = 0; y < rows; y += 1) {
+    if (y + 0.5 < centerY) top += coverageAt(Math.floor(centerX), y);
+    else if (y + 0.5 > centerY) bottom += coverageAt(Math.floor(centerX), y);
+  }
+  let start = 0;
+  let end = 0;
+  for (let x = 0; x < pixels.width; x += 1) {
+    if (x + 0.5 < centerX) start += coverageAt(x, Math.floor(centerY));
+    else if (x + 0.5 > centerX) end += coverageAt(x, Math.floor(centerY));
+  }
+  const nearerEnd = knobRect.left + knobRect.width / 2 < trackRect.left + trackRect.width / 2 ? start : end;
+  return { top, bottom, end: nearerEnd };
+}
+
+async function parkPointerOutsideFrame(session: CDPSession) {
+  const frame = topLevelRect({ left: 0, top: 0, width: window.innerWidth, height: window.innerHeight });
+  const host = window.top!;
+  const point = frame.left + frame.width + 4 < host.innerWidth
+    ? { x: frame.left + frame.width + 2, y: frame.top + 2 }
+    : { x: frame.left + 2, y: frame.top + frame.height + 2 };
+  expect(point.x < host.innerWidth && point.y < host.innerHeight, "The pointer parks outside the test frame").toBe(true);
+  await session.send("Input.dispatchMouseEvent", { type: "mouseMoved", ...point });
+}
+
+async function checkPaintedSwitches(canvasElement: HTMLElement, width: number) {
+  const context = await browser(width);
+  const session = context.cdp();
+  await session.send("Emulation.setDeviceMetricsOverride", { ...unscaledHost, deviceScaleFactor: 1, mobile: false });
+  try {
+    // The runner fits its frame on viewport changes; reapply the width on the enlarged host.
+    await context.page.viewport(width, 844);
+    const frame = topLevelRect({ left: 0, top: 0, width: window.innerWidth, height: window.innerHeight });
+    expect(frame.width / window.innerWidth, "Painted measurement needs an unscaled test frame").toBe(1);
+    await parkPointerOutsideFrame(session);
+    for (const scope of roundTwoScopes(canvasElement, "switch")) {
+      const switches = await within(scope).findAllByRole("switch");
+      expect(switches, "Every zoom and offset renders an on and an off switch").toHaveLength(switchZooms.length * switchOffsets.length * 2);
+      await settled(scope);
+      for (const control of switches) {
+        control.scrollIntoView({ block: "center" });
+        expect(control.matches(":hover"), "The pointer is parked away from the switch").toBe(false);
+        const name = `${scope.dataset.theme} ${control.getAttribute("aria-label")}`;
+        const gaps = await paintedKnobGaps(session, control, scope);
+        expect(Math.abs(gaps.top - gaps.bottom), `${name}: painted knob gaps top ${gaps.top.toFixed(2)} and bottom ${gaps.bottom.toFixed(2)} device px differ by at most 0.35`).toBeLessThanOrEqual(0.35);
+        const crossAxis = (gaps.top + gaps.bottom) / 2;
+        expect(Math.abs(gaps.end - crossAxis), `${name}: painted end gap ${gaps.end.toFixed(2)} device px is within 0.5 of the cross-axis gap ${crossAxis.toFixed(2)}`).toBeLessThanOrEqual(0.5);
+      }
+    }
+  } finally {
+    await session.send("Emulation.clearDeviceMetricsOverride");
+  }
+}
+
 export const SwitchKnobCentered390: Story = {
-  render: () => <BothThemes kind="selection" />,
-  play: async ({ canvasElement }) => checkSwitchKnobCentered(canvasElement, 390),
+  render: () => <RoundTwoThemes kind="switch" />,
+  play: async ({ canvasElement }) => checkPaintedSwitches(canvasElement, 390),
 };
 
 export const SwitchKnobCentered1440: Story = {
   ...SwitchKnobCentered390,
-  play: async ({ canvasElement }) => checkSwitchKnobCentered(canvasElement, 1440),
+  play: async ({ canvasElement }) => checkPaintedSwitches(canvasElement, 1440),
 };
 
 function tabIndicator(list: HTMLElement, trigger: HTMLElement) {

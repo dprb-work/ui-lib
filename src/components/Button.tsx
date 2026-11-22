@@ -33,6 +33,11 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border-ui-danger-ink bg-transparent text-ui-danger hover:bg-ui-danger-fill active:bg-ui-danger-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-danger-ink)]",
 };
 
+// A pressed secondary toggle keeps ordinary ink on an accent-tinted fill with an accent edge,
+// so "on" never reads as a primary action and toggling never changes the button's size.
+const toggleOnClasses =
+  "border-ui-accent [--ui-control-fill:color-mix(in_srgb,var(--color-ui-accent)_20%,var(--color-ui-surface))] bg-[var(--ui-control-fill)] text-ui-surface-foreground hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]";
+
 export function Button({
   className,
   children,
@@ -47,7 +52,7 @@ export function Button({
   const busy = ariaBusy === true || ariaBusy === "true";
   const selected = buttonProps["aria-pressed"] === true || buttonProps["aria-pressed"] === "true";
   const iconOnly = size === "icon";
-  const filledSelection = !iconOnly && variant === "secondary" && selected;
+  const toggleOn = !iconOnly && variant === "secondary" && selected;
   const button = (
     <button
       {...buttonProps}
@@ -57,7 +62,7 @@ export function Button({
       className={cn(
         baseClasses,
         sizeClasses[size],
-        variantClasses[filledSelection ? "primary" : variant],
+        toggleOn ? toggleOnClasses : variantClasses[variant],
         iconOnly && variant !== "primary" && "focus-visible:border-ui-accent-link focus-visible:bg-ui-press-fill focus-visible:shadow-none",
         selected && (variant === "ghost" || (iconOnly && variant !== "primary")) && "text-ui-accent",
         className,

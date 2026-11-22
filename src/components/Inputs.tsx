@@ -51,14 +51,14 @@ export type SelectInputProps = {
 };
 
 const defaultClasses =
-  "h-7 w-full rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pl-1 pr-0 [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-1 pb-0.5 pl-1 pr-0 [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const subtleClasses =
-  "h-7 w-full border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 pt-1 pb-0.5 [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 const textareaDefaultClasses =
-  "min-h-16 w-full rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent px-1 pt-1 pb-0.5 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const textareaSubtleClasses =
-  "min-h-16 w-full border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 py-1 [field-sizing:content] [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 pt-1 pb-0.5 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
@@ -200,8 +200,8 @@ export function SelectInput({
   const compact = density === "compact";
   const triggerClasses = cn(
     appearance === "subtle" ? subtleClasses : defaultClasses,
-    compact && "h-5 text-xs",
-    isInvalid && "border-ui-danger text-ui-danger",
+    compact && "h-5 py-0 text-xs",
+    isInvalid && "border-ui-danger",
     "flex min-w-0 items-center justify-between gap-1 overflow-hidden whitespace-nowrap text-left",
     className,
   );
@@ -221,7 +221,7 @@ export function SelectInput({
             aria-label={label}
             aria-invalid={isInvalid || undefined}
             aria-describedby={error ? errorId : undefined}
-            className={cn(triggerClasses, !compact && "text-sm")}
+            className={triggerClasses}
           >
             <Select.Value className="truncate" />
             <Select.Icon className="shrink-0 text-ui-muted-foreground">
@@ -238,7 +238,7 @@ export function SelectInput({
               aria-label={label}
               aria-invalid={isInvalid || undefined}
               aria-describedby={error ? errorId : undefined}
-              className={cn(triggerClasses, !compact && "text-sm")}
+              className={triggerClasses}
             >
               <Select.Value className="truncate" />
               <Select.Icon className="shrink-0 text-ui-muted-foreground">

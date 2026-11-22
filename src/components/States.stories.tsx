@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Pin, Search } from "lucide-react";
-import { useState } from "react";
+import { Pin, Search, Trash2 } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
 import { Button } from "./Button";
 import { Checkbox, Switch } from "./BinaryControls";
@@ -10,6 +10,7 @@ import { IconButton } from "./IconButton";
 import { CopyButton, Tabs } from "./Interactions";
 import { NativeSelect } from "./NativeSelect";
 import { NumberInput, SelectInput, TextareaInput, TextInput } from "./Inputs";
+import { PortalProvider } from "./portal-context";
 import { SegmentedControl } from "./SegmentedControl";
 
 const meta = {
@@ -20,10 +21,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+type Theme = "light" | "dark";
+const themes = ["light", "dark"] as const;
 const choices = [{ value: "one", label: "One" }, { value: "two", label: "Two" }];
 const views = [{ value: "graph", label: "Graph" }, { value: "data", label: "Data" }];
+const listChoices = [{ value: "graph", label: "Graph" }, { value: "data", label: "Data" }, { value: "table", label: "Table" }];
 
-function StateExample({ theme }: { theme: "light" | "dark" }) {
+function ThemeScope({ theme, label, children }: { theme: Theme; label: string; children: ReactNode }) {
+  // Portaled overlays render inside the section so they take its theme, as in an application's nested theme region.
+  const [portal, setPortal] = useState<HTMLElement | null>(null);
+  return (
+    <section ref={setPortal} data-theme={theme} aria-label={label} className="grid min-w-0 content-start gap-6 rounded-lg border border-ui-border bg-ui-background p-4 text-sm text-ui-foreground">
+      {portal && <PortalProvider container={portal}>{children}</PortalProvider>}
+    </section>
+  );
+}
+
+function StateExample({ theme }: { theme: Theme }) {
   const [pinned, setPinned] = useState(true);
   const [selected, setSelected] = useState(true);
   const [tab, setTab] = useState("graph");
@@ -33,7 +47,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
   const [colors, setColors] = useState(["#4c88c5", "#aa7a35"]);
   const [message, setMessage] = useState("Use Tab to inspect keyboard focus. Hold Space or the pointer to inspect press feedback.");
   return (
-    <section data-theme={theme} aria-label={`${theme} shared control states`} className="grid min-w-0 content-start gap-6 rounded-lg border border-ui-border bg-ui-background p-4 text-sm text-ui-foreground">
+    <ThemeScope theme={theme} label={`${theme} shared control states`}>
       <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
       <div className="grid gap-3">
         <h3 className="font-semibold">Actions and availability</h3>
@@ -60,6 +74,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
         <label className="grid gap-1">Native choice<NativeSelect defaultValue="one">{choices.map((choice) => <option key={choice.value} value={choice.value}>{choice.label}</option>)}</NativeSelect></label>
         <div className="grid gap-1"><span>Shared choice</span><SelectInput label="Shared choice" defaultValue="one" options={choices} /></div>
         <label className="grid gap-1">Required name<TextInput error="Enter a name before saving." /></label>
+        <label className="grid gap-1">Order number<TextInput defaultValue="12-AB" aria-invalid /></label>
         <label className="grid gap-1">Unavailable field<TextInput defaultValue="Unavailable" disabled /></label>
       </div>
       <div className="grid gap-3">
@@ -79,7 +94,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
         <Calendar ariaLabel={`${theme} date choice`} month={month} onMonthChange={setMonth} value={day} onValueChange={setDay} />
         <ColorSelector label={`${theme} data color`} colors={colors} onValueChange={(index, value) => setColors(colors.map((color, slot) => slot === index ? value : color))} />
       </div>
-    </section>
+    </ThemeScope>
   );
 }
 
@@ -89,10 +104,82 @@ export const SharedControls: Story = {
       <header className="grid gap-2 text-sm">
         <h1 className="text-xl font-semibold">Color, fill and keyboard shape</h1>
         <p>Color carries selected/on or status meaning. Hover adds a faint fill; held press adds a stronger fill. Focus uses an inside edge, field underline or icon plate, never a floating offset ring.</p>
-        <p>Disabled fades. Busy shows one spinner without becoming disabled or faded. Invalid drafts keep danger color and their explanation during focus.</p>
-        <p>Graph/Data tabs retain their box, selected fill and bold. The tabs share the full width and do not gain an underline.</p>
+        <p>Disabled fades. Busy shows one spinner without becoming disabled or faded. An invalid draft colors only its underline; the application decides whether an explanation appears below it.</p>
+        <p>Selected tabs and segments take the accent fill with ordinary text. A pressed toggle button gets an accent edge on a tinted fill, never the primary action's solid fill.</p>
       </header>
-      <div className="grid gap-6 lg:grid-cols-2">{(["light", "dark"] as const).map((theme) => <StateExample key={theme} theme={theme} />)}</div>
+      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <StateExample key={theme} theme={theme} />)}</div>
+    </main>
+  ),
+};
+
+function OptionListComparison({ theme }: { theme: Theme }) {
+  const [insetPortal, setInsetPortal] = useState<HTMLElement | null>(null);
+  return (
+    <ThemeScope theme={theme} label={`${theme} option list comparison`}>
+      <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
+      <div className="grid gap-1">
+        <span>Current: the highlight runs edge to edge</span>
+        <SelectInput label={`${theme} current option list`} defaultValue="graph" options={listChoices} />
+      </div>
+      {/* Proposal only: the list gains inner padding and each highlighted option a rounded inset fill. */}
+      <div ref={setInsetPortal} className="grid gap-1 [&_[role=listbox]]:p-1 [&_[role=option]]:rounded-md">
+        <span>Alternative: inset options with a rounded highlight</span>
+        {insetPortal && (
+          <PortalProvider container={insetPortal}>
+            <SelectInput label={`${theme} inset option list`} defaultValue="graph" options={listChoices} />
+          </PortalProvider>
+        )}
+      </div>
+    </ThemeScope>
+  );
+}
+
+export const OptionListPadding: Story = {
+  render: () => (
+    <main className="mx-auto grid max-w-4xl gap-6 text-ui-foreground">
+      <header className="grid gap-2 text-sm">
+        <h1 className="text-xl font-semibold">Option list padding</h1>
+        <p>Open each list and move the pointer over an option. The current list stays the default until one is chosen.</p>
+      </header>
+      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <OptionListComparison key={theme} theme={theme} />)}</div>
+    </main>
+  ),
+};
+
+// Proposal only: hover changes ink, never the fill or the size.
+const calmDangerText = "border-ui-border hover:border-ui-danger-ink hover:bg-transparent active:bg-ui-danger-fill";
+const calmDangerIcon = "border-transparent text-ui-muted-foreground hover:bg-transparent hover:text-ui-danger active:bg-ui-danger-fill";
+
+function DangerHoverComparison({ theme }: { theme: Theme }) {
+  return (
+    <ThemeScope theme={theme} label={`${theme} danger hover comparison`}>
+      <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
+      <div className="grid gap-3">
+        <h3 className="font-semibold">Current: hover fills the button</h3>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="danger">Delete</Button>
+          <IconButton label="Delete item" size="large" variant="danger"><Trash2 aria-hidden="true" /></IconButton>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        <h3 className="font-semibold">Calm: hover changes only the ink</h3>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="danger" className={calmDangerText}>Delete</Button>
+          <IconButton label="Delete item, calm hover" size="large" variant="danger" className={calmDangerIcon}><Trash2 aria-hidden="true" /></IconButton>
+        </div>
+      </div>
+    </ThemeScope>
+  );
+}
+
+export const DangerHover: Story = {
+  render: () => (
+    <main className="mx-auto grid max-w-4xl gap-6 text-ui-foreground">
+      <header className="grid gap-2 text-sm">
+        <h1 className="text-xl font-semibold">Delete hover</h1>
+        <p>Move the pointer over each delete control. The current behavior stays the default until one is chosen.</p>
+      </header>
+      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <DangerHoverComparison key={theme} theme={theme} />)}</div>
     </main>
   ),
 };

@@ -11,9 +11,9 @@ export type NativeSelectProps = Omit<ComponentPropsWithRef<"select">, "title"> &
 };
 
 const standardClasses =
-  "min-h-11 w-full appearance-none rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-2 pl-1 pr-6 [font-family:inherit] text-sm text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-7 w-full appearance-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-1 pb-0.5 pl-1 pr-6 [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const compactClasses =
-  "min-h-8 w-full cursor-pointer appearance-none rounded-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pl-1 pr-5 [font-family:inherit] text-sm text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:text-ui-danger aria-invalid:focus:border-ui-danger aria-invalid:focus:bg-ui-danger-fill disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-5 w-full cursor-pointer appearance-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent py-0 pl-1 pr-5 [font-family:inherit] text-xs text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 export function NativeSelect({
   className,
@@ -36,7 +36,7 @@ export function NativeSelect({
         aria-hidden="true"
         className={cn(
           "pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-ui-muted-foreground",
-          density === "compact" ? "right-0 size-3" : "top-[calc(50%+0.25rem)] size-3.5",
+          density === "compact" ? "right-0 size-3" : "size-3.5",
         )}
       />
     </div>

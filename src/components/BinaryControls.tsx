@@ -32,7 +32,8 @@ export function Switch({ label, className, tooltip, ref, ...switchProps }: Switc
         className,
       )}
     >
-      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface shadow-sm transition-transform data-[state=checked]:translate-x-4" />
+      {/* No offset shadow: a downward shadow moves the knob's painted center below the track's. */}
+      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface transition-transform data-[state=checked]:translate-x-4" />
     </RadixSwitch.Root>
   );
 

@@ -110,11 +110,12 @@ light and dark examples in the catalog's **Foundations / States** story.
 - **Color says what it is:** selected or on uses the accent; status uses its role color.
 - **Fill says what the pointer is doing:** hover gets a faint tint; press feedback gets a stronger tint. Neither means a toggle is on.
 - **Shape says where the keyboard is:** focus has no floating offset ring. Fields get a 2px accent underline and faint tint. Buttons get a 2px border inside the edge, using the on-accent color on filled buttons. Icon-only buttons get a small tinted plate behind the icon, leaving the icon's color free to mean on.
-- **Disabled is faded. Busy has a spinner, not fading. Invalid uses danger color plus words.**
+- **Disabled is faded. Busy has a spinner, not fading. Invalid colors only the field's underline, in danger.** Whether an explanation appears below it is the application's choice.
 
-Tabs retain their rounded group border, selected fill and bold text. They have
-no selected underline; the group fills its container and tabs share its width
-equally. Keyboard focus remains separate from selection.
+Tabs retain their rounded group border and bold selected text. The selected tab
+and segment take the accent fill with on-accent text. They have no selected
+underline; the group fills its container and tabs share its width equally.
+Keyboard focus remains separate from selection.
 
 Focus uses the existing readable accent role where contrast requires it, not
 a new palette stop. Filled controls use their on-color edge; unchecked switches

@@ -27,6 +27,38 @@
   appearance: none;
 }
 
+/* Chromium's customizable select keeps the native element, keyboard and form value
+   while the open list matches SelectInput: inset rounded options with a calm, neutral
+   highlight. Other browsers keep their own picker. */
+@supports (appearance: base-select) {
+  [data-ui-native-select],
+  [data-ui-native-select]::picker(select) {
+    appearance: base-select;
+  }
+
+  [data-ui-native-select]::picker-icon {
+    display: none;
+  }
+
+  [data-ui-native-select]::picker(select) {
+    @apply mt-1 rounded-md border border-ui-border bg-ui-surface p-1 text-ui-surface-foreground shadow-xl;
+  }
+
+  [data-ui-native-select] option {
+    @apply flex h-7 items-center gap-2 rounded-md px-2 text-xs outline-hidden [--ui-control-fill:var(--color-ui-surface)] [--ui-feedback-tint:var(--color-ui-foreground)] [--ui-hover-weight:8%] [--ui-press-weight:16%];
+  }
+
+  /* One active option: the pointer's while it is over the list, otherwise the keyboard's. */
+  [data-ui-native-select] option:hover,
+  [data-ui-native-select]:not(:has(option:hover)) option:focus-visible {
+    @apply bg-ui-hover-fill text-ui-foreground;
+  }
+
+  [data-ui-native-select] option:active {
+    @apply bg-ui-press-fill;
+  }
+}
+
 [data-ui-chart] {
   position: relative;
   min-width: 0;

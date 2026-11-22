@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Pin, Search, Trash2 } from "lucide-react";
+import { Pin, Search } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import { Button } from "./Button";
@@ -25,7 +25,6 @@ type Theme = "light" | "dark";
 const themes = ["light", "dark"] as const;
 const choices = [{ value: "one", label: "One" }, { value: "two", label: "Two" }];
 const views = [{ value: "graph", label: "Graph" }, { value: "data", label: "Data" }];
-const listChoices = [{ value: "graph", label: "Graph" }, { value: "data", label: "Data" }, { value: "table", label: "Table" }];
 
 function ThemeScope({ theme, label, children }: { theme: Theme; label: string; children: ReactNode }) {
   // Portaled overlays render inside the section so they take its theme, as in an application's nested theme region.
@@ -103,83 +102,11 @@ export const SharedControls: Story = {
     <main className="mx-auto grid max-w-6xl gap-6 text-ui-foreground">
       <header className="grid gap-2 text-sm">
         <h1 className="text-xl font-semibold">Color, fill and keyboard shape</h1>
-        <p>Color carries selected/on or status meaning. Hover adds a faint fill; held press adds a stronger fill. Focus uses an inside edge, field underline or icon plate, never a floating offset ring.</p>
+        <p>Color carries selected/on or status meaning. Hover adds a faint fill; held press adds a stronger fill. An outlined delete action fills with red under the pointer. Focus uses an inside edge, field underline or icon plate, never a floating offset ring.</p>
         <p>Disabled fades. Busy shows one spinner without becoming disabled or faded. An invalid draft colors only its underline; the application decides whether an explanation appears below it.</p>
         <p>Selected tabs and segments take the accent fill with ordinary text. A pressed toggle button gets an accent edge on a tinted fill, never the primary action's solid fill.</p>
       </header>
       <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <StateExample key={theme} theme={theme} />)}</div>
-    </main>
-  ),
-};
-
-function OptionListComparison({ theme }: { theme: Theme }) {
-  const [insetPortal, setInsetPortal] = useState<HTMLElement | null>(null);
-  return (
-    <ThemeScope theme={theme} label={`${theme} option list comparison`}>
-      <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
-      <div className="grid gap-1">
-        <span>Current: the highlight runs edge to edge</span>
-        <SelectInput label={`${theme} current option list`} defaultValue="graph" options={listChoices} />
-      </div>
-      {/* Proposal only: the list gains inner padding and each highlighted option a rounded inset fill. */}
-      <div ref={setInsetPortal} className="grid gap-1 [&_[role=listbox]]:p-1 [&_[role=option]]:rounded-md">
-        <span>Alternative: inset options with a rounded highlight</span>
-        {insetPortal && (
-          <PortalProvider container={insetPortal}>
-            <SelectInput label={`${theme} inset option list`} defaultValue="graph" options={listChoices} />
-          </PortalProvider>
-        )}
-      </div>
-    </ThemeScope>
-  );
-}
-
-export const OptionListPadding: Story = {
-  render: () => (
-    <main className="mx-auto grid max-w-4xl gap-6 text-ui-foreground">
-      <header className="grid gap-2 text-sm">
-        <h1 className="text-xl font-semibold">Option list padding</h1>
-        <p>Open each list and move the pointer over an option. The current list stays the default until one is chosen.</p>
-      </header>
-      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <OptionListComparison key={theme} theme={theme} />)}</div>
-    </main>
-  ),
-};
-
-// Proposal only: hover changes ink, never the fill or the size.
-const calmDangerText = "border-ui-border hover:border-ui-danger-ink hover:bg-transparent active:bg-ui-danger-fill";
-const calmDangerIcon = "border-transparent text-ui-muted-foreground hover:bg-transparent hover:text-ui-danger active:bg-ui-danger-fill";
-
-function DangerHoverComparison({ theme }: { theme: Theme }) {
-  return (
-    <ThemeScope theme={theme} label={`${theme} danger hover comparison`}>
-      <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
-      <div className="grid gap-3">
-        <h3 className="font-semibold">Current: hover fills the button</h3>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="danger">Delete</Button>
-          <IconButton label="Delete item" size="large" variant="danger"><Trash2 aria-hidden="true" /></IconButton>
-        </div>
-      </div>
-      <div className="grid gap-3">
-        <h3 className="font-semibold">Calm: hover changes only the ink</h3>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="danger" className={calmDangerText}>Delete</Button>
-          <IconButton label="Delete item, calm hover" size="large" variant="danger" className={calmDangerIcon}><Trash2 aria-hidden="true" /></IconButton>
-        </div>
-      </div>
-    </ThemeScope>
-  );
-}
-
-export const DangerHover: Story = {
-  render: () => (
-    <main className="mx-auto grid max-w-4xl gap-6 text-ui-foreground">
-      <header className="grid gap-2 text-sm">
-        <h1 className="text-xl font-semibold">Delete hover</h1>
-        <p>Move the pointer over each delete control. The current behavior stays the default until one is chosen.</p>
-      </header>
-      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <DangerHoverComparison key={theme} theme={theme} />)}</div>
     </main>
   ),
 };

@@ -29,8 +29,9 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border-ui-border bg-ui-surface text-ui-surface-foreground hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
   ghost:
     "border-transparent bg-transparent text-ui-muted-foreground hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
+  // Outlined at rest; hover and press fill with solid danger and switch to on-danger ink.
   danger:
-    "border-ui-danger-ink bg-transparent text-ui-danger hover:bg-ui-danger-fill active:bg-ui-danger-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-danger-ink)]",
+    "border-ui-danger-ink bg-transparent text-ui-danger hover:border-ui-danger-hover hover:bg-ui-danger-hover hover:text-ui-on-danger active:border-ui-danger-press-fill active:bg-ui-danger-press-fill active:text-ui-on-danger focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-danger-ink)] hover:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-danger)]",
 };
 
 // A pressed secondary toggle keeps ordinary ink on an accent-tinted fill with an accent edge,

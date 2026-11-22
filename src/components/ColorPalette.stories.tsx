@@ -32,9 +32,9 @@ const semanticTokens: ColorToken[] = [
   { name: "Info", variable: "--color-ui-info-ink", use: "Information text and icons", foreground: "--color-ui-info-fill" },
   { name: "Info fill", variable: "--color-ui-info-fill", use: "Information feedback background", foreground: "--color-ui-info-ink" },
   { name: "Danger", variable: "--color-ui-danger", use: "Solid danger: confirming actions only", foreground: "--color-ui-on-danger" },
-  { name: "Danger hover", variable: "--color-ui-danger-hover", use: "Solid confirming-action hover fill", foreground: "--color-ui-on-danger" },
+  { name: "Danger hover", variable: "--color-ui-danger-hover", use: "Solid danger hover fill, including outlined delete actions", foreground: "--color-ui-on-danger" },
   { name: "Danger ink", variable: "--color-ui-danger-ink", use: "Errors, invalid drafts and destructive labels", foreground: "--color-ui-danger-fill" },
-  { name: "Danger fill", variable: "--color-ui-danger-fill", use: "Danger feedback and outlined-action hover", foreground: "--color-ui-danger-ink" },
+  { name: "Danger fill", variable: "--color-ui-danger-fill", use: "Danger feedback background", foreground: "--color-ui-danger-ink" },
 ];
 
 const chartTokens: ColorToken[] = [

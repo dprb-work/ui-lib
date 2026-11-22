@@ -51,21 +51,21 @@ export type SelectInputProps = {
 };
 
 const defaultClasses =
-  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-1 pb-0.5 pl-1 pr-0 [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-1 pb-0.5 pl-2 pr-0 [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const subtleClasses =
-  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 pt-1 pb-0.5 [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "h-7 w-full rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent pt-1 pb-0.5 pl-2 pr-1 [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 const textareaDefaultClasses =
-  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent px-1 pt-1 pb-0.5 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border bg-transparent pt-1 pb-0.5 pl-2 pr-1 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-foreground shadow-none outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 const textareaSubtleClasses =
-  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent px-1 pt-1 pb-0.5 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
+  "min-h-16 w-full resize-none rounded-t-md rounded-b-none border-x-0 border-t-0 border-b-2 border-ui-border/70 bg-transparent pt-1 pb-0.5 pl-2 pr-1 [field-sizing:content] [font-family:inherit] text-sm leading-5 text-ui-muted-foreground outline-hidden [--ui-hover-weight:6%] [--ui-press-weight:12%] transition-colors hover:bg-ui-hover-fill active:bg-ui-press-fill focus:border-ui-accent-link focus:bg-[color-mix(in_srgb,var(--color-ui-accent)_8%,var(--color-ui-surface))] aria-invalid:border-ui-danger aria-invalid:focus:border-ui-danger disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ui-muted-foreground disabled:opacity-50";
 
 function inputClassName(appearance: InputAppearance, className: string | undefined) {
   return cn(appearance === "subtle" ? subtleClasses : defaultClasses, className);
 }
 
 
-function InputError({ id, children }: { id: string; children: ReactNode }) {
+export function InputError({ id, children }: { id: string; children: ReactNode }) {
   return (
     <p id={id} aria-hidden="true" className="m-0 flex min-w-0 items-start gap-ui-icon-text text-xs leading-4 text-ui-danger">
       <CircleX aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
@@ -92,7 +92,7 @@ export function TextInput({
   return (
     <div className="grid gap-1">
       <div className="relative">
-        {type === "search" && <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1 size-3.5 -translate-y-1/2 text-ui-muted-foreground" />}
+        {type === "search" && <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-ui-muted-foreground" />}
         <Tooltip label={tooltip}>
           <input
             {...inputProps}
@@ -100,7 +100,7 @@ export function TextInput({
             id={id}
             aria-describedby={description || undefined}
             aria-invalid={error ? true : ariaInvalid}
-            className={inputClassName(appearance, cn(type === "search" && "pl-6", className))}
+            className={inputClassName(appearance, cn(type === "search" && "pl-7", className))}
             type={type}
           />
         </Tooltip>
@@ -200,7 +200,7 @@ export function SelectInput({
   const compact = density === "compact";
   const triggerClasses = cn(
     appearance === "subtle" ? subtleClasses : defaultClasses,
-    compact && "h-5 py-0 text-xs",
+    compact && "h-5 py-0 pl-1 text-xs",
     isInvalid && "border-ui-danger",
     "flex min-w-0 items-center justify-between gap-1 overflow-hidden whitespace-nowrap text-left",
     className,
@@ -257,16 +257,15 @@ export function SelectInput({
             position="popper"
             sideOffset={4}
           >
-            <Select.Viewport>
+            <Select.Viewport className="p-1">
               {options.map((option) => (
                 <Select.Item
                   key={option.value}
                   value={option.value}
                   disabled={option.disabled}
-                  className={cn(
-                    "relative flex h-7 cursor-default select-none items-center px-7 pr-2 [font-family:inherit] outline-hidden data-[disabled]:opacity-50 data-[highlighted]:bg-ui-hover-fill data-[highlighted]:text-ui-foreground active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]",
-                    compact ? "text-xs" : "text-xs",
-                  )}
+                  // The neutral highlight alone marks the active option for pointer and keyboard, as in the
+                  // native picker; Radix focuses options on pointer move, so an accent edge would follow the pointer.
+                  className="relative flex h-7 cursor-default select-none items-center rounded-md px-7 pr-2 [font-family:inherit] text-xs outline-hidden [--ui-feedback-tint:var(--color-ui-foreground)] [--ui-control-fill:var(--color-ui-surface)] data-[disabled]:opacity-50 data-[highlighted]:bg-ui-hover-fill data-[highlighted]:text-ui-foreground data-[highlighted]:active:bg-ui-press-fill"
                 >
                   <Select.ItemIndicator className="absolute left-2 inline-flex items-center">
                     <Check aria-hidden="true" className="size-3" strokeWidth={2.5} />

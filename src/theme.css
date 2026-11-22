@@ -132,5 +132,6 @@
   --color-ui-hover-fill: color-mix(in srgb, var(--ui-feedback-tint, var(--color-ui-accent)) var(--ui-hover-weight, 8%), var(--ui-control-fill, var(--color-ui-surface)));
   --color-ui-press-fill: color-mix(in srgb, var(--ui-feedback-tint, var(--color-ui-accent)) var(--ui-press-weight, 16%), var(--ui-control-fill, var(--color-ui-surface)));
   --color-ui-accent-press-fill: color-mix(in srgb, var(--color-ui-accent-hover) 88%, white);
-  --color-ui-danger-press-fill: color-mix(in srgb, var(--color-ui-danger-fill) 97%, var(--color-ui-danger-ink));
+  /* Toward the foreground moves away from the background in both themes: darker in light, lighter in dark. */
+  --color-ui-danger-press-fill: color-mix(in srgb, var(--color-ui-danger-hover) 88%, var(--color-ui-foreground));
 }

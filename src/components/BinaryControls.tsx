@@ -28,12 +28,18 @@ export function Switch({ label, className, tooltip, ref, ...switchProps }: Switc
       ref={ref}
       aria-label={label}
       className={cn(
-        "relative h-5 w-9 shrink-0 rounded-full bg-ui-border p-0.5 outline-hidden -outline-offset-2 [--ui-control-fill:var(--color-ui-border)] transition-colors enabled:hover:bg-ui-hover-fill enabled:active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-foreground)] data-[state=checked]:bg-ui-accent data-[state=checked]:hover:bg-ui-accent-hover data-[state=checked]:active:bg-ui-accent-press-fill data-[state=checked]:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] disabled:cursor-not-allowed disabled:opacity-50",
+        "relative h-5 w-9 shrink-0 rounded-full bg-ui-border outline-hidden -outline-offset-2 [--ui-control-fill:var(--color-ui-border)] transition-colors enabled:hover:bg-ui-hover-fill enabled:active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-foreground)] data-[state=checked]:bg-ui-accent data-[state=checked]:hover:bg-ui-accent-hover data-[state=checked]:active:bg-ui-accent-press-fill data-[state=checked]:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
-      {/* No offset shadow: a downward shadow moves the knob's painted center below the track's. */}
-      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface transition-transform data-[state=checked]:translate-x-4" />
+      {/* Chrome applies display scaling as layout zoom, so a 2px inset becomes 2.5 device px and a
+          separately snapped knob box sits a pixel off center. The SVG maps onto the track's own
+          snapped box and anti-aliases the circle there, keeping both gaps equal at any scale. */}
+      <svg aria-hidden="true" viewBox="0 0 36 20" className="pointer-events-none absolute inset-0 size-full">
+        <RadixSwitch.Thumb asChild>
+          <circle cx="10" cy="10" r="8" className="fill-ui-surface transition-transform data-[state=checked]:translate-x-4" />
+        </RadixSwitch.Thumb>
+      </svg>
     </RadixSwitch.Root>
   );
 

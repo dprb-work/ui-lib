@@ -138,8 +138,10 @@ uses Amber, info uses Blue, and danger is an independent red used only for
 status, not one of the ten palette families.
 Pair every status with an icon and words; color alone does not communicate
 status. Links use the readable Green link role and stay underlined. Danger
-buttons use an outlined treatment by default. Reserve a solid danger button for
-the confirming step; consumers can apply the complete treatment through `className`:
+buttons are outlined at rest: danger border and text, no fill. Hover and held
+press fill them with solid danger and switch the text to on-danger. Reserve a
+button that is solid at rest for the confirming step; consumers can apply the
+complete treatment through `className`:
 
 ```tsx
 <Button
@@ -272,7 +274,9 @@ Readable accent and danger text specializations and derived interaction fills us
 work. Hover and press fills mix the existing accent with the control's base;
 they do not introduce another authored palette or focus color. Filled accent
 and outlined danger controls have their own derived press fills to preserve
-their foreground contrast.
+their foreground contrast. An outlined danger button fills with solid
+`danger-hover` on hover; its press fill moves that red toward the foreground,
+away from the background in both themes.
 The theme imports `src/palette.css` for the existing raw `--color-*` ramps;
 both authored files ship with the package. Products reference the public theme
 entry instead of copying either source.
@@ -309,11 +313,16 @@ like a primary action; toggling does not change its size. Persistent
 **Foundations / States** story shows the controls in both themes.
 
 Fields (`TextInput`, `NumberInput`, `TextareaInput`, `NativeSelect` and the
-`SelectInput` trigger) use 0.875rem text that sits close to the underline, a
-28px single-line height and rounded top corners at rest and in focus. An
+`SelectInput` trigger) use 0.875rem text that sits close to the underline and
+starts 8px from the field's left edge (4px in compact density), a 28px
+single-line height and rounded top corners at rest and in focus. An
 invalid field colors only its underline; its background and text keep the valid
 field's paint. Pass `error` to show an explanation, or only `aria-invalid`
 (`invalid` on `SelectInput`) when the application shows no message.
+
+Open option lists (`SelectInput`, and `NativeSelect` where the browser supports
+`appearance: base-select`) inset their options by 4px and round them. The
+option under the pointer or keyboard takes a neutral highlight, not the accent.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
@@ -329,7 +338,9 @@ growth techniques.
 `NativeSelect` styles a native HTML select with a decorative chevron. Use native
 `option` children and select props, including `ref`, `name`, `value`,
 `defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
-and form submission. `density` accepts `standard` or `compact`; standard density
+and form submission; in Chromium the open picker takes the shared option-list
+styling through `appearance: base-select`, and other browsers show their own.
+`density` accepts `standard` or `compact`; standard density
 matches the 28px field height and uses 0.875rem selected text near the underline.
 `className` styles the select, and `wrapperClassName` controls its surrounding
 layout. Consumers own labels, options, and selection policy. Use `SelectInput`
@@ -345,10 +356,13 @@ Its scroll container spans the available width. The consumer owns preferences,
 syntax highlighting, line numbers, and streaming behavior.
 
 `ColorPicker` is controlled by `value` and `onValueChange` using opaque
-`#rrggbb` strings. It provides RGB sliders, a native color well, and an editable
-hex field. Invalid drafts stay in the field without changing the selected color.
-Supply `label` for the controls' accessible names. Compose it with `Popover`
-when selection should open on click; the consumer owns persistence.
+`#rrggbb` strings. Its first line shows the `label`, a format choice (Hex, RGB,
+HSL or OKLCH) and one editable value field in that format. Below it, a single
+swatch is the native color input, so clicking it opens the browser's color
+picker, followed by RGB sliders. Invalid drafts stay in the field without
+changing the selected color. Supply `label` for the controls' accessible names.
+Compose it with `Popover` when selection should open on click; the consumer owns
+persistence.
 
 `ColorSelector` composes `Popover`, `ColorPicker`, and the shared `Tooltip` into
 a controlled row of opaque `#rrggbb` color slots. Its public API is

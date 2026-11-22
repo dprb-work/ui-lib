@@ -47,7 +47,7 @@ export function ColorSelector({
                 />
               </PopoverTrigger>
             </Tooltip>
-            <PopoverContent aria-label={`${slotLabel} picker`} className="w-72">
+            <PopoverContent aria-label={`${slotLabel} picker`} className="w-80 p-4">
               <ColorPicker
                 label={slotLabel}
                 value={color}

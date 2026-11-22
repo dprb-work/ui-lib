@@ -1009,18 +1009,31 @@ export const UncheckedSwitchFeedback: Story = {
     for (const scope of scopes(canvasElement)) {
       const canvas = within(scope);
       const control = canvas.getByRole("switch", { name: "Inactive choice" });
-      const thumb = control.firstElementChild;
-      expect(thumb).not.toBeNull();
+      // Read the knob from the screen, not from an element box: the off knob sits concentric with the
+      // track's start end, so the pixel at that end's center is knob paint whatever element draws it.
+      const knobPaint = async () => {
+        const pixels = await paintedPixels(session, control, 0);
+        const track = topLevelRect(control.getBoundingClientRect());
+        const x = Math.floor((track.left + track.height / 2 - pixels.left) * pixels.scale);
+        const y = Math.floor((track.top + track.height / 2 - pixels.top) * pixels.scale);
+        const offset = (y * pixels.width + x) * 4;
+        return Array.from(pixels.data.slice(offset, offset + 3)).concat(255);
+      };
       await userEvent.hover(canvas.getByTestId("pointer-parking"));
       await expect(control).not.toBeChecked();
+      // A screenshot only holds what the frame shows; the dark probe starts below the fold.
+      control.scrollIntoView({ block: "nearest" });
+      expect(control.matches(":hover"), "The pointer is parked away from the switch").toBe(false);
       await settled(control);
       const rest = paintedBackground(control, scope);
-      const baselineContrast = contrast(rest, paintedBackground(thumb!, scope));
+      const restKnob = await knobPaint();
+      expect(distance(restKnob, rest), "The unchecked switch paints a visible knob on its track").toBeGreaterThan(15);
+      const baselineContrast = contrast(rest, restKnob);
       await userEvent.hover(control);
       await settled(control);
       const hovered = paintedBackground(control, scope);
       expect(distance(hovered, rest)).toBeGreaterThan(2);
-      expect(contrast(hovered, paintedBackground(thumb!, scope)), "Hover must not erase existing track/thumb separation").toBeGreaterThanOrEqual(baselineContrast);
+      expect(contrast(hovered, await knobPaint()), "Hover must not erase existing track/thumb separation").toBeGreaterThanOrEqual(baselineContrast);
       const point = topLevelPoint(control);
       await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
       try {
@@ -1029,7 +1042,7 @@ export const UncheckedSwitchFeedback: Story = {
         await settled(control);
         const pressed = paintedBackground(control, scope);
         expect(distance(pressed, rest)).toBeGreaterThan(distance(hovered, rest) + 1);
-        expect(contrast(pressed, paintedBackground(thumb!, scope)), "Press must not erase existing track/thumb separation").toBeGreaterThanOrEqual(baselineContrast);
+        expect(contrast(pressed, await knobPaint()), "Press must not erase existing track/thumb separation").toBeGreaterThanOrEqual(baselineContrast);
       } finally {
         await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
       }

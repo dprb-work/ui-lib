@@ -1643,13 +1643,14 @@ const unscaledHost = { width: 1700, height: 1000 };
 // A solid red fill's red channel exceeds green and blue by about 100 in both themes; a tint or neutral stays far below 60.
 const solidRedMargin = 60;
 
-type RoundTwoKind = "inset" | "options" | "danger" | "color" | "switch";
+type RoundTwoKind = "inset" | "options" | "danger" | "color" | "switch" | "review";
 const roundTwoRegions: Record<RoundTwoKind, string> = {
   inset: "field inset",
   options: "option lists",
   danger: "danger actions",
   color: "color picker",
   switch: "painted switches",
+  review: "review regressions",
 };
 
 function InsetFields() {
@@ -1730,6 +1731,24 @@ function PaintedSwitches() {
   </div>;
 }
 
+function ReviewProbes({ theme }: { theme: Theme }) {
+  const [value, setValue] = useState("#4c88c5");
+  const [reported, setReported] = useState(value);
+  // This parent records each reported color and applies it only when asked, as an asynchronous store would.
+  return <>
+    <div className="w-80 max-w-full">
+      <ColorPicker label="Deferred color" value={value} onValueChange={(next) => { recordColor(`${theme} Deferred color`, next); setReported(next); }} />
+    </div>
+    <div className="flex flex-wrap gap-2">
+      <Button variant="secondary" onClick={() => setValue(reported)}>Apply reported color</Button>
+      <Button variant="secondary" onClick={() => setValue("#808080")}>Use #808080</Button>
+    </div>
+    <NativeSelect aria-label="Consumer native select" className="appearance-auto rounded-none pl-5" defaultValue="one">
+      {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </NativeSelect>
+  </>;
+}
+
 function RoundTwoSection({ theme, kind }: { theme: Theme; kind: RoundTwoKind }) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   return (
@@ -1741,6 +1760,7 @@ function RoundTwoSection({ theme, kind }: { theme: Theme; kind: RoundTwoKind }) 
         {kind === "danger" && <DangerActions />}
         {kind === "color" && <ColorPickers theme={theme} />}
         {kind === "switch" && <PaintedSwitches />}
+        {kind === "review" && <ReviewProbes theme={theme} />}
       </PortalProvider>}
     </section>
   );
@@ -2618,4 +2638,193 @@ export const SegmentedControlGeometry390: Story = {
 export const SegmentedControlGeometry1440: Story = {
   ...SegmentedControlGeometry390,
   play: async ({ canvasElement }) => checkSegmentedGeometry(canvasElement, 1440),
+};
+
+function insetEdge(element: Element): number[] | undefined {
+  // A contiguous inside edge: an inset shadow with no offset or blur and a spread of at least 1px.
+  for (const shadow of shadows(getComputedStyle(element))) {
+    if (!shadow.includes("inset")) continue;
+    const [offsetX = 0, offsetY = 0, blur = 0, spread = 0] = shadowLengths(shadow);
+    const ink = shadow.match(/(?:rgba?|oklch|oklab|color|hsl|lab|lch)\([^)]*\)/)?.[0];
+    if (offsetX === 0 && offsetY === 0 && blur === 0 && spread >= 1 && ink && rgba(ink)[3]! > 0) return rgba(ink);
+  }
+  return undefined;
+}
+
+function expectKeyboardEdge(option: HTMLElement, fill: number[], list: string) {
+  const edge = insetEdge(option);
+  expect(edge, `${list} keyboard-focused option shows an inside edge`).toBeDefined();
+  expect(contrast(composite(edge!, fill), fill), `${list} keyboard edge reaches 3:1 on the option's fill`).toBeGreaterThanOrEqual(3);
+  return edge!;
+}
+
+function expectSolidDangerUnder(button: HTMLElement, glyph: Element, scope: HTMLElement, state: string) {
+  const fill = paintedBackground(button, scope);
+  expect(rgba(getComputedStyle(button).backgroundColor)[3], `${state}: the fill is opaque`).toBe(255);
+  expect(fill[0]! - Math.max(fill[1]!, fill[2]!), `${state}: the fill stays solid red`).toBeGreaterThan(solidRedMargin);
+  expect(paint(glyph, "color"), `${state}: the icon uses the on-danger role`).toBe(role(button, "on-danger"));
+  expect(contrast(rgba(getComputedStyle(glyph).color), fill), `${state}: the icon reaches 4.5:1`).toBeGreaterThanOrEqual(4.5);
+}
+
+export const DangerIconFocusedFeedback: Story = {
+  render: () => <RoundTwoThemes kind="danger" />,
+  play: async ({ canvasElement }) => {
+    const { cdp, userEvent } = await browser();
+    const session = cdp();
+    for (const scope of roundTwoScopes(canvasElement, "danger")) {
+      const canvas = within(scope);
+      const icon = await canvas.findByRole("button", { name: "Delete file" });
+      const glyph = icon.querySelector("svg");
+      expect(glyph, "Delete file paints its icon").not.toBeNull();
+      await userEvent.hover(canvas.getByTestId("pointer-parking"));
+      await keyboardFocus(icon);
+      await userEvent.hover(icon);
+      await settled(icon);
+      expect(icon.matches(":focus-visible"), "Delete file keeps keyboard focus while hovered").toBe(true);
+      expectSolidDangerUnder(icon, glyph!, scope, "Focused and hovered Delete file");
+      const point = topLevelPoint(icon);
+      await session.send("Input.dispatchMouseEvent", { type: "mousePressed", ...point, button: "left", buttons: 1, clickCount: 1 });
+      try {
+        expect(icon.matches(":active"), "Real pointer-down must reach CSS :active").toBe(true);
+        expect(icon.matches(":focus-visible"), "Delete file keeps keyboard focus while pressed").toBe(true);
+        await settled(icon);
+        expectSolidDangerUnder(icon, glyph!, scope, "Focused and pressed Delete file");
+      } finally {
+        await session.send("Input.dispatchMouseEvent", { type: "mouseReleased", ...point, button: "left", buttons: 0, clickCount: 1 });
+      }
+    }
+  },
+};
+
+export const DangerButtonFocusEdge: Story = {
+  render: () => <RoundTwoThemes kind="danger" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const scope of roundTwoScopes(canvasElement, "danger")) {
+      const canvas = within(scope);
+      const button = await canvas.findByRole("button", { name: "Delete draft" });
+      await userEvent.hover(canvas.getByTestId("pointer-parking"));
+      await keyboardFocus(button);
+      await userEvent.keyboard("[Space>]");
+      try {
+        expect(button.matches(":active"), "Held Space must reach CSS :active").toBe(true);
+        expect(button.matches(":hover"), "The pointer is parked away from Delete draft").toBe(false);
+        await settled(button);
+        // The inside focus edge must stay visible on the solid press fill.
+        expectInsideEdge(button, undefined, paintedBackground(button, scope));
+      } finally {
+        await userEvent.keyboard("[/Space]");
+      }
+      await settled(button);
+      await userEvent.hover(button);
+      await settled(button);
+      expect(button.matches(":focus-visible"), "Delete draft keeps keyboard focus while hovered").toBe(true);
+      expectInsideEdge(button, undefined, paintedBackground(button, scope));
+    }
+  },
+};
+
+export const NativePickerKeyboardCue: Story = {
+  render: () => <RoundTwoThemes kind="options" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const scope of roundTwoScopes(canvasElement, "options")) {
+      const canvas = within(scope);
+      const select = await canvas.findByRole("combobox", { name: "Native choice" }) as HTMLSelectElement;
+      select.scrollIntoView({ block: "center" });
+      await userEvent.hover(canvas.getByTestId("pointer-parking"));
+      await openNativePicker(userEvent, select);
+      const [, two, three] = Array.from(select.options);
+      await userEvent.hover(two!);
+      for (let step = 0; step < select.options.length && document.activeElement !== three; step += 1) await userEvent.keyboard("{ArrowDown}");
+      await expect(three, "ArrowDown moves keyboard focus to Three").toHaveFocus();
+      expect(two!.matches(":hover"), "The pointer stays on Two").toBe(true);
+      await settled(three!);
+      const surface = rgba(getComputedStyle(select, "::picker(select)").backgroundColor);
+      expectKeyboardEdge(three!, composite(rgba(getComputedStyle(three!).backgroundColor), surface), "Native picker");
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(select).toHaveValue("three"));
+      await waitFor(() => expect(select.matches(":open"), "Enter closes the native picker").toBe(false));
+    }
+  },
+};
+
+export const SelectOptionKeyboardCue: Story = {
+  render: () => <RoundTwoThemes kind="options" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    for (const scope of roundTwoScopes(canvasElement, "options")) {
+      const canvas = within(scope);
+      const trigger = await canvas.findByRole("combobox", { name: "Custom choice" });
+      trigger.scrollIntoView({ block: "center" });
+      await userEvent.hover(canvas.getByTestId("pointer-parking"));
+      await keyboardFocus(trigger);
+      await userEvent.keyboard("{ArrowDown}");
+      const listbox = await within(scope).findByRole("listbox");
+      const two = within(listbox).getByRole("option", { name: "Two" });
+      for (let step = 0; step < pickerOptions.length && document.activeElement !== two; step += 1) await userEvent.keyboard("{ArrowDown}");
+      await expect(two, "ArrowDown moves keyboard focus to Two").toHaveFocus();
+      await settled(listbox);
+      const fill = composite(rgba(getComputedStyle(two).backgroundColor), paintedBackground(listbox, scope));
+      const [red, green, blue] = expectKeyboardEdge(two, fill, "Custom list");
+      // Inverse of expectAccent: the keyboard edge must not be the Green accent.
+      expect(green! - red! > 5 && green! - blue! > 5, "Custom list keyboard edge is neutral, not the accent").toBe(false);
+      await closeCustomList(userEvent, scope);
+      await waitFor(() => expect(trigger).toHaveFocus());
+    }
+  },
+};
+
+export const NativeSelectConsumerAppearance: Story = {
+  render: () => <RoundTwoThemes kind="review" />,
+  play: async ({ canvasElement }) => {
+    await browser();
+    for (const scope of roundTwoScopes(canvasElement, "review")) {
+      const style = getComputedStyle(await within(scope).findByRole("combobox", { name: "Consumer native select" }));
+      expect(["base-select", "none"], `A consumer appearance-auto replaces the default appearance, got ${style.appearance}`).not.toContain(style.appearance);
+      expect(style.paddingLeft, "A consumer padding class replaces the default padding").toBe("20px");
+      expect(style.borderTopLeftRadius, "A consumer radius class replaces the default radius").toBe("0px");
+    }
+  },
+};
+
+export const ColorPickerDeferredParent: Story = {
+  render: () => <RoundTwoThemes kind="review" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    colorChanges.clear();
+    const [scope] = roundTwoScopes(canvasElement, "review");
+    const canvas = within(scope!);
+    const key = "light Deferred color";
+    const group = await canvas.findByRole("group", { name: "Deferred color" });
+    await userEvent.selectOptions(formatChooser(group, "Deferred color"), "rgb");
+    const field = valueField(group, "Deferred color", "rgb");
+    await userEvent.clear(field);
+    await userEvent.type(field, "rgb(18 52 86)");
+    await expect(field, "The typed entry stays while the parent has not applied it").toHaveValue("rgb(18 52 86)");
+    expect(colorChangesOf(key).at(-1), "The typed entry reports its color").toBe("#123456");
+    await userEvent.click(canvas.getByRole("button", { name: "Apply reported color" }));
+    await expect(within(group).getByLabelText("Deferred color color well"), "The parent applied the reported color").toHaveValue("#123456");
+    await expect(field, "The typed entry stays after the parent applies its color").toHaveValue("rgb(18 52 86)");
+    await userEvent.click(canvas.getByRole("button", { name: "Use #808080" }));
+    await expect(field, "An external change replaces the typed entry").toHaveValue("128 128 128");
+  },
+};
+
+export const ColorPickerOverflowEntry: Story = {
+  render: () => <RoundTwoThemes kind="color" />,
+  play: async ({ canvasElement }) => {
+    const { userEvent } = await browser();
+    colorChanges.clear();
+    const [scope] = roundTwoScopes(canvasElement, "color");
+    const group = await within(scope!).findByRole("group", { name: "Accent color" });
+    await userEvent.selectOptions(formatChooser(group, "Accent color"), "oklch");
+    const field = valueField(group, "Accent color", "oklch");
+    // 309 digits overflow a double to Infinity; the entry must be rejected, not turned into NaN channels.
+    const entry = `0.5 ${"9".repeat(309)} 0`;
+    await userEvent.fill(field, entry);
+    await expect(field).toHaveValue(entry);
+    await expectInvalidDraft(field, "A 309-digit chroma");
+    expect(colorChangesOf("light Accent color"), "A 309-digit chroma does not change the color").toEqual([]);
+  },
 };

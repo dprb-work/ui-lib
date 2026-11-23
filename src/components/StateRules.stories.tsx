@@ -1742,6 +1742,7 @@ function ReviewProbes({ theme }: { theme: Theme }) {
     <div className="flex flex-wrap gap-2">
       <Button variant="secondary" onClick={() => setValue(reported)}>Apply reported color</Button>
       <Button variant="secondary" onClick={() => setValue("#808080")}>Use #808080</Button>
+      <Button variant="secondary" onClick={() => setValue("#123456")}>Use #123456</Button>
     </div>
     <NativeSelect aria-label="Consumer native select" className="appearance-auto rounded-none pl-5" defaultValue="one">
       {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -2808,6 +2809,9 @@ export const ColorPickerDeferredParent: Story = {
     await expect(field, "The typed entry stays after the parent applies its color").toHaveValue("rgb(18 52 86)");
     await userEvent.click(canvas.getByRole("button", { name: "Use #808080" }));
     await expect(field, "An external change replaces the typed entry").toHaveValue("128 128 128");
+    // Returning to the color the typed entry once reported is still an external change.
+    await userEvent.click(canvas.getByRole("button", { name: "Use #123456" }));
+    await expect(field, "An external change back to the earlier typed color shows the formatted value").toHaveValue("18 52 86");
   },
 };
 
@@ -2820,11 +2824,14 @@ export const ColorPickerOverflowEntry: Story = {
     const group = await within(scope!).findByRole("group", { name: "Accent color" });
     await userEvent.selectOptions(formatChooser(group, "Accent color"), "oklch");
     const field = valueField(group, "Accent color", "oklch");
-    // 309 digits overflow a double to Infinity; the entry must be rejected, not turned into NaN channels.
-    const entry = `0.5 ${"9".repeat(309)} 0`;
-    await userEvent.fill(field, entry);
-    await expect(field).toHaveValue(entry);
-    await expectInvalidDraft(field, "A 309-digit chroma");
-    expect(colorChangesOf("light Accent color"), "A 309-digit chroma does not change the color").toEqual([]);
+    // 309 digits overflow a double to Infinity; 104 digits stay finite but overflow when the chroma is cubed.
+    // Both must be rejected, not turned into NaN or infinite channels.
+    for (const [digits, cause] of [[309, "parsing"], [104, "conversion"]] as const) {
+      const entry = `0.5 ${"9".repeat(digits)} 0`;
+      await userEvent.fill(field, entry);
+      await expect(field).toHaveValue(entry);
+      await expectInvalidDraft(field, `A ${digits}-digit chroma that overflows in ${cause}`);
+      expect(colorChangesOf("light Accent color"), `A ${digits}-digit chroma does not change the color`).toEqual([]);
+    }
   },
 };

@@ -55,7 +55,7 @@ export function ChartOutput({
           onSelect: () => setTable((current) => !current),
         },
       ]}
-      expansion="zoom"
+      expansion={table ? "scroll" : "zoom"}
     >
       <div className="p-3 in-data-[content-block-viewport=expanded]:size-full">
         {table ? (

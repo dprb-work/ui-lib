@@ -64,7 +64,7 @@ function CaptionBar({ icon, title, metadata, actions, zoom, toggle }: CaptionBar
           ))}
         </span>
       </div>
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div data-content-block-controls className="flex shrink-0 items-center gap-0.5">
         {/* Keyed by position: a toggle may rename itself and must keep focus. */}
         {actions.map((action, index) =>
           action.kind === "copy" ? (
@@ -152,32 +152,25 @@ export function ContentBlock({
   // While expanded, the inline viewport keeps its height so the page does not jump.
   const [expandedFrom, setExpandedFrom] = useState<number | null>(null);
   const viewport = useRef<HTMLDivElement>(null);
-  const ownsHistoryEntry = useRef(false);
   const expanded = expandedFrom !== null;
 
   // The back gesture or button closes the expanded view instead of leaving the page.
   useEffect(() => {
     if (!expanded) return;
-    function onPopState() {
-      ownsHistoryEntry.current = false;
-      setExpandedFrom(null);
-    }
+    const onPopState = () => setExpandedFrom(null);
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [expanded]);
 
   function onExpandedChange(open: boolean) {
     if (open) {
-      window.history.pushState({ [historyMarker]: true }, "");
-      ownsHistoryEntry.current = true;
+      // Keep the router's state; the marker tells Close whether the current entry is still ours.
+      window.history.pushState({ ...window.history.state, [historyMarker]: true }, "");
       setExpandedFrom(viewport.current?.offsetHeight ?? 0);
       return;
     }
     setExpandedFrom(null);
-    if (ownsHistoryEntry.current) {
-      ownsHistoryEntry.current = false;
-      window.history.back();
-    }
+    if (window.history.state?.[historyMarker] === true) window.history.back();
   }
 
   const caption = { icon, title, metadata, actions };

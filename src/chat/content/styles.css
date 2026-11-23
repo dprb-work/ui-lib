@@ -6,7 +6,7 @@
 }
 /* Touch screens keep their 44px targets in compact density. */
 @media not (pointer: coarse) {
-  .chat-block--compact [data-content-block-caption] button {
+  .chat-block--compact [data-content-block-controls] button {
     width: 1.75rem;
     height: 1.75rem;
   }

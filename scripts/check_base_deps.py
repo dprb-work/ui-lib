@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Verify Node.js version and Node base-image alignment across maintained selectors.
+"""Verify base-dependency and shared-conventions alignment across repositories.
 
 Stdlib only. Reads one declared Node.js version owner (no parallel registry)
 and checks .node-version, package manifests, GitHub Actions setup-node steps
 (resolving node-version-file targets), Node Dockerfile FROM lines, and
-optionally project-template's generated react-vite starter.
+optionally project-template's generated react-vite starter. With --template,
+each repository must also carry a byte-identical copy of the template's
+CONVENTIONS.md at docs/conventions.md.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
@@ -35,6 +38,10 @@ SKIP_DIRS = frozenset(
         + "storybook-static target venv"
     ).split()
 )
+CONVENTIONS_SOURCE = "CONVENTIONS.md"
+CONVENTIONS_COPY = "docs/conventions.md"
+# Declared value of a finding whose file does not exist.
+MISSING = "<missing>"
 
 
 @dataclass(frozen=True)
@@ -86,6 +93,14 @@ def semver_satisfies(version: str, range_expr: str) -> bool:
     return bool(alts) and all(alts) and any(_matches_set(target, a) for a in alts)
 
 
+def read_conventions(template: Path) -> bytes:
+    """Read the template's generated conventions file that every consumer copies."""
+    path = template / CONVENTIONS_SOURCE
+    if not path.is_file():
+        raise ValueError(f"Template {template.name} has no {CONVENTIONS_SOURCE}")
+    return path.read_bytes()
+
+
 def check_repository(
     repo: Path,
     *,
@@ -94,8 +109,13 @@ def check_repository(
     source: str | None = None,
     excludes: tuple[str, ...] = (),
     repo_label: str | None = None,
+    conventions: bytes | None = None,
 ) -> list[DriftFinding]:
-    """Check one repository's maintained Node.js and Node-image selectors."""
+    """Check one repository's Node.js and Node-image selectors.
+
+    With ``conventions``, also require ``docs/conventions.md`` to hold exactly
+    those bytes.
+    """
     resolved = repo.resolve(strict=True)
     label = repo_label or resolved.name
     findings: list[DriftFinding] = []
@@ -106,7 +126,7 @@ def check_repository(
         declared = _read_version_target(src_path) if src_path.is_file() else None
         if declared != expected_node:
             findings.append(
-                DriftFinding(label, source, declared or "<missing>", expected_node)
+                DriftFinding(label, source, declared or MISSING, expected_node)
             )
 
     node_ver = resolved / ".node-version"
@@ -131,20 +151,22 @@ def check_repository(
             _check_dockerfile(
                 label, rel, file_path, expected_node, expected_digest, findings
             )
+    if conventions is not None:
+        _check_conventions_copy(label, resolved, conventions, findings)
     return findings
 
 
 def check_template_generator(
     template_root: Path, expected_node: str
 ) -> list[DriftFinding]:
-    """Materialize project-template's react-vite starter and verify its Node pins."""
+    """Materialize the react-vite starter; check its Node pins and conventions copy."""
     creator = template_root / "scripts" / "create_project.py"
     if not creator.is_file():
         return [
             DriftFinding(
                 template_root.name,
                 "scripts/create_project.py",
-                "<missing>",
+                MISSING,
                 expected_node,
             )
         ]
@@ -174,6 +196,7 @@ def check_template_generator(
                 expected_node=expected_node,
                 source="package.json",
                 repo_label=f"{template_root.name}:generated/react-vite",
+                conventions=(template_root / CONVENTIONS_SOURCE).read_bytes(),
             )
     finally:
         if added and scripts_dir in sys.path:
@@ -211,6 +234,11 @@ def main(argv: list[str] | None = None) -> int:
         else:
             raise ValueError("Provide --template or --expected-node for multiple repos")
         _extract_digest(expected_image)
+        conventions = (
+            read_conventions(template.resolve(strict=True))
+            if template is not None
+            else None
+        )
     except (OSError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
@@ -224,6 +252,7 @@ def main(argv: list[str] | None = None) -> int:
                 expected_node_image=expected_image,
                 source=source,
                 excludes=excludes,
+                conventions=conventions,
             )
         )
     if check_template:
@@ -257,6 +286,23 @@ def _read_version_target(path: Path) -> str | None:
     except (OSError, UnicodeDecodeError):
         return None
     return lines[0] if len(lines) == 1 else None
+
+
+def _check_conventions_copy(
+    label: str, repo: Path, conventions: bytes, findings: list[DriftFinding]
+) -> None:
+    copy = repo / CONVENTIONS_COPY
+    expected = _sha256_ref(conventions)
+    if not copy.is_file():
+        findings.append(DriftFinding(label, CONVENTIONS_COPY, MISSING, expected))
+    elif (declared := copy.read_bytes()) != conventions:
+        findings.append(
+            DriftFinding(label, CONVENTIONS_COPY, _sha256_ref(declared), expected)
+        )
+
+
+def _sha256_ref(content: bytes) -> str:
+    return f"sha256:{hashlib.sha256(content).hexdigest()}"
 
 
 def _matches_set(target: tuple[int, int, int], expr: str) -> bool:

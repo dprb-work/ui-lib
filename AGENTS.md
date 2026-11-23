@@ -4,6 +4,8 @@
 
 Read [CONTEXT.md](CONTEXT.md) before changes and use its words in code comments, stories, pull requests and reviews. [README.md](README.md#use) owns consumer setup, styling and composition guidance; follow it rather than duplicating its rules here.
 
+Follow [docs/conventions.md](docs/conventions.md) for general code and style rules; this file holds only ui-lib's own. It is a byte-identical copy of project-template's `CONVENTIONS.md`: update it by copying, never edit it here; `python3 scripts/check_base_deps.py --template <project-template checkout> .` checks the copy.
+
 ## Commands
 
 ```bash
@@ -41,8 +43,8 @@ The routed pre-push hook is the local gate: it runs `verify`, including the Stor
 
 ## Examples and review
 
-- Show the simplest realistic composition. Use concrete task content and action names rather than marketing copy.
-- For each added visible label or surface, state what new information or relationship it carries. Leave out repeated headings, control labels and ornamental wrappers.
+- Use concrete task content and action names rather than marketing copy.
+- For each added visible label or surface, state what new information or relationship it carries. Leave out repeated headings and control labels.
 - Before adding a confirmation or notification to an example, name the risk protected or the change communicated. Keep necessary consent, consequential-action safeguards and recovery.
 
 ## Evidence

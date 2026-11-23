@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+# Checks run in this checkout; inherited hook variables must not redirect Git to another repository.
+git_env=$(git rev-parse --local-env-vars)
+unset $git_env
+exec node "$(dirname "$0")/../scripts/ci-local.mjs"

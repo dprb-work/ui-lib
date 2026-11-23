@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 0
       - name: Test CI classifier
         if: steps.routing.outputs.metadata_only != 'true'
-        run: node --test scripts/ci-plan.node-test.mjs
+        run: node --test scripts/ci-plan.node-test.mjs scripts/ci-local.node-test.mjs
       - name: Check base dependency alignment
         if: steps.routing.outputs.metadata_only != 'true'
         run: python3 scripts/check_base_deps.py
@@ -109,6 +109,22 @@ jobs:
             git diff --check HEAD^...HEAD
           fi
 
+  fast:
+    needs: plan
+    if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'fast')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run fast checks
+        run: pnpm run verify:fast
+
   verify:
     needs: plan
     if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'verify')
@@ -133,7 +149,7 @@ jobs:
       pull-requests: read
     name: ${{ needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true' && 'metadata-only' || 'aggregate' }}
     if: always() && !(needs.plan.result == 'success' && needs.plan.outputs.metadata_only == 'true')
-    needs: [plan, docs, verify]
+    needs: [plan, docs, fast, verify]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -168,6 +184,7 @@ jobs:
           TIER: ${{ needs.plan.outputs.tier }}
           CHECKS: ${{ needs.plan.outputs.checks }}
           DOCS_RESULT: ${{ needs.docs.result }}
+          FAST_RESULT: ${{ needs.fast.result }}
           VERIFY_RESULT: ${{ needs.verify.result }}
           EXPECTED_HEAD: ${{ needs.plan.outputs.head }}
           EXPECTED_BASE: ${{ needs.plan.outputs.base }}
@@ -177,7 +194,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { aggregateSuccess } from './scripts/ci-plan.mjs';
           const selected = JSON.parse(process.env.CHECKS || '[]');
-          const results = { docs: process.env.DOCS_RESULT, verify: process.env.VERIFY_RESULT };
+          const results = { docs: process.env.DOCS_RESULT, fast: process.env.FAST_RESULT, verify: process.env.VERIFY_RESULT };
           const expectedBase = process.env.EXPECTED_BASE || process.env.EXPECTED_HEAD;
           const actualBase = process.env.ACTUAL_BASE || expectedBase;
           if (process.env.TIER === 'draft' || !aggregateSuccess(selected, results, process.env.EXPECTED_HEAD, process.env.ACTUAL_HEAD, expectedBase, actualBase)) throw new Error('Required checks are not all successful for the current candidate and base.');

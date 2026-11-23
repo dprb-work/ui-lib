@@ -8,25 +8,30 @@ const knownPaths = [
   /^docs\//, /^src\//, /^scripts\//, /^tests\//,
   /^(?:AGENTS\.md|\.editorconfig|\.gitignore|README\.md)$/,
 ];
-const proseDocs = (path) => path === "README.md" || /^docs\/.+\.md$/.test(path);
+const proseDocs = (path) => ["README.md", "AGENTS.md", "CONTEXT.md"].includes(path) || /^docs\/.+\.md$/.test(path);
+const validPaths = (paths) => Array.isArray(paths) && paths.length > 0
+  && !paths.some((path) => typeof path !== "string" || path === "" || path === "." || path.startsWith("/") || path.split("/").includes(".."));
 const appPlan = (tier) => ({ tier, checks: appChecks, run_heavy: true });
+const docsPlan = () => ({ tier: "docs", checks: ["docs"], run_heavy: false });
+const cheapPlan = () => ({ tier: "cheap", checks: ["fast"], run_heavy: false });
 const manualPlan = () => ({ tier: "full", checks: ["docs", ...appChecks], run_heavy: true });
 
 export function plan({ event, draft, paths }) {
   if (event === "pull_request" && draft === true) return { tier: "draft", checks: [], run_heavy: false };
-  if (!Array.isArray(paths) || paths.some((path) => typeof path !== "string" || path === "" || path === "." || path.startsWith("/") || path.split("/").includes(".."))) return appPlan("full");
   if (event === "workflow_dispatch") return manualPlan();
-  if (event !== "pull_request" && event !== "push") return appPlan("full");
-  if (paths.length > 0 && paths.every(proseDocs)) return { tier: "docs", checks: ["docs"], run_heavy: false };
-  if (paths.length > 0 && paths.every((path) => fullPaths.some((pattern) => pattern.test(path)))) return appPlan("full");
-  if (paths.length > 0 && paths.every((path) => [...knownPaths, ...fullPaths].some((pattern) => pattern.test(path)))) return appPlan("targeted");
+  // A ready pull request runs only the cheap hosted tier; the browser-backed verify stays in the local push hook.
+  if (event === "pull_request") return validPaths(paths) && paths.every(proseDocs) ? docsPlan() : cheapPlan();
+  if (!validPaths(paths) || (event !== "push" && event !== "local")) return appPlan("full");
+  if (paths.every(proseDocs)) return docsPlan();
+  if (paths.every((path) => fullPaths.some((pattern) => pattern.test(path)))) return appPlan("full");
+  if (paths.every((path) => [...knownPaths, ...fullPaths].some((pattern) => pattern.test(path)))) return appPlan("targeted");
   return appPlan("full");
 }
 
 export function aggregateSuccess(selectedChecks, results, expectedHead, actualHead, expectedBase, actualBase) {
-  const allowed = ["docs", ...appChecks];
+  const allowed = new Set(["docs", "fast", ...appChecks]);
   if (!Array.isArray(selectedChecks) || selectedChecks.length === 0
-      || selectedChecks.some((check) => !allowed.includes(check))
+      || selectedChecks.some((check) => !allowed.has(check))
       || new Set(selectedChecks).size !== selectedChecks.length
       || !results || typeof results !== "object" || Array.isArray(results)
       || selectedChecks.some((check) => results[check] !== "success")

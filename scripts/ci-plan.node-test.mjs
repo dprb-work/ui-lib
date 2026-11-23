@@ -6,103 +6,163 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { aggregateSuccess, plan } from "./ci-plan.mjs";
 
-const appChecks = ["verify"];
-const allChecks = ["docs", ...appChecks];
+const allChecks = ["docs", "verify"];
 
-function assertChecks(result, expected) {
-  assert.deepEqual(new Set(result.checks), new Set(expected));
+function assertPlan(result, { tier, checks, runHeavy }) {
+  if (tier !== undefined) {
+    assert.equal(result.tier, tier);
+  }
+  assert.deepEqual(result.checks, checks);
+  assert.equal(result.run_heavy, runHeavy);
 }
 
-function assertFullOrFail(input, expectedChecks) {
-  let result;
-  try {
-    result = plan(input);
-  } catch (error) {
-    assert.ok(error instanceof Error);
-    return;
-  }
-  assert.equal(result.tier, "full");
-  assertChecks(result, expectedChecks);
-}
+test("ready pull requests route every non-prose, unknown, mixed, empty, and invalid path set to fast", () => {
+  const pathSets = [
+    ["src/index.ts"],
+    ["src/index.test.ts"],
+    [".storybook/main.ts"],
+    [".github/workflows/ci.yml"],
+    ["pnpm-lock.yaml"],
+    [".node-version"],
+    ["new/input.bin"],
+    ["README.md", "src/index.ts"],
+    [],
+    ["../x"],
+    ["/abs"],
+    ["."],
+    [""],
+  ];
 
-test("ready README and positive docs prose select only documentation validation", () => {
-  for (const path of ["README.md", "docs/accessibility.md"]) {
-    const result = plan({ event: "pull_request", draft: false, paths: [path] });
-    assert.equal(result.tier, "docs");
-    assert.equal(result.run_heavy, false);
-    assertChecks(result, ["docs"]);
+  for (const paths of pathSets) {
+    assertPlan(
+      plan({ event: "pull_request", draft: false, paths }),
+      { tier: "cheap", checks: ["fast"], runHeavy: false },
+    );
   }
-});
-
-test("runtime Markdown and configuration are not docs-only", () => {
-  for (const path of [".storybook/README.md", ".storybook/main.ts", "tsconfig.json"]) {
-    const result = plan({ event: "pull_request", draft: false, paths: [path] });
-    assert.notEqual(result.tier, "docs");
-    assert.equal(result.run_heavy, true);
-    assertChecks(result, appChecks);
-  }
-});
-
-test("known component source and test changes select the existing verify boundary", () => {
-  for (const path of ["src/components/Popover.tsx", "src/components/Popover.test.tsx"]) {
-    const result = plan({ event: "pull_request", draft: false, paths: [path] });
-    assert.notEqual(result.tier, "docs");
-    assert.equal(result.run_heavy, true);
-    assertChecks(result, appChecks);
+  for (const paths of [undefined, null, "src/index.ts", {}]) {
+    assertPlan(
+      plan({ event: "pull_request", draft: false, paths }),
+      { tier: "cheap", checks: ["fast"], runHeavy: false },
+    );
   }
 });
 
-test("dependency and workflow inputs do not select docs-only work", () => {
-  for (const path of [".node-version", "pnpm-lock.yaml", ".github/workflows/ci.yml"]) {
-    const result = plan({ event: "pull_request", draft: false, paths: [path] });
-    assert.equal(result.tier, "full");
-    assertChecks(result, appChecks);
+test("local planning runs verify for non-prose and unknown paths", () => {
+  for (const paths of [
+    ["src/index.ts"],
+    ["src/index.test.ts"],
+    [".storybook/main.ts"],
+    [".github/workflows/ci.yml"],
+    ["pnpm-lock.yaml"],
+    [".node-version"],
+    ["new/input.bin"],
+    ["README.md", "src/index.ts"],
+  ]) {
+    const result = plan({ event: "local", paths });
+    assertPlan(result, { checks: ["verify"], runHeavy: true });
+    assert.ok(["targeted", "full"].includes(result.tier));
   }
 });
 
-test("unmapped and broad changes cannot produce a narrow plan", () => {
-  for (const paths of [[], ["unknown/new-input.bin"], ["**/*"], ["."]]) {
-    assertFullOrFail({ event: "pull_request", draft: false, paths }, appChecks);
+test("invalid local and push paths select the full verify plan", () => {
+  const invalidPathSets = [[], ["../x"], ["/abs"], ["."], [""], null, undefined, "README.md"];
+  for (const event of ["local", "push"]) {
+    for (const paths of invalidPathSets) {
+      assertPlan(
+        plan({ event, paths }),
+        { tier: "full", checks: ["verify"], runHeavy: true },
+      );
+    }
   }
 });
 
-test("draft skips every automatic app check; manual dispatch selects the full contract", () => {
-  const draft = plan({
-    event: "pull_request",
-    draft: true,
-    paths: [".github/workflows/new-heavy-job.yml", "src/components/Popover.tsx"],
-  });
-  assert.equal(draft.tier, "draft");
-  assert.equal(draft.run_heavy, false);
-  assertChecks(draft, []);
-  assert.equal(aggregateSuccess([], {}, "head-1", "head-1", "base-1", "base-1"), false);
+test("AGENTS.md and CONTEXT.md route as prose on pull requests, pushes, and locally", () => {
+  const prosePathSets = [
+    ["AGENTS.md"],
+    ["CONTEXT.md"],
+    ["README.md", "docs/guide.md"],
+    ["AGENTS.md", "CONTEXT.md", "README.md", "docs/guide.md"],
+  ];
 
-  const manual = plan({ event: "workflow_dispatch", draft: false, paths: ["README.md"] });
-  assert.equal(manual.tier, "full");
-  assert.equal(manual.run_heavy, true);
-  assertChecks(manual, allChecks);
-});
-
-test("push and pull request planning preserve the same selected verify boundary", () => {
-  for (const event of ["pull_request", "push"]) {
-    const result = plan({ event, draft: false, paths: ["src/components/Popover.tsx"] });
-    assertChecks(result, appChecks);
+  for (const event of ["pull_request", "push", "local"]) {
+    for (const paths of prosePathSets) {
+      assertPlan(
+        plan({ event, draft: false, paths }),
+        { tier: "docs", checks: ["docs"], runHeavy: false },
+      );
+    }
   }
 });
 
-test("required aggregate rejects selected failures and stale candidate or base", () => {
-  const selected = ["verify"];
-  const results = { verify: "success" };
+test("draft pull requests select nothing even for workflow paths", () => {
+  assertPlan(
+    plan({
+      event: "pull_request",
+      draft: true,
+      paths: [".github/workflows/ci.yml", "src/index.ts"],
+    }),
+    { tier: "draft", checks: [], runHeavy: false },
+  );
+});
+
+test("workflow dispatch selects docs and verify for any paths", () => {
+  assertPlan(
+    plan({ event: "workflow_dispatch", paths: ["README.md"] }),
+    { tier: "full", checks: allChecks, runHeavy: true },
+  );
+  assertPlan(
+    plan({ event: "workflow_dispatch", paths: [] }),
+    { tier: "full", checks: allChecks, runHeavy: true },
+  );
+});
+
+test("aggregate accepts only selected successful known checks with matching nonempty heads and bases", () => {
   const revision = ["head-1", "head-1", "base-1", "base-1"];
-  assert.equal(aggregateSuccess(selected, results, ...revision), true);
-  for (const outcome of ["failure", "cancelled", "skipped", "unknown"]) {
-    assert.equal(aggregateSuccess(selected, { verify: outcome }, ...revision), false);
+  assert.equal(
+    aggregateSuccess(["fast"], { fast: "success", verify: "skipped" }, ...revision),
+    true,
+  );
+  assert.equal(
+    aggregateSuccess(["docs", "fast", "verify"], {
+      docs: "success",
+      fast: "success",
+      verify: "success",
+    }, ...revision),
+    true,
+  );
+
+  for (const outcome of ["failure", "cancelled", "skipped", undefined]) {
+    assert.equal(
+      aggregateSuccess(["fast"], { fast: outcome }, ...revision),
+      false,
+    );
   }
-  assert.equal(aggregateSuccess(selected, {}, ...revision), false);
-  assert.equal(aggregateSuccess([], results, ...revision), false);
-  assert.equal(aggregateSuccess(selected, results, "head-1", "head-2", "base-1", "base-1"), false);
-  assert.equal(aggregateSuccess(selected, results, "head-1", "head-1", "base-1", "base-2"), false);
+  for (const selected of [[], ["fast", "fast"], ["unknown"], ["fast", "unknown"]]) {
+    assert.equal(
+      aggregateSuccess(selected, { fast: "success", unknown: "success" }, ...revision),
+      false,
+    );
+  }
+  for (const values of [
+    ["", "head-1", "base-1", "base-1"],
+    ["head-1", "", "base-1", "base-1"],
+    ["head-1", "head-1", "", "base-1"],
+    ["head-1", "head-1", "base-1", ""],
+    ["head-1", "head-2", "base-1", "base-1"],
+    ["head-1", "head-1", "base-1", "base-2"],
+  ]) {
+    assert.equal(
+      aggregateSuccess(["fast"], { fast: "success" }, ...values),
+      false,
+    );
+  }
 });
+
+test("other events select verify", () => {
+  const result = plan({ event: "schedule", paths: ["README.md"] });
+  assertPlan(result, { checks: ["verify"], runHeavy: true });
+});
+
 
 test("ui-lib declares Node 24.22.3 and passes base dependency drift check", () => {
   const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));

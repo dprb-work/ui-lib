@@ -420,86 +420,96 @@ export const DisabledAndBusy: Story = {
   },
 };
 
-export const PersistentSelection: Story = {
+async function checkPersistentSelection(scope: HTMLElement) {
+  const { userEvent } = await browser();
+  const canvas = within(scope);
+  const toggle = canvas.getByRole("button", { name: "Toggle choice" });
+  for (const control of [canvas.getByRole("button", { name: "Selected icon" }), canvas.getByRole("tab", { name: "Tab One" }), canvas.getByRole("button", { name: "Segment One" })]) {
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    await keyboardFocus(control);
+    expectSelectionInk(control);
+    expectNoOutsideRing(control);
+    await userEvent.hover(control);
+    await settled(control);
+    expectSelectionInk(control);
+    await userEvent.hover(canvas.getByTestId("pointer-parking"));
+    await settled(control);
+    expectSelectionInk(control);
+  }
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await keyboardFocus(toggle);
+  expect(paint(toggle)).toBe(role(toggle, "accent"));
+  expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
+  expectInsideEdge(toggle, role(toggle, "on-accent"));
+  await userEvent.hover(toggle);
+  await settled(toggle);
+  expectAccent(paint(toggle), toggle);
+  expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
+  await userEvent.hover(canvas.getByTestId("pointer-parking"));
+  await settled(toggle);
+  expect(paint(toggle)).toBe(role(toggle, "accent"));
+  await userEvent.keyboard(" ");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await settled(toggle);
+  expect(paint(toggle, "color")).not.toBe(role(toggle, "accent-link"));
+  await userEvent.keyboard(" ");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await settled(toggle);
+  expect(paint(toggle)).toBe(role(toggle, "accent"));
+  expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
+
+  const firstTab = canvas.getByRole("tab", { name: "Tab One" });
+  await keyboardFocus(firstTab);
+  await userEvent.keyboard("{ArrowRight}");
+  const nextTab = canvas.getByRole("tab", { name: "Tab Two" });
+  await expect(nextTab).toHaveFocus();
+  await expect(nextTab).toHaveAttribute("aria-selected", "true");
+  await settled(nextTab);
+  expectSelectionInk(nextTab);
+  await expect(canvas.getByText("Second panel")).toBeVisible();
+
+  const nextSegment = canvas.getByRole("button", { name: "Segment Two" });
+  await keyboardFocus(nextSegment);
+  await userEvent.keyboard(" ");
+  await expect(nextSegment).toHaveAttribute("aria-pressed", "true");
+  await expect(nextSegment).toHaveFocus();
+  await settled(nextSegment);
+  expectAccent(paint(nextSegment, "color"), nextSegment);
+
+  for (const control of [canvas.getByRole("checkbox", { name: "Checked choice" }), canvas.getByRole("switch", { name: "Enabled choice" })]) {
+    await keyboardFocus(control);
+    await expect(control).toBeChecked();
+    expect(paint(control)).toBe(role(control, "accent"));
+    expectNoOutsideRing(control);
+    expectInsideEdge(control, role(control, "on-accent"));
+    await userEvent.keyboard(" ");
+    await expect(control).not.toBeChecked();
+    await expect(control).toHaveFocus();
+    await settled(control);
+    expect(paint(control)).not.toBe(role(control, "accent"));
+    expectInsideEdge(control);
+    await userEvent.keyboard(" ");
+    await expect(control).toBeChecked();
+    await expect(control).toHaveFocus();
+    await settled(control);
+    expect(paint(control)).toBe(role(control, "accent"));
+    expectInsideEdge(control, role(control, "on-accent"));
+  }
+}
+
+export const PersistentSelectionLight: Story = {
   render: () => <BothThemes kind="selection" />,
-  play: async ({ canvasElement }) => {
-    const { userEvent } = await browser();
+  play: async ({ canvasElement, args }) => {
     for (const scope of scopes(canvasElement)) {
-      const canvas = within(scope);
-      const toggle = canvas.getByRole("button", { name: "Toggle choice" });
-      for (const control of [canvas.getByRole("button", { name: "Selected icon" }), canvas.getByRole("tab", { name: "Tab One" }), canvas.getByRole("button", { name: "Segment One" })]) {
-        await userEvent.hover(canvas.getByTestId("pointer-parking"));
-        await keyboardFocus(control);
-        expectSelectionInk(control);
-        expectNoOutsideRing(control);
-        await userEvent.hover(control);
-        await settled(control);
-        expectSelectionInk(control);
-        await userEvent.hover(canvas.getByTestId("pointer-parking"));
-        await settled(control);
-        expectSelectionInk(control);
-      }
-      await expect(toggle).toHaveAttribute("aria-pressed", "true");
-      await keyboardFocus(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-      expectInsideEdge(toggle, role(toggle, "on-accent"));
-      await userEvent.hover(toggle);
-      await settled(toggle);
-      expectAccent(paint(toggle), toggle);
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-      await userEvent.hover(canvas.getByTestId("pointer-parking"));
-      await settled(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
-      await userEvent.keyboard(" ");
-      await expect(toggle).toHaveAttribute("aria-pressed", "false");
-      await settled(toggle);
-      expect(paint(toggle, "color")).not.toBe(role(toggle, "accent-link"));
-      await userEvent.keyboard(" ");
-      await expect(toggle).toHaveAttribute("aria-pressed", "true");
-      await settled(toggle);
-      expect(paint(toggle)).toBe(role(toggle, "accent"));
-      expect(paint(toggle, "color")).toBe(role(toggle, "on-accent"));
-
-      const firstTab = canvas.getByRole("tab", { name: "Tab One" });
-      await keyboardFocus(firstTab);
-      await userEvent.keyboard("{ArrowRight}");
-      const nextTab = canvas.getByRole("tab", { name: "Tab Two" });
-      await expect(nextTab).toHaveFocus();
-      await expect(nextTab).toHaveAttribute("aria-selected", "true");
-      await settled(nextTab);
-      expectSelectionInk(nextTab);
-      await expect(canvas.getByText("Second panel")).toBeVisible();
-
-      const nextSegment = canvas.getByRole("button", { name: "Segment Two" });
-      await keyboardFocus(nextSegment);
-      await userEvent.keyboard(" ");
-      await expect(nextSegment).toHaveAttribute("aria-pressed", "true");
-      await expect(nextSegment).toHaveFocus();
-      await settled(nextSegment);
-      expectAccent(paint(nextSegment, "color"), nextSegment);
-
-      for (const control of [canvas.getByRole("checkbox", { name: "Checked choice" }), canvas.getByRole("switch", { name: "Enabled choice" })]) {
-        await keyboardFocus(control);
-        await expect(control).toBeChecked();
-        expect(paint(control)).toBe(role(control, "accent"));
-        expectNoOutsideRing(control);
-        expectInsideEdge(control, role(control, "on-accent"));
-        await userEvent.keyboard(" ");
-        await expect(control).not.toBeChecked();
-        await expect(control).toHaveFocus();
-        await settled(control);
-        expect(paint(control)).not.toBe(role(control, "accent"));
-        expectInsideEdge(control);
-        await userEvent.keyboard(" ");
-        await expect(control).toBeChecked();
-        await expect(control).toHaveFocus();
-        await settled(control);
-        expect(paint(control)).toBe(role(control, "accent"));
-        expectInsideEdge(control, role(control, "on-accent"));
-      }
+      if (scope.dataset.theme !== args.theme) continue;
+      await checkPersistentSelection(scope);
     }
   },
+};
+
+export const PersistentSelectionDark: Story = {
+  ...PersistentSelectionLight,
+  args: { theme: "dark" },
 };
 
 function topLevelPoint(element: HTMLElement): { x: number; y: number } {

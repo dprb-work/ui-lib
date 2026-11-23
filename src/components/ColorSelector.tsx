@@ -40,7 +40,7 @@ export function ColorSelector({
                   aria-label={slotLabel}
                   disabled={disabled}
                   className={cn(
-                    "size-6 shrink-0 rounded-sm border border-ui-border outline-hidden -outline-offset-2 transition-colors hover:border-ui-foreground focus-visible:z-10 focus-visible:shadow-[inset_0_0_0_1px_var(--color-ui-background),inset_0_0_0_2px_var(--color-ui-foreground)] disabled:cursor-not-allowed disabled:opacity-40",
+                    "size-6 shrink-0 rounded-sm border border-ui-border outline-hidden -outline-offset-2 transition-colors hover:border-ui-foreground focus-visible:z-10 focus-visible:shadow-[inset_0_0_0_1px_var(--color-ui-background),inset_0_0_0_2px_var(--color-ui-foreground)] disabled:cursor-not-allowed disabled:opacity-40 forced-colors:forced-color-adjust-none",
                     isOpen && "border-2 border-ui-foreground",
                   )}
                   style={{ backgroundColor: `var(--ui-color-selector-${index + 1}, ${color})` }}

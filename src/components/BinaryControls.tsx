@@ -32,7 +32,7 @@ export function Switch({ label, className, tooltip, ref, ...switchProps }: Switc
         className,
       )}
     >
-      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface shadow-sm transition-transform data-[state=checked]:translate-x-4" />
+      <RadixSwitch.Thumb className="block size-4 rounded-full bg-ui-surface shadow-sm transition-transform data-[state=checked]:translate-x-4 forced-colors:forced-color-adjust-none forced-colors:bg-[ButtonText]" />
     </RadixSwitch.Root>
   );
 

@@ -306,6 +306,11 @@ Selected secondary buttons use the filled accent treatment. Persistent
 `aria-pressed` state is separate from temporary `:active` feedback. The
 **Foundations / States** story shows the controls in both themes.
 
+In forced-colors mode, `Switch` uses a system-color thumb while its track and
+focus remain system-adjusted. `ColorSelector` preserves authored data-color
+paint and the contrasting inside focus edge only on each swatch; the picker
+still follows forced colors.
+
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
 and copy-button styling through `className` and `copyButtonClassName`.

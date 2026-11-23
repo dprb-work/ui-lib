@@ -19,6 +19,7 @@ function SwitchProbe({ theme }: ProbeProps) {
   const [enabled, setEnabled] = useState(false);
   return (
     <section data-theme={theme} aria-label={`${theme} switch forced colors`} className="grid w-full gap-4 bg-ui-background p-4 text-sm text-ui-foreground">
+      <button type="button">Keyboard start</button>
       <Switch label={`${theme} feature`} checked={enabled} onCheckedChange={setEnabled} />
     </section>
   );
@@ -28,6 +29,7 @@ function SwatchProbe({ theme }: ProbeProps) {
   const [colors, setColors] = useState<string[]>([...swatchColors]);
   return (
     <section data-theme={theme} aria-label={`${theme} swatches forced colors`} className="grid w-full gap-4 bg-ui-background p-4 text-sm text-ui-foreground">
+      <button type="button">Keyboard start</button>
       <ColorSelector
         label={`${theme} data color`}
         colors={colors}
@@ -62,6 +64,11 @@ async function emulateForcedPalette(palette: (typeof palettes)[number]) {
       { name: "prefers-color-scheme", value: palette },
     ],
   });
+}
+async function clearForcedPalette() {
+  // CDP media emulation applies to the shared page, beyond the isolated Storybook test iframe.
+  const { cdp } = await import("@vitest/browser/context");
+  await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
 }
 
 async function viewport(width: (typeof widths)[number]) {
@@ -146,11 +153,13 @@ function hasVisibleFocusCue(control: HTMLElement, resting: FocusPaint) {
   expect(outline || border || shadow, "Keyboard focus must retain a visible cue against the rendered control").toBe(true);
 }
 
-async function keyboardFocus(element: HTMLElement) {
+async function keyboardFocus(element: HTMLElement, tabSteps = 1) {
+  // Browser APIs exist only in Vitest's browser runner, not Storybook's ordinary story runtime.
   const { userEvent } = await import("@vitest/browser/context");
-  element.focus();
-  await userEvent.tab({ shift: true });
-  await userEvent.tab();
+  const scope = element.closest<HTMLElement>("section");
+  if (!scope) throw new Error("Keyboard focus probe must have a theme section");
+  within(scope).getByRole("button", { name: "Keyboard start" }).focus();
+  for (let step = 0; step < tabSteps; step += 1) await userEvent.tab();
   await expect(element).toHaveFocus();
   expect(element.matches(":focus-visible"), "The focus cue must be keyboard-visible").toBe(true);
 }
@@ -165,34 +174,38 @@ export const SwitchForcedColors: Story = {
     // Linux Chromium emulates the forced-colors media feature and its default system palette; it is not native Windows High Contrast.
     // Browser APIs exist only in Vitest's browser runner, not Storybook's ordinary story runtime.
     const { userEvent } = await import("@vitest/browser/context");
-    for (const palette of palettes) {
-      await emulateForcedPalette(palette);
-      for (const width of widths) {
-        await viewport(width);
-        for (const theme of themes) {
-          const control = within(themeScope(canvasElement, theme, "switch")).getByRole("switch", { name: `${theme} feature` });
-          const thumb = control.firstElementChild;
-          expect(thumb).not.toBeNull();
-          control.blur();
-          const resting = focusPaint(control);
-          await keyboardFocus(control);
-          for (const checked of [false, true, false]) {
-            if (checked !== (control.getAttribute("aria-checked") === "true")) {
-              await userEvent.keyboard(" ");
+    try {
+      for (const palette of palettes) {
+        await emulateForcedPalette(palette);
+        for (const width of widths) {
+          await viewport(width);
+          for (const theme of themes) {
+            const control = within(themeScope(canvasElement, theme, "switch")).getByRole("switch", { name: `${theme} feature` });
+            const thumb = control.firstElementChild;
+            expect(thumb).not.toBeNull();
+            control.blur();
+            const resting = focusPaint(control);
+            await keyboardFocus(control);
+            for (const checked of [false, true, false]) {
+              if (checked !== (control.getAttribute("aria-checked") === "true")) {
+                await userEvent.keyboard(" ");
+              }
+              await expect(control).toHaveAttribute("aria-checked", String(checked));
+              const trackPaint = paint(control);
+              const thumbPaint = paint(thumb!);
+              expect(paintDistance(trackPaint, thumbPaint), `Switch track and thumb remain visibly distinct (${palette} forced palette, ${theme} theme, ${width}px)`).toBeGreaterThan(1);
+              await expect(control).toHaveFocus();
+              expect(control.matches(":focus-visible")).toBe(true);
+              hasVisibleFocusCue(control, resting);
+              const bounds = thumb!.getBoundingClientRect();
+              expect(bounds.width).toBeGreaterThan(0);
+              expect(bounds.height).toBeGreaterThan(0);
             }
-            await expect(control).toHaveAttribute("aria-checked", String(checked));
-            const trackPaint = paint(control);
-            const thumbPaint = paint(thumb!);
-            expect(paintDistance(trackPaint, thumbPaint), `Switch track and thumb remain visibly distinct (${palette} forced palette, ${theme} theme, ${width}px)`).toBeGreaterThan(1);
-            await expect(control).toHaveFocus();
-            expect(control.matches(":focus-visible")).toBe(true);
-            hasVisibleFocusCue(control, resting);
-            const bounds = thumb!.getBoundingClientRect();
-            expect(bounds.width).toBeGreaterThan(0);
-            expect(bounds.height).toBeGreaterThan(0);
           }
         }
       }
+    } finally {
+      await clearForcedPalette();
     }
   },
 };
@@ -203,32 +216,36 @@ export const SwatchesForcedColors: Story = {
     // Linux Chromium emulates the forced-colors media feature and its default system palette; it is not native Windows High Contrast.
     // Browser APIs exist only in Vitest's browser runner, not Storybook's ordinary story runtime.
     const { userEvent } = await import("@vitest/browser/context");
-    for (const palette of palettes) {
-      await emulateForcedPalette(palette);
-      for (const width of widths) {
-        await viewport(width);
-        for (const theme of themes) {
-          const canvas = within(themeScope(canvasElement, theme, "swatches"));
-          const controls = swatchColors.map((_, index) => canvas.getByRole("button", { name: `${theme} data color ${index + 1}` }));
-          const paints = controls.map((control) => paint(control));
-          expect(paintDistance(paints[0]!, paints[1]!), `Data swatches remain distinct (${palette} forced palette, ${theme} theme, ${width}px)`).toBeGreaterThan(1);
-          for (const [index, control] of controls.entries()) {
-            const resting = focusPaint(control);
-            await keyboardFocus(control);
-            await expect(control).toHaveFocus();
-            expect(control.matches(":focus-visible")).toBe(true);
-            hasVisibleFocusCue(control, resting);
-            expect(paint(control)).toEqual(rgba(swatchColors[index]!));
-            await userEvent.click(control);
-            const dialog = await within(document.body).findByRole("dialog", { name: `${theme} data color ${index + 1} picker` });
-            await expect(dialog).toBeVisible();
-            await userEvent.keyboard("{Escape}");
-            await waitFor(() => expect(control).toHaveFocus());
-            await expect(dialog).not.toBeInTheDocument();
-            expect(paint(control)).toEqual(rgba(swatchColors[index]!));
+    try {
+      for (const palette of palettes) {
+        await emulateForcedPalette(palette);
+        for (const width of widths) {
+          await viewport(width);
+          for (const theme of themes) {
+            const canvas = within(themeScope(canvasElement, theme, "swatches"));
+            const controls = swatchColors.map((_, index) => canvas.getByRole("button", { name: `${theme} data color ${index + 1}` }));
+            const paints = controls.map((control) => paint(control));
+            expect(paintDistance(paints[0]!, paints[1]!), `Data swatches remain distinct (${palette} forced palette, ${theme} theme, ${width}px)`).toBeGreaterThan(1);
+            for (const [index, control] of controls.entries()) {
+              const resting = focusPaint(control);
+              await keyboardFocus(control, index + 1);
+              await expect(control).toHaveFocus();
+              expect(control.matches(":focus-visible")).toBe(true);
+              hasVisibleFocusCue(control, resting);
+              expect(paint(control)).toEqual(rgba(swatchColors[index]!));
+              await userEvent.click(control);
+              const dialog = await within(document.body).findByRole("dialog", { name: `${theme} data color ${index + 1} picker` });
+              await expect(dialog).toBeVisible();
+              await userEvent.keyboard("{Escape}");
+              await waitFor(() => expect(control).toHaveFocus());
+              await expect(dialog).not.toBeInTheDocument();
+              expect(paint(control)).toEqual(rgba(swatchColors[index]!));
+            }
           }
         }
       }
+    } finally {
+      await clearForcedPalette();
     }
   },
 };

@@ -99,8 +99,17 @@
   to { opacity: 0; }
 }
 
+.ui-content-block-motion[data-state="open"] {
+  animation: ui-tooltip-fade-in 180ms ease-out;
+}
+
+.ui-content-block-motion[data-state="closed"] {
+  animation: ui-tooltip-fade-out 150ms ease-in;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ui-tooltip-motion[data-state] {
+  .ui-tooltip-motion[data-state],
+  .ui-content-block-motion[data-state] {
     animation: none;
   }
 }

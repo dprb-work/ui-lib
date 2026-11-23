@@ -60,7 +60,7 @@ function QuestionForm({
       className="min-w-0 text-ui-foreground"
     >
       <form
-        className="space-y-3 pt-6 px-4 pb-4"
+        className="space-y-3 p-4"
         onSubmit={(event) => {
           event.preventDefault();
           if (!locked && (choices.length > 0 || text.trim()))

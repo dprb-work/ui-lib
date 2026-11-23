@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Fullscreen } from "../../components/Fullscreen";
-import { IconButton } from "../../components/IconButton";
-import { ChartColumn, ChartLine, Maximize2, Table2 } from "lucide-react";
+import { ChartColumn, ChartLine, Table2 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
 export type ChartPoint = { label: string; value: number };
 export type ChartOutputProps = {
@@ -10,16 +8,13 @@ export type ChartOutputProps = {
   unit: string;
   type?: "bar" | "line";
 };
-type ChartOutputInternalProps = ChartOutputProps & { expanded?: boolean };
 export function ChartOutput({
   title,
   points,
   unit,
   type = "bar",
-  expanded = false,
-}: ChartOutputInternalProps) {
+}: ChartOutputProps) {
   const [table, setTable] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
   const valid = points.filter((point) => Number.isFinite(point.value));
   const values = valid.map((point) => point.value);
   const observedMinimum = values.length ? Math.min(...values) : 0;
@@ -41,61 +36,28 @@ export function ChartOutput({
         `${valid.length === 1 ? 50 : 8 + (index * 84) / (valid.length - 1)},${yFor(point.value)}`,
     )
     .join(" ");
+  const chartIcon =
+    type === "line" ? (
+      <ChartLine aria-hidden="true" />
+    ) : (
+      <ChartColumn aria-hidden="true" />
+    );
   return (
     <ChatBlock
       title={title}
-      icon={
-        type === "line" ? (
-          <ChartLine aria-hidden="true" size={16} />
-        ) : (
-          <ChartColumn aria-hidden="true" size={16} />
-        )
-      }
-      corner={
-        <div className="flex items-center gap-1">
-          {!expanded && (
-            <Fullscreen
-              open={fullscreen}
-              onOpenChange={setFullscreen}
-              title={`${title} chart`}
-              closeLabel="Close expanded chart"
-              zoomable
-              trigger={
-                <IconButton label="Expand chart">
-                  <Maximize2 aria-hidden="true" />
-                </IconButton>
-              }
-            >
-              <div className="w-full max-w-6xl rounded-lg bg-ui-surface p-4">
-                <ChartOutput
-                  title={title}
-                  points={points}
-                  unit={unit}
-                  type={type}
-                  expanded
-                />
-              </div>
-            </Fullscreen>
-          )}
-          <IconButton
-            label={table ? "Show chart" : "Show table"}
-            aria-pressed={table}
-            onClick={() => setTable((current) => !current)}
-          >
-            {table ? (
-              type === "line" ? (
-                <ChartLine aria-hidden="true" />
-              ) : (
-                <ChartColumn aria-hidden="true" />
-              )
-            ) : (
-              <Table2 aria-hidden="true" />
-            )}
-          </IconButton>
-        </div>
-      }
+      icon={chartIcon}
+      actions={[
+        {
+          kind: "button",
+          label: table ? "Show chart" : "Show table",
+          pressed: table,
+          icon: table ? chartIcon : <Table2 aria-hidden="true" />,
+          onSelect: () => setTable((current) => !current),
+        },
+      ]}
+      expansion="zoom"
     >
-      <div className="pt-5 px-3 pb-3">
+      <div className="p-3 in-data-[content-block-viewport=expanded]:size-full">
         {table ? (
           <div className="overflow-auto">
             <table className="w-full text-left text-sm">
@@ -124,16 +86,12 @@ export function ChartOutput({
             No finite values to chart.
           </p>
         ) : (
-          <figure>
+          <figure className="in-data-[content-block-viewport=expanded]:h-full">
             <svg
               viewBox="0 0 100 100"
               role="img"
               aria-label={`${title} chart`}
-              className={
-                expanded
-                  ? "h-[min(72dvh,48rem)] w-full overflow-visible"
-                  : "h-64 w-full overflow-visible"
-              }
+              className="h-64 w-full overflow-visible in-data-[content-block-viewport=expanded]:h-full"
             >
               {type === "bar" ? (
                 valid.map((point, index) => {

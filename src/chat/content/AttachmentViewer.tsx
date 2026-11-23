@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { Button } from "../../components/Button";
-import { Fullscreen } from "../../components/Fullscreen";
 import { Image } from "../../components/Image";
 import {
   Download,
   ExternalLink,
   File,
   Image as ImageIcon,
-  Maximize2,
 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
 import { isSameOriginHref, safeHref } from "./chat-links";
@@ -48,7 +46,6 @@ export function AttachmentViewer({
   onDownload,
 }: AttachmentViewerProps) {
   const [imageState, setImageState] = useState<ImageState>();
-  const [fullscreen, setFullscreen] = useState(false);
   const safeAttachmentHref = safeHref(attachment.href);
   const localAttachmentHref =
     safeAttachmentHref && isSameOriginHref(safeAttachmentHref)
@@ -92,50 +89,23 @@ export function AttachmentViewer({
         href={localDownloadHref}
         onTitleClick={onDownload}
         download={localDownloadHref ? attachment.name : undefined}
+        expansion={imageHref ? "zoom" : undefined}
       >
-        <div className="p-3">
+        <div className="p-3 in-data-[content-block-viewport=expanded]:contents">
           {imageHref && (
-            <div className="max-w-full overflow-auto">
-              <Fullscreen
-                open={fullscreen}
-                onOpenChange={setFullscreen}
-                title={attachment.name}
-                closeLabel="Close expanded image"
-                zoomable
-                trigger={
-                  <button
-                    type="button"
-                    className="group relative mx-auto block max-w-full cursor-zoom-in focus:outline-hidden focus:ring-2 focus:ring-ui-accent"
-                    aria-label={`Expand ${attachment.name}`}
-                  >
-                    <Image
-                      src={imageHref}
-                      alt={attachment.name}
-                      className="block h-auto max-w-full"
-                      onLoad={() =>
-                        setImageState({ href: imageHref, status: "loaded" })
-                      }
-                      onError={() =>
-                        setImageState({ href: imageHref, status: "error" })
-                      }
-                    />
-                    <span
-                      aria-hidden="true"
-                      className="absolute right-2 top-2 rounded bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-                    >
-                      <Maximize2 size={16} />
-                    </span>
-                  </button>
-                }
-              >
-                <Image
-                  src={imageHref}
-                  alt={attachment.name}
-                  className="block max-h-[calc(100dvh-3rem)] max-w-full object-contain"
-                />
-              </Fullscreen>
-            </div>
+            <Image
+              src={imageHref}
+              alt={attachment.name}
+              className="mx-auto block h-auto max-w-full in-data-[content-block-viewport=expanded]:max-h-full in-data-[content-block-viewport=expanded]:object-contain"
+              onLoad={() =>
+                setImageState({ href: imageHref, status: "loaded" })
+              }
+              onError={() =>
+                setImageState({ href: imageHref, status: "error" })
+              }
+            />
           )}
+          <div className="in-data-[content-block-viewport=expanded]:hidden">
           {imageStatus === "error" && (
             <p className="mt-3 text-sm text-ui-muted-foreground" role="alert">
               Image failed to load. Try again.
@@ -170,7 +140,6 @@ export function AttachmentViewer({
                   }
                   onClick={() => {
                     if (!imageHref && !onLoadImage) return;
-                    setFullscreen(false);
                     if (imageHref)
                       setImageState({ href: imageHref, status: "loading" });
                     onLoadImage?.();
@@ -193,6 +162,7 @@ export function AttachmentViewer({
               </a>
             </div>
           )}
+          </div>
         </div>
       </ChatBlock>
     );
@@ -201,7 +171,7 @@ export function AttachmentViewer({
       title={attachment.name}
       icon={<File aria-hidden="true" className="text-ui-accent" />}
     >
-      <div className="pt-5 px-3 pb-3">
+      <div className="p-3">
         <p className="text-sm text-ui-muted-foreground">
           {[attachment.mediaType, attachment.size]
             .filter(Boolean)

@@ -1,34 +1,107 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FileCode } from "lucide-react";
+import { FileCode, Image as ImageIcon, LineChart, Table2 } from "lucide-react";
+import { useState } from "react";
 
-import { ContentBlock } from "./ContentBlock";
 import { CodeViewport } from "./CodeViewport";
-import { CopyButton } from "./Interactions";
+import { ContentBlock } from "./ContentBlock";
 
-const code = Array.from({ length: 30 }, (_, index) => `Record ${index + 1}: a deliberately long line to exercise horizontal and vertical scrolling without reserving a column for the floating action.`).join("\n");
+const code = Array.from({ length: 30 }, (_, index) => `Record ${index + 1}: a deliberately long line to exercise horizontal and vertical scrolling inside the content viewport.`).join("\n");
+const diagram = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='240' viewBox='0 0 480 240'%3E%3Crect width='480' height='240' fill='%23f1f5f4'/%3E%3Crect x='24' y='88' width='112' height='64' rx='8' fill='%230e7490'/%3E%3Crect x='184' y='88' width='112' height='64' rx='8' fill='%23157f5b'/%3E%3Crect x='344' y='88' width='112' height='64' rx='8' fill='%23525f5c'/%3E%3Cpath d='M136 120h48M296 120h48' stroke='%23333' stroke-width='3'/%3E%3Ctext x='240' y='228' font-size='6' text-anchor='middle' fill='%23333'%3ESmall footnote that becomes readable when zoomed%3C/text%3E%3C/svg%3E";
+const rows = Array.from({ length: 40 }, (_, index) => ({ run: `run-${index + 1}`, status: index % 5 === 0 ? "failed" : "passed", seconds: 30 + ((index * 17) % 90), host: `runner-${index % 4}.example.internal` }));
+
 const meta = {
   title: "Components/ContentBlock",
   component: ContentBlock,
-  parameters: { layout: "centered" },
+  parameters: { layout: "padded" },
 } satisfies Meta<typeof ContentBlock>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Scrollable: Story = {
-  args: { title: "Records", "aria-label": "Records", metadata: ["30 rows"] },
+export const Code: Story = {
+  args: { label: "Records", title: "records.txt", metadata: ["30 lines"], children: null },
   render: (args) => (
-    <ContentBlock {...args} className="mt-6 w-96" icon={<FileCode className="size-4" />} corner={<CopyButton text={code} label="Copy records" />}>
+    <ContentBlock
+      {...args}
+      className="w-full max-w-[32rem]"
+      icon={<FileCode aria-hidden="true" />}
+      actions={[{ kind: "copy", label: "Copy records", text: code }]}
+      expansion="scroll"
+    >
       <CodeViewport aria-label="Record contents">{code}</CodeViewport>
     </ContentBlock>
   ),
 };
 
-export const Segments: Story = {
-  args: { title: "Request", "aria-label": "Request" },
+function ChartContent() {
+  const [table, setTable] = useState(false);
+  const points = [4, 9, 6, 14, 11, 18, 22];
+  return (
+    <ContentBlock
+      label="Weekly runs"
+      title="Weekly runs"
+      icon={<LineChart aria-hidden="true" />}
+      className="w-full max-w-[32rem]"
+      expansion="zoom"
+      actions={[
+        { kind: "button", label: table ? "Show chart" : "Show table", icon: <Table2 aria-hidden="true" />, pressed: table, onSelect: () => setTable((current) => !current) },
+        { kind: "copy", label: "Copy CSV", text: points.map((value, index) => `${index + 1},${value}`).join("\n") },
+      ]}
+    >
+      {table ? (
+        <ol className="p-3 text-sm">{points.map((value, index) => <li key={index}>Week {index + 1}: {value}</li>)}</ol>
+      ) : (
+        <svg viewBox="0 0 100 60" role="img" aria-label="Weekly runs chart" className="block h-56 w-full p-3 in-data-[content-block-viewport=expanded]:h-full">
+          <polyline fill="none" className="stroke-ui-accent" strokeWidth="1.5" vectorEffect="non-scaling-stroke" points={points.map((value, index) => `${8 + index * 14},${55 - value * 2}`).join(" ")} />
+        </svg>
+      )}
+    </ContentBlock>
+  );
+}
+
+export const Chart: Story = {
+  args: { label: "Weekly runs", children: null },
+  render: () => <ChartContent />,
+};
+
+export const Image: Story = {
+  args: { label: "Pipeline diagram", title: "Pipeline diagram", metadata: ["SVG"], children: null },
   render: (args) => (
-    <ContentBlock {...args} className="mt-6 w-96">
-      <CodeViewport aria-label="Request contents">Read records</CodeViewport>
-      <div className="border-t border-ui-border"><CodeViewport wrap aria-label="Response contents">{code}</CodeViewport></div>
+    <ContentBlock {...args} className="w-full max-w-[32rem]" icon={<ImageIcon aria-hidden="true" />} expansion="zoom">
+      <img src={diagram} alt="Three pipeline stages connected left to right" className="mx-auto block h-auto max-w-full in-data-[content-block-viewport=expanded]:max-h-full in-data-[content-block-viewport=expanded]:object-contain" />
+    </ContentBlock>
+  ),
+};
+
+export const Table: Story = {
+  args: { label: "Test runs", title: "Test runs", metadata: ["40 rows"], children: null },
+  render: (args) => (
+    <ContentBlock {...args} className="w-full max-w-[28rem]" icon={<Table2 aria-hidden="true" />} expansion="scroll">
+      <div tabIndex={0} aria-label="Test runs table" className="min-h-0 overflow-auto">
+      <table className="w-max min-w-full text-left text-sm">
+        <thead className="sticky top-0 bg-ui-surface">
+          <tr>{["Run", "Status", "Seconds", "Host"].map((heading) => <th key={heading} className="border-b border-ui-border px-3 py-2">{heading}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.run}>
+              <td className="border-b border-ui-border px-3 py-1.5">{row.run}</td>
+              <td className="border-b border-ui-border px-3 py-1.5">{row.status}</td>
+              <td className="border-b border-ui-border px-3 py-1.5 tabular-nums">{row.seconds}</td>
+              <td className="border-b border-ui-border px-3 py-1.5">{row.host}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      </div>
+    </ContentBlock>
+  ),
+};
+
+export const UntitledShort: Story = {
+  args: { label: "Command output", children: null },
+  render: (args) => (
+    <ContentBlock {...args} className="w-full max-w-[32rem]" actions={[{ kind: "copy", label: "Copy output", text: "ok" }]}>
+      <CodeViewport aria-label="Command output">ok</CodeViewport>
     </ContentBlock>
   ),
 };

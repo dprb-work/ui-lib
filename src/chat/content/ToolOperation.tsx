@@ -76,19 +76,20 @@ export function ToolOperation({
   return (
     <ChatBlock
       title={operation.name}
-      aria-label={
+      label={
         operation.path
           ? `${operation.name} · ${operation.path}`
           : operation.name
       }
-      metadata={operation.path ? [operation.path] : undefined}
+      metadata={[
+        operation.path,
+        operation.state !== "completed" && (
+          <ActivityStatus key="status" state={operation.state} />
+        ),
+      ]}
       language={operation.language}
       busy={active}
-      corner={
-        operation.state !== "completed" && (
-          <ActivityStatus state={operation.state} />
-        )
-      }
+      expansion="scroll"
     >
       {inputContent === undefined ? (
         <ToolOperationText text={operation.input} label="Input" active={active}>

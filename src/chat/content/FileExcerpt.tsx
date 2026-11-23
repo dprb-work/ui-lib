@@ -1,4 +1,3 @@
-import { CopyButton } from "../../components/Interactions";
 import { FileCode2 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
 import { useChatPresentation } from "./ChatPresentation";
@@ -43,10 +42,10 @@ export function FileExcerpt({
               })
           : undefined
       }
-      corner={<CopyButton text={excerpt} label="Copy file excerpt" />}
+      actions={[{ kind: "copy", text: excerpt, label: "Copy file excerpt" }]}
+      expansion="scroll"
     >
-      <div className="pt-2">
-        <pre className="max-h-96 overflow-auto p-3 font-mono text-xs leading-5">
+      <pre className="max-h-96 overflow-auto p-3 font-mono text-xs leading-5 in-data-[content-block-viewport=expanded]:max-h-none">
           <code>
             {excerpt.split("\n").map((line, index) => (
               <span
@@ -67,7 +66,6 @@ export function FileExcerpt({
             ))}
           </code>
         </pre>
-      </div>
     </ChatBlock>
   );
 }

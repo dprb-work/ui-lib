@@ -1,5 +1,4 @@
 import { CodeViewport } from "../../components/CodeViewport";
-import { CopyButton } from "../../components/Interactions";
 import { useChatPresentation } from "./ChatPresentation";
 import { CodeText } from "./CodeText";
 import { ChatBlock } from "./ChatBlock";
@@ -25,7 +24,8 @@ export function CodeBlock({
     <ChatBlock
       title={filename ?? "Code"}
       language={language}
-      corner={<CopyButton text={code} label="Copy code" />}
+      actions={[{ kind: "copy", text: code, label: "Copy code" }]}
+      expansion="scroll"
       className={className}
     >
       <CodeViewport

@@ -1,3 +1,6 @@
+/* Component defaults sit below utilities so consumer classes still replace them. */
+@layer theme, base, components, utilities;
+
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
@@ -25,6 +28,48 @@
 [data-ui-number-input]::-webkit-outer-spin-button {
   margin: 0;
   appearance: none;
+}
+
+@layer components {
+  [data-ui-native-select] {
+    appearance: none;
+  }
+
+  /* Chromium's customizable select keeps the native element, keyboard and form value
+     while the open list matches SelectInput: inset rounded options with a calm, neutral
+     highlight. Other browsers keep their own picker. */
+  @supports (appearance: base-select) {
+    [data-ui-native-select],
+    [data-ui-native-select]::picker(select) {
+      appearance: base-select;
+    }
+
+    [data-ui-native-select]::picker-icon {
+      display: none;
+    }
+
+    [data-ui-native-select]::picker(select) {
+      @apply mt-1 rounded-md border border-ui-border bg-ui-surface p-1 text-ui-surface-foreground shadow-xl;
+    }
+
+    [data-ui-native-select] option {
+      @apply flex h-7 items-center gap-2 rounded-md px-2 text-xs outline-hidden [--ui-control-fill:var(--color-ui-surface)] [--ui-feedback-tint:var(--color-ui-foreground)] [--ui-hover-weight:8%] [--ui-press-weight:16%];
+    }
+
+    [data-ui-native-select] option:hover,
+    [data-ui-native-select] option:focus-visible {
+      @apply bg-ui-hover-fill text-ui-foreground;
+    }
+
+    /* The keyboard target keeps a thin neutral inside edge, so it stays visible while the pointer rests elsewhere. */
+    [data-ui-native-select] option:focus-visible {
+      @apply shadow-[inset_0_0_0_1px_var(--color-ui-muted-foreground)];
+    }
+
+    [data-ui-native-select] option:active {
+      @apply bg-ui-press-fill;
+    }
+  }
 }
 
 [data-ui-chart] {

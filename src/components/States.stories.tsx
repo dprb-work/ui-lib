@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Pin, Search } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Button } from "./Button";
 import { Checkbox, Switch } from "./BinaryControls";
@@ -10,6 +10,7 @@ import { IconButton } from "./IconButton";
 import { CopyButton, Tabs } from "./Interactions";
 import { NativeSelect } from "./NativeSelect";
 import { NumberInput, SelectInput, TextareaInput, TextInput } from "./Inputs";
+import { PortalProvider } from "./portal-context";
 import { SegmentedControl } from "./SegmentedControl";
 
 const meta = {
@@ -20,10 +21,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+type Theme = "light" | "dark";
+const themes = ["light", "dark"] as const;
 const choices = [{ value: "one", label: "One" }, { value: "two", label: "Two" }];
 const views = [{ value: "graph", label: "Graph" }, { value: "data", label: "Data" }];
 
-function StateExample({ theme }: { theme: "light" | "dark" }) {
+function ThemeScope({ theme, label, children }: { theme: Theme; label: string; children: ReactNode }) {
+  // Portaled overlays render inside the section so they take its theme, as in an application's nested theme region.
+  const [portal, setPortal] = useState<HTMLElement | null>(null);
+  return (
+    <section ref={setPortal} data-theme={theme} aria-label={label} className="grid min-w-0 content-start gap-6 rounded-lg border border-ui-border bg-ui-background p-4 text-sm text-ui-foreground">
+      {portal && <PortalProvider container={portal}>{children}</PortalProvider>}
+    </section>
+  );
+}
+
+function StateExample({ theme }: { theme: Theme }) {
   const [pinned, setPinned] = useState(true);
   const [selected, setSelected] = useState(true);
   const [tab, setTab] = useState("graph");
@@ -33,7 +46,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
   const [colors, setColors] = useState(["#4c88c5", "#aa7a35"]);
   const [message, setMessage] = useState("Use Tab to inspect keyboard focus. Hold Space or the pointer to inspect press feedback.");
   return (
-    <section data-theme={theme} aria-label={`${theme} shared control states`} className="grid min-w-0 content-start gap-6 rounded-lg border border-ui-border bg-ui-background p-4 text-sm text-ui-foreground">
+    <ThemeScope theme={theme} label={`${theme} shared control states`}>
       <h2 className="text-lg font-semibold">{theme === "light" ? "Light" : "Dark"}</h2>
       <div className="grid gap-3">
         <h3 className="font-semibold">Actions and availability</h3>
@@ -60,6 +73,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
         <label className="grid gap-1">Native choice<NativeSelect defaultValue="one">{choices.map((choice) => <option key={choice.value} value={choice.value}>{choice.label}</option>)}</NativeSelect></label>
         <div className="grid gap-1"><span>Shared choice</span><SelectInput label="Shared choice" defaultValue="one" options={choices} /></div>
         <label className="grid gap-1">Required name<TextInput error="Enter a name before saving." /></label>
+        <label className="grid gap-1">Order number<TextInput defaultValue="12-AB" aria-invalid /></label>
         <label className="grid gap-1">Unavailable field<TextInput defaultValue="Unavailable" disabled /></label>
       </div>
       <div className="grid gap-3">
@@ -79,7 +93,7 @@ function StateExample({ theme }: { theme: "light" | "dark" }) {
         <Calendar ariaLabel={`${theme} date choice`} month={month} onMonthChange={setMonth} value={day} onValueChange={setDay} />
         <ColorSelector label={`${theme} data color`} colors={colors} onValueChange={(index, value) => setColors(colors.map((color, slot) => slot === index ? value : color))} />
       </div>
-    </section>
+    </ThemeScope>
   );
 }
 
@@ -88,11 +102,11 @@ export const SharedControls: Story = {
     <main className="mx-auto grid max-w-6xl gap-6 text-ui-foreground">
       <header className="grid gap-2 text-sm">
         <h1 className="text-xl font-semibold">Color, fill and keyboard shape</h1>
-        <p>Color carries selected/on or status meaning. Hover adds a faint fill; held press adds a stronger fill. Focus uses an inside edge, field underline or icon plate, never a floating offset ring.</p>
-        <p>Disabled fades. Busy shows one spinner without becoming disabled or faded. Invalid drafts keep danger color and their explanation during focus.</p>
-        <p>Graph/Data tabs retain their box, selected fill and bold. The tabs share the full width and do not gain an underline.</p>
+        <p>Color carries selected/on or status meaning. Hover adds a faint fill; held press adds a stronger fill. An outlined delete action fills with red under the pointer. Focus uses an inside edge, field underline or icon plate, never a floating offset ring.</p>
+        <p>Disabled fades. Busy shows one spinner without becoming disabled or faded. An invalid draft colors only its underline; the application decides whether an explanation appears below it.</p>
+        <p>Selected tabs and segments take the accent fill with ordinary text. A pressed toggle button gets an accent edge on a tinted fill, never the primary action's solid fill.</p>
       </header>
-      <div className="grid gap-6 lg:grid-cols-2">{(["light", "dark"] as const).map((theme) => <StateExample key={theme} theme={theme} />)}</div>
+      <div className="grid gap-6 lg:grid-cols-2">{themes.map((theme) => <StateExample key={theme} theme={theme} />)}</div>
     </main>
   ),
 };

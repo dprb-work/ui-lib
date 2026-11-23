@@ -105,7 +105,7 @@ export function Tabs({
         {indicator && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[0.4375rem] bg-ui-surface transition-[transform,width] duration-200 ease-out motion-reduce:transition-none"
+            className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[0.4375rem] bg-ui-accent transition-[transform,width] duration-200 ease-out motion-reduce:transition-none"
             style={{
               width: indicator.width,
               transform: `translateX(${indicator.offset}px)`,
@@ -118,8 +118,11 @@ export function Tabs({
             key={tab.value}
             value={tab.value}
             disabled={tab.disabled}
+            // Hover and press tints stay translucent (mixed into transparent), so they never cover
+            // the sliding selected indicator during a switch. Over the accent indicator the tint is
+            // white, because an accent tint would vanish into the accent fill.
             className={cn(
-              "relative z-10 min-w-0 flex-1 rounded-[0.4375rem] px-3 py-2 text-center text-sm font-normal text-ui-muted-foreground outline-hidden -outline-offset-2 transition-colors duration-200 hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:z-10 focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] data-[state=active]:[--ui-control-fill:var(--color-ui-surface)] data-[state=active]:font-semibold data-[state=active]:text-ui-foreground disabled:bg-transparent disabled:opacity-50 motion-reduce:transition-none",
+              "relative z-10 min-w-0 flex-1 rounded-[0.4375rem] px-3 py-2 text-center text-sm font-normal text-ui-muted-foreground outline-hidden -outline-offset-2 [--ui-control-fill:transparent] transition-colors duration-200 hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:z-10 focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] data-[state=active]:font-semibold data-[state=active]:text-ui-on-accent data-[state=active]:[--ui-feedback-tint:white] data-[state=active]:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] disabled:bg-transparent disabled:opacity-50 motion-reduce:transition-none",
               triggerClassName,
             )}
           >

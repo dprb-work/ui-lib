@@ -1,7 +1,9 @@
 import { type ChangeEvent, useId, useState } from "react";
 
 import { cn } from "../cn";
-import { TextInput } from "./Inputs";
+import { type ColorFormat, type RgbColor, colorFormats, hexColorFormat, toHexColor } from "./color-formats";
+import { InputError, TextInput } from "./Inputs";
+import { NativeSelect } from "./NativeSelect";
 
 export type ColorPickerProps = {
   value: string;
@@ -11,38 +13,12 @@ export type ColorPickerProps = {
   className?: string;
 };
 
-type RgbColor = Readonly<{
-  red: number;
-  green: number;
-  blue: number;
-}>;
-
-const hexColorPattern = /^#([0-9a-f]{6})$/i;
 const colorChannels = [
   { channel: "red", label: "Red" },
   { channel: "green", label: "Green" },
   { channel: "blue", label: "Blue" },
 ] as const;
-
-function parseHexColor(value: string): RgbColor | undefined {
-  const match = hexColorPattern.exec(value);
-  if (!match) {
-    return undefined;
-  }
-
-  const hex = match[1];
-  return {
-    red: Number.parseInt(hex.slice(0, 2), 16),
-    green: Number.parseInt(hex.slice(2, 4), 16),
-    blue: Number.parseInt(hex.slice(4, 6), 16),
-  };
-}
-
-function toHexColor({ red, green, blue }: RgbColor): string {
-  return `#${[red, green, blue]
-    .map((channel) => channel.toString(16).padStart(2, "0"))
-    .join("")}`;
-}
+const black: RgbColor = { red: 0, green: 0, blue: 0 };
 
 function ColorChannel({
   colorLabel,
@@ -88,85 +64,97 @@ export function ColorPicker({
   disabled = false,
   className,
 }: ColorPickerProps) {
-  const [draft, setDraft] = useState(value);
-  const [previousValue, setPreviousValue] = useState(value);
-  const hexInputId = useId();
-  const color = parseHexColor(value);
-  const channels = color ?? { red: 0, green: 0, blue: 0 };
-  const displayColor = color ? value : "#000000";
-  const draftIsValid = parseHexColor(draft) !== undefined;
+  const [format, setFormat] = useState<ColorFormat>(hexColorFormat);
+  const color = hexColorFormat.parse(value) ?? black;
+  const [draft, setDraft] = useState(() => format.format(color));
+  // `seenValue` is the last `value` prop; `emittedValue` is the color this draft reported and the
+  // parent has not yet answered. A typed entry keeps its spelling when the parent applies exactly that color.
+  const [seenValue, setSeenValue] = useState(value);
+  const [emittedValue, setEmittedValue] = useState<string | null>(null);
+  const nameId = useId();
+  const errorId = useId();
+  const draftIsValid = format.parse(draft) !== undefined;
 
-  if (value !== previousValue) {
-    setPreviousValue(value);
-    setDraft(value);
+  if (value !== seenValue) {
+    setSeenValue(value);
+    setEmittedValue(null);
+    if (value !== emittedValue) setDraft(format.format(color));
   }
 
-  const handleHexChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextDraft = event.target.value;
-    setDraft(nextDraft);
+  const handleDraftChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDraft(event.target.value);
+    const parsed = format.parse(event.target.value);
+    if (!parsed) return;
+    const next = toHexColor(parsed);
+    setEmittedValue(next);
+    if (next !== value) onValueChange(next);
+  };
 
-    const parsedColor = parseHexColor(nextDraft);
-    if (parsedColor) {
-      onValueChange(toHexColor(parsedColor));
-    }
+  const handleFormatChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const next = colorFormats.find((entry) => entry.id === event.target.value) ?? hexColorFormat;
+    setFormat(next);
+    setDraft(next.format(color));
+    setEmittedValue(null);
   };
 
   return (
     <fieldset
+      aria-labelledby={nameId}
       disabled={disabled}
       className={cn(
         "m-0 grid min-w-0 gap-3 border-0 p-0 text-ui-foreground disabled:cursor-not-allowed disabled:text-ui-muted-foreground",
         className,
       )}
     >
-      <legend className="p-0 text-sm font-medium">{label}</legend>
-      <div className="flex items-center gap-3">
-        <input
-          type="color"
-          aria-label={`${label} color well`}
-          value={displayColor}
-          disabled={disabled}
-          onChange={(event) => onValueChange(event.target.value.toLowerCase())}
-          className="size-10 shrink-0 cursor-pointer rounded-md border border-ui-border bg-transparent p-0.5 outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <div
-          aria-label={`${label} preview`}
-          role="img"
-          className="h-10 min-w-0 flex-1 rounded-md border border-ui-border"
-          style={{ backgroundColor: displayColor }}
-        />
-        <span className="font-mono text-xs text-ui-muted-foreground">{value}</span>
+      <div className="grid gap-1">
+        <div className="flex items-center gap-2">
+          <span id={nameId} className="min-w-0 flex-1 text-sm font-medium">{label}</span>
+          <NativeSelect
+            aria-label={`${label} format`}
+            density="compact"
+            value={format.id}
+            disabled={disabled}
+            onChange={handleFormatChange}
+            wrapperClassName="shrink-0"
+            className="w-auto"
+          >
+            {colorFormats.map((entry) => <option key={entry.id} value={entry.id}>{entry.label}</option>)}
+          </NativeSelect>
+          <TextInput
+            aria-label={`${label} ${format.id} value`}
+            aria-describedby={draftIsValid ? undefined : errorId}
+            aria-invalid={!draftIsValid}
+            value={draft}
+            disabled={disabled}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+            onChange={handleDraftChange}
+            className={cn(format.fieldWidth, "tabular-nums")}
+          />
+        </div>
+        {!draftIsValid && <InputError id={errorId}>{format.hint}</InputError>}
       </div>
+      {/* The swatch is the native color input itself, so clicking it opens the browser's picker. */}
+      <input
+        type="color"
+        aria-label={`${label} color well`}
+        value={toHexColor(color)}
+        disabled={disabled}
+        onChange={(event) => onValueChange(event.target.value.toLowerCase())}
+        className="h-10 w-full cursor-pointer rounded-md border border-ui-border bg-transparent p-0 outline-hidden focus-visible:ring-2 focus-visible:ring-ui-accent disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-color-swatch]:rounded-[5px] [&::-moz-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-[5px] [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0"
+      />
       <div className="grid gap-2">
         {colorChannels.map(({ channel, label: channelLabel }) => (
           <ColorChannel
             key={channel}
             colorLabel={label}
             label={channelLabel}
-            value={channels[channel]}
+            value={color[channel]}
             disabled={disabled}
-            onValueChange={(nextValue) =>
-              onValueChange(toHexColor({ ...channels, [channel]: nextValue }))
-            }
+            onValueChange={(nextValue) => onValueChange(toHexColor({ ...color, [channel]: nextValue }))}
           />
         ))}
-      </div>
-      <div className="grid gap-1">
-        <label htmlFor={hexInputId} className="text-xs text-ui-muted-foreground">
-          Hex value
-        </label>
-        <TextInput
-          id={hexInputId}
-          aria-label={`${label} hex value`}
-          value={draft}
-          disabled={disabled}
-          spellCheck={false}
-          autoCapitalize="off"
-          autoCorrect="off"
-          aria-invalid={!draftIsValid}
-          error={!draftIsValid ? "Enter a six-digit hex value, for example #4f46e5." : undefined}
-          onChange={handleHexChange}
-        />
       </div>
     </fieldset>
   );

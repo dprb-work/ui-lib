@@ -46,7 +46,7 @@ export function SegmentedControl<Value extends string>({
       {selectedIndex >= 0 && options.length > 0 && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[0.4375rem] bg-ui-surface transition-transform duration-200 ease-out motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[0.4375rem] bg-ui-accent transition-transform duration-200 ease-out motion-reduce:transition-none"
           style={{
             width: `${100 / options.length}%`,
             transform: `translateX(${selectedIndex * 100}%)`,
@@ -60,8 +60,11 @@ export function SegmentedControl<Value extends string>({
           type="button"
           aria-pressed={value === option.value}
           disabled={option.disabled}
+          // Hover and press tints stay translucent (mixed into transparent), so they never cover
+          // the sliding selected indicator during a switch. Over the accent indicator the tint is
+          // white, because an accent tint would vanish into the accent fill.
           className={cn(
-            "relative z-10 inline-flex items-center justify-center gap-ui-icon-text rounded-lg px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden -outline-offset-2 transition-colors duration-200 hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] disabled:cursor-not-allowed disabled:bg-transparent disabled:opacity-50 aria-pressed:[--ui-control-fill:var(--color-ui-surface)] aria-pressed:text-ui-accent motion-reduce:transition-none [&_svg]:size-3.5 [&_svg]:shrink-0",
+            "relative z-10 inline-flex items-center justify-center gap-ui-icon-text rounded-lg px-2.5 py-1.5 text-xs text-ui-muted-foreground outline-hidden -outline-offset-2 [--ui-control-fill:transparent] transition-colors duration-200 hover:bg-ui-hover-fill active:bg-ui-press-fill focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)] disabled:cursor-not-allowed disabled:bg-transparent disabled:opacity-50 aria-pressed:text-ui-on-accent aria-pressed:[--ui-feedback-tint:white] aria-pressed:focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-on-accent)] motion-reduce:transition-none [&_svg]:size-3.5 [&_svg]:shrink-0",
             buttonClassName,
           )}
           onClick={() => onValueChange(option.value)}

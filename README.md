@@ -138,8 +138,10 @@ uses Amber, info uses Blue, and danger is an independent red used only for
 status, not one of the ten palette families.
 Pair every status with an icon and words; color alone does not communicate
 status. Links use the readable Green link role and stay underlined. Danger
-buttons use an outlined treatment by default. Reserve a solid danger button for
-the confirming step; consumers can apply the complete treatment through `className`:
+buttons are outlined at rest: danger border and text, no fill. Hover and held
+press fill them with solid danger and switch the text to on-danger. Reserve a
+button that is solid at rest for the confirming step; consumers can apply the
+complete treatment through `className`:
 
 ```tsx
 <Button
@@ -272,7 +274,9 @@ Readable accent and danger text specializations and derived interaction fills us
 work. Hover and press fills mix the existing accent with the control's base;
 they do not introduce another authored palette or focus color. Filled accent
 and outlined danger controls have their own derived press fills to preserve
-their foreground contrast.
+their foreground contrast. An outlined danger button fills with solid
+`danger-hover` on hover; its press fill moves that red toward the foreground,
+away from the background in both themes.
 The theme imports `src/palette.css` for the existing raw `--color-*` ramps;
 both authored files ship with the package. Products reference the public theme
 entry instead of copying either source.
@@ -302,9 +306,24 @@ invocation is unavailable. Its icon-only content stays mounted in an internal
 wrapper while the spinner is visible. Consumer CSS must not assume the action
 SVG is a direct button child.
 
-Selected secondary buttons use the filled accent treatment. Persistent
+A pressed secondary button (`aria-pressed="true"`) shows "on" with an accent
+edge on an accent-tinted fill and keeps its ordinary text, so it never looks
+like a primary action; toggling does not change its size. Persistent
 `aria-pressed` state is separate from temporary `:active` feedback. The
 **Foundations / States** story shows the controls in both themes.
+
+Fields (`TextInput`, `NumberInput`, `TextareaInput`, `NativeSelect` and the
+`SelectInput` trigger) use 0.875rem text that sits close to the underline and
+starts 8px from the field's left edge (4px in compact density), a 28px
+single-line height and rounded top corners at rest and in focus. An
+invalid field colors only its underline; its background and text keep the valid
+field's paint. Pass `error` to show an explanation, or only `aria-invalid`
+(`invalid` on `SelectInput`) when the application shows no message.
+
+Open option lists (`SelectInput`, and `NativeSelect` where the browser supports
+`appearance: base-select`) inset their options by 4px and round them. The
+option under the pointer or keyboard takes a neutral highlight, not the accent;
+keyboard focus adds a thin neutral inside edge.
 
 `CopyableText` takes `text`, `copyLabel`, and an optional React `label`. It
 renders wrapped code text with the existing `CopyButton`; callers retain layout
@@ -312,14 +331,18 @@ and copy-button styling through `className` and `copyButtonClassName`.
 
 `TextareaInput` accepts native textarea props, including `ref`, and shares the
 input appearance and accessible error contract. It grows with content where
-the browser supports `field-sizing`; `rows` supplies the native fallback.
-Consumers control maximum height, resizing, and submission behavior.
+the browser supports `field-sizing`; `rows` supplies the native fallback. It has
+no resize handle. Consumers control maximum height and submission behavior;
+[textarea auto-sizing](docs/research/textarea-auto-sizing.md) compares the
+growth techniques.
 
 `NativeSelect` styles a native HTML select with a decorative chevron. Use native
 `option` children and select props, including `ref`, `name`, `value`,
 `defaultValue`, and `onChange`. The browser owns its picker, keyboard interaction,
-and form submission. `density` accepts `standard` or `compact`; standard density
-keeps a 44px control height and uses 0.875rem selected text near the underline.
+and form submission; in Chromium the open picker takes the shared option-list
+styling through `appearance: base-select`, and other browsers show their own.
+`density` accepts `standard` or `compact`; standard density
+matches the 28px field height and uses 0.875rem selected text near the underline.
 `className` styles the select, and `wrapperClassName` controls its surrounding
 layout. Consumers own labels, options, and selection policy. Use `SelectInput`
 instead when the existing Radix-backed picker and its `onValueChange` API is needed.
@@ -334,10 +357,13 @@ Its scroll container spans the available width. The consumer owns preferences,
 syntax highlighting, line numbers, and streaming behavior.
 
 `ColorPicker` is controlled by `value` and `onValueChange` using opaque
-`#rrggbb` strings. It provides RGB sliders, a native color well, and an editable
-hex field. Invalid drafts stay in the field without changing the selected color.
-Supply `label` for the controls' accessible names. Compose it with `Popover`
-when selection should open on click; the consumer owns persistence.
+`#rrggbb` strings. Its first line shows the `label`, a format choice (Hex, RGB,
+HSL or OKLCH) and one editable value field in that format. Below it, a single
+swatch is the native color input, so clicking it opens the browser's color
+picker, followed by RGB sliders. Invalid drafts stay in the field without
+changing the selected color. Supply `label` for the controls' accessible names.
+Compose it with `Popover` when selection should open on click; the consumer owns
+persistence.
 
 `ColorSelector` composes `Popover`, `ColorPicker`, and the shared `Tooltip` into
 a controlled row of opaque `#rrggbb` color slots. Its public API is
@@ -435,12 +461,17 @@ Storybook is the component catalog and browser verification surface.
 
 `TextInput` accepts native input props and forwards its `ref` to the input. Its `type` accepts `"text"` or `"search"`. Search inputs retain native search semantics and show the shared small decorative leading magnifying-glass icon with the underlined appearance, focus, disabled and invalid-input treatment. Consumers own accessible labels, query state, routing and page layout.
 
-`NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density keeps the native control at 44px high, uses 0.875rem selected text, and places it close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
+`NativeSelect` accepts native select props and forwards its `ref` to the select. Its standard appearance is underlined and includes a decorative right-side chevron. Standard density matches the 28px text field, uses 0.875rem selected text, and places it close to the underline. The chevron does not receive pointer events, so the browser retains ownership of the picker, keyboard interaction and form submission. `density`, `className` and `wrapperClassName` retain the contracts described above. `SelectInput` remains the Radix-backed alternative with its own `onValueChange` contract.
 
 `Tabs` accepts `renderTabList` for consumers that must place the tab list within a composed layout while retaining the component's keyboard navigation and selected-panel semantics.
 
 The tab group spans its container and tabs share the width equally. It retains
-the rounded border and selected fill/bold text, with no selected underline.
+the rounded border and bold selected text; the selected tab takes the accent
+fill with on-accent text, with no selected underline. `Tabs` and
+`SegmentedControl` paint the selected fill on a sliding indicator beneath the
+triggers, so trigger hover and press fills are translucent tints. A consumer
+`triggerClassName` or `buttonClassName` that paints an opaque hover or press
+fill hides the selected fill and must also restyle the selected text.
 Consumers must delete copied fixed-width/flex and selected underline rules to
 receive these defaults. In particular, Reporter's `.tab-list button` and
 `[aria-selected="true"]` overrides currently own its underline and auto width;

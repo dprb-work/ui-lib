@@ -12,7 +12,9 @@ push hook.
 
 Prose is `README.md`, `AGENTS.md`, `CONTEXT.md` and Markdown under `docs/`.
 `verify:fast` runs the base dependency check, ESLint, strict TypeScript, unit
-tests and the library build. `verify` adds the browser-backed Storybook tests.
+tests and the library build. `verify` adds the browser-backed Storybook tests
+and starts `pnpm run dev` to check that the Storybook dev server listens only
+on loopback and refuses framing by foreign sites.
 
 A ready pull request never runs the browser-backed `verify` on the hosted
 runner. Unknown, malformed or empty change sets select `fast` there and the full

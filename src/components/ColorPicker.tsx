@@ -67,8 +67,8 @@ export function ColorPicker({
   const [format, setFormat] = useState<ColorFormat>(hexColorFormat);
   const color = hexColorFormat.parse(value) ?? black;
   const [draft, setDraft] = useState(() => format.format(color));
-  // `seenValue` is the last `value` prop; `emittedValue` is the color this draft last reported.
-  // A typed entry keeps its spelling until `value` changes to something the draft did not report.
+  // `seenValue` is the last `value` prop; `emittedValue` is the color this draft reported and the
+  // parent has not yet answered. A typed entry keeps its spelling when the parent applies exactly that color.
   const [seenValue, setSeenValue] = useState(value);
   const [emittedValue, setEmittedValue] = useState<string | null>(null);
   const nameId = useId();
@@ -77,6 +77,7 @@ export function ColorPicker({
 
   if (value !== seenValue) {
     setSeenValue(value);
+    setEmittedValue(null);
     if (value !== emittedValue) setDraft(format.format(color));
   }
 

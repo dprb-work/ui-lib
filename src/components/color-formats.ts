@@ -185,8 +185,10 @@ function parseOklch(text: string): RgbColor | undefined {
   if (!inRange(lightness, 1) || chroma === undefined || chroma < 0 || hue === undefined) return undefined;
   const radians = (hue * 2 * Math.PI) / fullTurn;
   const [l, m, s] = multiply(oklabToLms, [lightness, chroma * Math.cos(radians), chroma * Math.sin(radians)]);
-  // Out-of-gamut colors clip per channel to the nearest sRGB value.
+  // Out-of-gamut colors clip per channel to the nearest sRGB value; a chroma so large that cubing
+  // overflows has no nearest color, so the entry is rejected.
   const [r, g, b] = multiply(lmsToLinearSrgb, [l ** 3, m ** 3, s ** 3]);
+  if (![r, g, b].every(Number.isFinite)) return undefined;
   return { red: fromLinear(r), green: fromLinear(g), blue: fromLinear(b) };
 }
 

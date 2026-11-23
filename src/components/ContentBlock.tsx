@@ -114,7 +114,11 @@ function ExpandedBody({ expansion, onClose, children, ...caption }: ExpandedBody
           {children}
         </ZoomViewport>
       ) : (
-        <div data-content-block-viewport="expanded" className="flex min-h-0 flex-1 flex-col overflow-auto">
+        <div
+          data-content-block-viewport="expanded"
+          tabIndex={0} // NOSONAR(S6845): the expanded scroll area must be keyboard-focusable to scroll without a pointer
+          className="flex min-h-0 flex-1 flex-col overflow-auto outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
+        >
           {children}
         </div>
       )}

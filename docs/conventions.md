@@ -89,7 +89,10 @@ These are the general code and style rules shared by this family of repositories
   selects files from one map, not from hand-kept lists of file names.
 - Keep one pull request readable in one sitting: about 500 production lines is
   the upper bound, tests not counted. Split larger work into slices that can be
-  reviewed on their own.
+  reviewed on their own. Slices never wait on each other: each starts from the
+  repository's release or main branch and can merge on its own. Never stack a
+  branch on an unmerged pull request; a change that truly needs another
+  unmerged change is blocked, not stacked.
 - Small adjustments may share a pull request. Up to five minor, unrelated
   changes may go into one pull request, or ride on an open pull request that
   has not yet been reviewed, when each is something the owner would skim and
@@ -101,6 +104,11 @@ These are the general code and style rules shared by this family of repositories
   touching authorization, credentials, concurrency or the CI gate; and any
   bundle above about 100 changed production lines. Those keep their own pull
   request.
+- The project owns how a pull request description is built: its conventions
+  and, where present, its `.github/pull_request_template.md` define it. Start
+  every description from that template; `gh pr create --body-file` skips it, so
+  copy it into the body file rather than writing a new form or reusing blocks
+  of older pull requests.
 
 ## Python
 

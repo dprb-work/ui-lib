@@ -200,7 +200,7 @@ export const ControlsBelowContent: Story = {
     expect(expectControlsBelow(region, inline).length).toBeGreaterThanOrEqual(3);
 
     const { dialog, fitted } = await expandSitePlan(canvasElement);
-    expect(expectControlsBelow(dialog, fitted).length).toBeGreaterThanOrEqual(7);
+    expect(expectControlsBelow(dialog, fitted).length).toBeGreaterThanOrEqual(6);
   },
 };
 

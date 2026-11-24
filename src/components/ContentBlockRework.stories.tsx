@@ -124,7 +124,12 @@ async function expectCopied(container: HTMLElement, name: string, expected: stri
   // Vitest browser APIs are unavailable in the ordinary Storybook runtime.
   const { cdp, page } = await import("@vitest/browser/context");
   const session = cdp();
-  await session.send("Browser.grantPermissions", { origin: location.origin, permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"] });
+  const { targetInfo } = await session.send("Target.getTargetInfo");
+  await session.send("Browser.grantPermissions", {
+    origin: location.origin,
+    permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
+    ...(targetInfo.browserContextId ? { browserContextId: targetInfo.browserContextId } : {}),
+  });
   // Parallel headless tabs must each have a focused document for native clipboard access.
   await session.send("Emulation.setFocusEmulationEnabled", { enabled: true });
   try {

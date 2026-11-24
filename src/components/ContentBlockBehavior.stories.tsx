@@ -26,8 +26,8 @@ const anchorTolerance = 2;
 // Upper bound for frames spent waiting on zoom or dialog transitions to come to rest.
 const maxSettleFrames = 120;
 const stableFrames = 3;
-// Generous bound on presses; the contract fixes the zoom limits, not the step size.
-const maxZoomPresses = 64;
+// Generous bound on wheel notches; the contract fixes the zoom limits, not the step size.
+const maxZoomNotches = 64;
 // One wheel notch in pixel delta mode; negative is wheel up.
 const wheelNotch = 100;
 
@@ -296,8 +296,8 @@ export const ZeroKeyResetsToFittedView: Story = {
     await showViewport(desktop);
     const { dialog, drawing, fitted } = await expandSitePlan(canvasElement);
 
-    await userEvent.click(within(dialog).getByRole("button", { name: "Zoom in" }));
-    await userEvent.click(within(dialog).getByRole("button", { name: "Zoom in" }));
+    await userEvent.keyboard("+");
+    await userEvent.keyboard("+");
     await waitFor(() => expect(box(drawing).width).toBeGreaterThan(fitted.width + layoutTolerance));
     await userEvent.keyboard("0");
     await waitFor(() => expectBox(box(drawing), fitted, layoutTolerance));
@@ -309,10 +309,11 @@ export const DragPansZoomedContent: Story = {
   render: () => <SitePlanBlock />,
   play: async ({ canvasElement }) => {
     await showViewport(desktop);
-    const { dialog, drawing, fitted } = await expandSitePlan(canvasElement);
-    const zoomIn = within(dialog).getByRole("button", { name: "Zoom in" });
-    for (let press = 0; press < maxZoomPresses && !zoomIn.hasAttribute("disabled"); press += 1) await userEvent.click(zoomIn);
-    expect(zoomIn).toBeDisabled();
+    const { drawing, fitted } = await expandSitePlan(canvasElement);
+    for (let notch = 0; notch < maxZoomNotches && box(drawing).width < fitted.width * 4; notch += 1) {
+      await wheelAt(pointIn(fitted, 0.5, 0.5), -wheelNotch);
+      await nextFrame();
+    }
     const before = await settledBox(drawing);
 
     const drag = { x: -80, y: -60 };

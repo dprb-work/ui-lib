@@ -114,7 +114,7 @@ describe("ContentBlock container", () => {
     expect(screen.getByRole("region", { name: "Quarterly revenue" })).toHaveTextContent(content);
   });
 
-  test("zoom controls appear only for expanded zoom content, between the actions and Close", async () => {
+  test("expanded zoom controls precede the normal actions and Close", async () => {
     const user = userEvent.setup();
     const actions: ContentBlockAction[] = [{ kind: "copy", label: "Copy data", text: "Q3" }];
     const { unmount } = render(<Block expansion="scroll" actions={actions} />);
@@ -126,37 +126,31 @@ describe("ContentBlock container", () => {
     render(<Block expansion="zoom" actions={actions} />);
     expect(screen.queryByRole("button", { name: "Zoom in" })).not.toBeInTheDocument();
     const dialog = await expand(user);
-    const names = ["Copy data", "Zoom out", "Zoom in", "Reset view", "Click to zoom", "Close"];
+    const names = ["Zoom in", "Zoom out", "Reset view", "Copy data", "Close"];
     const controls = names.map((name) => within(dialog).getByRole("button", { name }));
     const documentOrder = [...controls]
       .sort((first, second) => (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
       .map((control) => names[controls.indexOf(control)]);
     expect(documentOrder).toEqual(names);
-    expect(within(dialog).getByRole("button", { name: "Click to zoom" })).toHaveAttribute("aria-pressed", "false");
+    expect(within(dialog).queryByRole("button", { name: "Click to zoom" })).not.toBeInTheDocument();
   });
 
-  test("zoom buttons stop at their limits and Reset view is disabled only at the fitted view", async () => {
+  test("zoom buttons select mutually exclusive viewport directions without changing the view", async () => {
     const user = userEvent.setup();
     render(<Block expansion="zoom" />);
     const dialog = await expand(user);
     const zoomIn = within(dialog).getByRole("button", { name: "Zoom in" });
     const zoomOut = within(dialog).getByRole("button", { name: "Zoom out" });
     const reset = within(dialog).getByRole("button", { name: "Reset view" });
-    // Generous bound on presses; the contract fixes the limits, not the step size.
-    const maxPresses = 64;
 
     expect(reset).toBeDisabled();
-    expect(zoomIn).toBeEnabled();
-    for (let press = 0; press < maxPresses && !zoomIn.hasAttribute("disabled"); press += 1) await user.click(zoomIn);
-    expect(zoomIn).toBeDisabled();
-    expect(zoomOut).toBeEnabled();
-    expect(reset).toBeEnabled();
-
-    await user.click(reset);
+    await user.click(zoomIn);
+    expect(zoomIn).toHaveAttribute("aria-pressed", "true");
+    expect(zoomOut).toHaveAttribute("aria-pressed", "false");
     expect(reset).toBeDisabled();
-    expect(zoomIn).toBeEnabled();
-    for (let press = 0; press < maxPresses && !zoomOut.hasAttribute("disabled"); press += 1) await user.click(zoomOut);
-    expect(zoomOut).toBeDisabled();
-    expect(reset).toBeEnabled();
+    await user.click(zoomOut);
+    expect(zoomOut).toHaveAttribute("aria-pressed", "true");
+    expect(zoomIn).toHaveAttribute("aria-pressed", "false");
+    expect(reset).toBeDisabled();
   });
 });

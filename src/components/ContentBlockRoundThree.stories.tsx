@@ -1,10 +1,10 @@
 import { composeStory, type Meta, type StoryObj } from "@storybook/react-vite";
-import { useEffect, useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import type {} from "@vitest/browser/providers/playwright";
 
 import { AttachmentViewer } from "../chat/content/AttachmentViewer";
 import { ChartOutput } from "../chat/content/ChartOutput";
+import attachmentImageUrl from "../test/fixtures/content-block-image.svg?no-inline";
 import catalogMeta, { Chart, Code, Image, Table } from "./ContentBlock.stories";
 
 const CatalogChart = composeStory(Chart, catalogMeta);
@@ -31,13 +31,7 @@ function CallerChart() {
 }
 
 function AttachmentImage() {
-  const [href, setHref] = useState<string>();
-  useEffect(() => {
-    const url = URL.createObjectURL(new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240"><rect width="480" height="240" fill="white"/></svg>'], { type: "image/svg+xml" }));
-    setHref(url);
-    return () => URL.revokeObjectURL(url);
-  }, []);
-  return <AttachmentViewer attachment={{ name: "Pipeline image", mediaType: "image/svg+xml", trustedImageHref: href }} />;
+  return <AttachmentViewer attachment={{ name: "Pipeline image", mediaType: "image/svg+xml", href: new URL(attachmentImageUrl, location.href).href }} />;
 }
 
 async function viewport(size = desktop) {

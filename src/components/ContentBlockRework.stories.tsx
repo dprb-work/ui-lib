@@ -259,7 +259,12 @@ export const StrongerTranslucentBackdrop: Story = {
     const overlay = document.elementFromPoint(2, 2)!;
     expect(dialog.contains(overlay), "sample outside the desktop dialog").toBe(false);
     const style = getComputedStyle(overlay);
-    const alpha = rgba(style.backgroundColor)[3]! / 255 * Number(style.opacity);
+    // Read CSS alpha directly: 8-bit canvas sampling rounds 0.5 up to 128/255.
+    const color = style.backgroundColor;
+    const alphaMatch = color.match(/\/\s*([\d.]+)(%)?\s*\)$/)
+      ?? (color.startsWith("rgba(") ? color.match(/,\s*([\d.]+)\s*\)$/) : null);
+    const colorAlpha = alphaMatch ? Number(alphaMatch[1]) / (alphaMatch[2] ? 100 : 1) : 1;
+    const alpha = colorAlpha * Number(style.opacity);
     // D-20261124-035 supersedes the original opaque-backdrop instruction.
     expect(alpha, "backdrop is stronger than the original half-opacity").toBeGreaterThan(0.5);
     expect(alpha, "backdrop remains translucent, not solid").toBeLessThan(1);

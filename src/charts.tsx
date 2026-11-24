@@ -8,6 +8,7 @@ import {
   LineElement,
   PointElement,
   Tooltip,
+  type ChartDataset,
 } from "chart.js";
 import {
   forwardRef,
@@ -22,6 +23,7 @@ import {
 
 import { cn } from "./cn";
 import { Tabs } from "./components/Interactions";
+import { SegmentedControl, type SegmentedControlOption } from "./components/SegmentedControl";
 import { tooltipSurfaceClassName } from "./components/tooltipStyles";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip);
@@ -671,7 +673,7 @@ export type ChartSeries = {
   color?: string;
 };
 
-export type MultiSeriesLinePlotProps = {
+export type SeriesPlotProps = {
   labels: readonly string[];
   series: readonly ChartSeries[];
   xLabel: string;
@@ -690,15 +692,17 @@ export type MultiSeriesLinePlotProps = {
   ariaLabel?: string;
 };
 
-export type MultiSeriesLineChartView = "graph" | "values";
+export type SeriesChartView = "graph" | "values";
 
-export type MultiSeriesLineChartProps = MultiSeriesLinePlotProps & {
+export type ChartTimeRange = "day" | "week" | "month" | "all";
+
+export type SeriesChartProps = SeriesPlotProps & {
   id?: string;
   tabsAriaLabel?: string;
   tableCaption?: string;
-  view?: MultiSeriesLineChartView;
-  defaultView?: MultiSeriesLineChartView;
-  onViewChange?: (view: MultiSeriesLineChartView) => void;
+  view?: SeriesChartView;
+  defaultView?: SeriesChartView;
+  onViewChange?: (view: SeriesChartView) => void;
   graphActions?: ReactNode;
   forceMount?: boolean;
   tabsClassName?: string;
@@ -706,7 +710,12 @@ export type MultiSeriesLineChartProps = MultiSeriesLinePlotProps & {
   tabTriggerClassName?: string;
   tabPanelClassName?: string;
   tableClassName?: string;
+  /** Epoch milliseconds, one per label in the same order; enables the time-range presets. */
+  timestamps?: readonly number[];
+  defaultTimeRange?: ChartTimeRange;
 };
+
+type SeriesPlotKind = "line" | "stackedBar";
 
 function seriesCssColor(item: ChartSeries, index: number): string {
   const spec = item.color ?? SERIES_COLOR_TOKENS[index % SERIES_COLOR_TOKENS.length];
@@ -718,9 +727,46 @@ function resolveSeriesPaint(item: ChartSeries, index: number, element: Element |
   return spec.startsWith("--") ? cssColor(spec, element) : spec;
 }
 
-export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotProps>(
-  function MultiSeriesLinePlot(props, ref) {
+function seriesDataset(
+  kind: SeriesPlotKind,
+  item: ChartSeries,
+  index: number,
+  color: string,
+  surface: string,
+  compact: boolean,
+): ChartDataset<"bar" | "line", (number | null)[]> {
+  if (kind === "stackedBar") {
+    // The tooltip marker reads borderColor, so bars carry their fill there too.
+    return {
+      label: item.label,
+      data: [...item.values],
+      backgroundColor: color,
+      borderColor: color,
+      borderWidth: 0,
+      maxBarThickness: 48,
+    };
+  }
+  return {
+    label: item.label,
+    data: [...item.values],
+    backgroundColor: "transparent",
+    borderColor: color,
+    borderWidth: compact ? 2 : 2.5,
+    pointStyle: SERIES_POINT_STYLES[index % SERIES_POINT_STYLES.length],
+    pointBackgroundColor: surface,
+    pointBorderColor: color,
+    pointBorderWidth: compact ? 1.5 : 2,
+    pointHoverRadius: 5,
+    pointRadius: compact ? 2.5 : 3.5,
+    clip: false,
+    tension: 0.24,
+  };
+}
+
+const SeriesPlot = forwardRef<ChartHandle, SeriesPlotProps & { kind: SeriesPlotKind }>(
+  function SeriesPlot(props, ref) {
     const {
+      kind,
       labels,
       series,
       xLabel,
@@ -758,29 +804,15 @@ export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotPr
         const palette = resolvedChartTheme(paletteOverrides, scopeElement, multiSeriesDefaultPalette);
         const resolvedColors = series.map((item, index) => resolveSeriesPaint(item, index, scopeElement));
         const format = customFormat ?? ((value: number) => formatValue(value, unit));
+        const stacked = kind === "stackedBar";
 
         chart.current = new Chart(canvasElement, {
-          type: "line",
+          type: stacked ? "bar" : "line",
           data: {
             labels: [...labels],
-            datasets: series.map((item, index) => {
-              const color = resolvedColors[index] || palette.accent;
-              return {
-                label: item.label,
-                data: [...item.values],
-                backgroundColor: "transparent",
-                borderColor: color,
-                borderWidth: compact ? 2 : 2.5,
-                pointStyle: SERIES_POINT_STYLES[index % SERIES_POINT_STYLES.length],
-                pointBackgroundColor: palette.surface,
-                pointBorderColor: color,
-                pointBorderWidth: compact ? 1.5 : 2,
-                pointHoverRadius: 5,
-                pointRadius: compact ? 2.5 : 3.5,
-                clip: false,
-                tension: 0.24,
-              };
-            }),
+            datasets: series.map((item, index) =>
+              seriesDataset(kind, item, index, resolvedColors[index] || palette.accent, palette.surface, compact),
+            ),
           },
           options: {
             animation: false,
@@ -808,6 +840,7 @@ export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotPr
             },
             scales: {
               x: {
+                stacked,
                 border: { color: palette.grid },
                 grid: { display: false },
                 ticks: {
@@ -827,6 +860,7 @@ export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotPr
                 },
               },
               y: {
+                stacked,
                 min,
                 max,
                 border: { display: false },
@@ -862,7 +896,7 @@ export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotPr
         window.removeEventListener("afterprint", renderChart);
         chart.current?.destroy();
       };
-    }, [compact, customFormat, labels, max, min, paletteOverrides, series, unit, xLabel, yLabel]);
+    }, [compact, customFormat, kind, labels, max, min, paletteOverrides, series, unit, xLabel, yLabel]);
 
     return (
       <div ref={host} className={cn("grid min-w-0 grid-cols-1 gap-3", className)} data-ui-multi-series-plot="">
@@ -905,14 +939,176 @@ export const MultiSeriesLinePlot = forwardRef<ChartHandle, MultiSeriesLinePlotPr
   },
 );
 
-const multiSeriesChartTabs = [
+export const MultiSeriesLinePlot = forwardRef<ChartHandle, SeriesPlotProps>(function MultiSeriesLinePlot(props, ref) {
+  return <SeriesPlot ref={ref} kind="line" {...props} />;
+});
+
+export const StackedBarPlot = forwardRef<ChartHandle, SeriesPlotProps>(function StackedBarPlot(props, ref) {
+  return <SeriesPlot ref={ref} kind="stackedBar" {...props} />;
+});
+
+const HOUR_MS = 60 * 60 * 1000;
+
+const timeRangeWindowMs = {
+  day: 24 * HOUR_MS,
+  week: 7 * 24 * HOUR_MS,
+  month: 30 * 24 * HOUR_MS,
+} as const satisfies Record<Exclude<ChartTimeRange, "all">, number>;
+
+const timeRangeOptions = [
+  { value: "day", label: "Last 24 hours" },
+  { value: "week", label: "Last week" },
+  { value: "month", label: "Last month" },
+  { value: "all", label: "All" },
+] as const satisfies readonly SegmentedControlOption<ChartTimeRange>[];
+
+type TimeRangeWindow = {
+  range: ChartTimeRange;
+  offersAll: boolean;
+  labels: readonly string[];
+  series: readonly ChartSeries[];
+};
+
+/** Keeps the points inside the range, anchored at the latest timestamp rather than the wall clock. */
+function timeRangeWindow(
+  labels: readonly string[],
+  series: readonly ChartSeries[],
+  timestamps: readonly number[],
+  requested: ChartTimeRange | undefined,
+): TimeRangeWindow {
+  let earliest = Infinity;
+  let latest = -Infinity;
+  for (const timestamp of timestamps) {
+    earliest = Math.min(earliest, timestamp);
+    latest = Math.max(latest, timestamp);
+  }
+  // "All" is offered only when "Last month" would drop a point; otherwise both show the same points.
+  const offersAll = latest - earliest >= timeRangeWindowMs.month;
+  const widest = offersAll ? "all" : "month";
+  const range = requested === undefined || requested === "all" ? widest : requested;
+  if (range === "all") return { range, offersAll, labels, series };
+
+  const start = latest - timeRangeWindowMs[range];
+  const kept = timestamps.flatMap((timestamp, index) => (timestamp > start ? [index] : []));
+  return {
+    range,
+    offersAll,
+    labels: kept.map((index) => labels[index]!),
+    series: series.map((item) => ({ ...item, values: kept.map((index) => item.values[index] ?? null) })),
+  };
+}
+
+function ChartTimeRangeSwitch({
+  offersAll,
+  value,
+  onValueChange,
+}: {
+  offersAll: boolean;
+  value: ChartTimeRange;
+  onValueChange: (range: ChartTimeRange) => void;
+}) {
+  return (
+    <SegmentedControl
+      ariaLabel="Time range"
+      options={offersAll ? timeRangeOptions : timeRangeOptions.filter((option) => option.value !== "all")}
+      value={value}
+      onValueChange={onValueChange}
+      buttonClassName="px-2"
+    />
+  );
+}
+
+function SeriesValuesTable({
+  labels,
+  series,
+  xLabel,
+  caption,
+  format,
+  className,
+}: {
+  labels: readonly string[];
+  series: readonly ChartSeries[];
+  xLabel: string;
+  caption: string;
+  format: (value: number) => string;
+  className?: string;
+}) {
+  return (
+    <section
+      data-ui-chart-values-scroll=""
+      tabIndex={0} // NOSONAR(typescript:S6845): the table scrolls sideways, so its region must be keyboard focusable
+      aria-label={caption}
+      className="overflow-x-auto outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
+    >
+      <table
+        data-ui-chart-values-table=""
+        className={cn("w-full border-collapse text-left text-sm text-ui-foreground", className)}
+      >
+        <caption className="sr-only">{caption}</caption>
+        <thead>
+          <tr>
+            <th
+              scope="col"
+              className="border-b border-ui-border px-2.5 py-2 text-left align-bottom font-semibold whitespace-nowrap text-ui-foreground sm:px-3"
+            >
+              {xLabel}
+            </th>
+            {series.map((item, index) => (
+              <th
+                key={item.id ?? `${item.label}-${index}`}
+                scope="col"
+                className="min-w-22 border-b border-ui-border px-2 py-2 text-right align-bottom leading-snug font-semibold text-ui-foreground sm:px-3"
+              >
+                <span className="inline-flex items-start justify-end gap-1.5 sm:gap-2">
+                  <span
+                    data-ui-chart-series-swatch=""
+                    aria-hidden="true"
+                    className="mt-1 inline-block size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: seriesCssColor(item, index) }}
+                  />
+                  <span>{item.label}</span>
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {labels.map((label, rowIndex) => (
+            <tr key={`${label}-${rowIndex}`}>
+              <th
+                scope="row"
+                className="border-b border-ui-border px-2.5 py-2 font-medium whitespace-nowrap text-ui-foreground sm:px-3"
+              >
+                {label}
+              </th>
+              {series.map((item, seriesIndex) => {
+                const value = item.values[rowIndex];
+                return (
+                  <td
+                    key={item.id ?? `${item.label}-${seriesIndex}`}
+                    className="border-b border-ui-border px-2.5 py-2 text-right whitespace-nowrap tabular-nums text-ui-foreground sm:px-3"
+                  >
+                    {value == null || !Number.isFinite(value) ? "—" : format(value)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
+const seriesChartTabs = [
   { value: "graph", label: "Graph" },
   { value: "values", label: "Values" },
 ] as const;
 
-export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChartProps>(
-  function MultiSeriesLineChart(props, ref) {
+const SeriesChart = forwardRef<ChartHandle, SeriesChartProps & { kind: SeriesPlotKind }>(
+  function SeriesChart(props, ref) {
     const {
+      kind,
       id,
       labels,
       series,
@@ -942,15 +1138,29 @@ export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChart
       tabTriggerClassName,
       tabPanelClassName,
       tableClassName,
+      timestamps,
+      defaultTimeRange,
     } = props;
+    if (timestamps && timestamps.length !== labels.length) {
+      throw new RangeError(`Chart timestamps (${timestamps.length}) must match its labels (${labels.length}).`);
+    }
 
-    const [uncontrolledView, setUncontrolledView] = useState<MultiSeriesLineChartView>(defaultView);
+    const [uncontrolledView, setUncontrolledView] = useState<SeriesChartView>(defaultView);
     const activeView = controlledView ?? uncontrolledView;
+    const [timeRange, setTimeRange] = useState<ChartTimeRange | undefined>(defaultTimeRange);
     const plotRef = useRef<ChartHandle>(null);
     useImperativeHandle(ref, () => ({ resize: () => plotRef.current?.resize() }));
 
+    const timeWindow = useMemo(
+      () => (timestamps ? timeRangeWindow(labels, series, timestamps, timeRange) : undefined),
+      [labels, series, timestamps, timeRange],
+    );
+    const shownLabels = timeWindow?.labels ?? labels;
+    const shownSeries = timeWindow?.series ?? series;
     const format = customFormat ?? ((value: number) => formatValue(value, unit));
-    const resolvedTableCaption = tableCaption ?? `${yLabel}${unit ? ` (${unit})` : ""} exact values`;
+    const yTitle = unit ? `${yLabel} (${unit})` : yLabel;
+    const resolvedTableCaption = tableCaption ?? `${yTitle} exact values`;
+    const Plot = kind === "stackedBar" ? StackedBarPlot : MultiSeriesLinePlot;
 
     function handleViewChange(next: string) {
       if (next !== "graph" && next !== "values") return;
@@ -965,10 +1175,15 @@ export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChart
 
     return (
       <div className={cn("min-w-0", className)} data-ui-multi-series-chart="">
+        {timeWindow && (
+          <div className="mb-2 flex justify-end">
+            <ChartTimeRangeSwitch offersAll={timeWindow.offersAll} value={timeWindow.range} onValueChange={setTimeRange} />
+          </div>
+        )}
         <Tabs
           id={id}
           ariaLabel={tabsAriaLabel ?? `${yLabel} views`}
-          tabs={multiSeriesChartTabs}
+          tabs={seriesChartTabs}
           value={activeView}
           onValueChange={handleViewChange}
           className={cn("min-w-0", tabsClassName)}
@@ -980,10 +1195,10 @@ export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChart
           {(tab) =>
             tab.value === "graph" ? (
               <div className="relative min-w-0">
-                <MultiSeriesLinePlot
+                <Plot
                   ref={plotRef}
-                  labels={labels}
-                  series={series}
+                  labels={shownLabels}
+                  series={shownSeries}
                   xLabel={xLabel}
                   yLabel={yLabel}
                   unit={unit}
@@ -1001,73 +1216,14 @@ export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChart
                 {graphActions}
               </div>
             ) : (
-              <div
-                data-ui-chart-values-scroll=""
-                tabIndex={0}
-                role="region"
-                aria-label={resolvedTableCaption}
-                className="overflow-x-auto outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
-              >
-                <table
-                  data-ui-chart-values-table=""
-                  className={cn(
-                    "w-full border-collapse text-left text-sm text-ui-foreground",
-                    tableClassName,
-                  )}
-                >
-                  <caption className="sr-only">{resolvedTableCaption}</caption>
-                  <thead>
-                    <tr>
-                      <th
-                        scope="col"
-                        className="border-b border-ui-border px-2.5 py-2 text-left align-bottom font-semibold whitespace-nowrap text-ui-foreground sm:px-3"
-                      >
-                        {xLabel}
-                      </th>
-                      {series.map((item, index) => (
-                        <th
-                          key={item.id ?? `${item.label}-${index}`}
-                          scope="col"
-                          className="min-w-22 border-b border-ui-border px-2 py-2 text-right align-bottom leading-snug font-semibold text-ui-foreground sm:px-3"
-                        >
-                          <span className="inline-flex items-start justify-end gap-1.5 sm:gap-2">
-                            <span
-                              data-ui-chart-series-swatch=""
-                              aria-hidden="true"
-                              className="mt-1 inline-block size-2.5 shrink-0 rounded-full"
-                              style={{ backgroundColor: seriesCssColor(item, index) }}
-                            />
-                            <span>{item.label}</span>
-                          </span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {labels.map((label, rowIndex) => (
-                      <tr key={`${label}-${rowIndex}`}>
-                        <th
-                          scope="row"
-                          className="border-b border-ui-border px-2.5 py-2 font-medium whitespace-nowrap text-ui-foreground sm:px-3"
-                        >
-                          {label}
-                        </th>
-                        {series.map((item, seriesIndex) => {
-                          const value = item.values[rowIndex];
-                          return (
-                            <td
-                              key={item.id ?? `${item.label}-${seriesIndex}`}
-                              className="border-b border-ui-border px-2.5 py-2 text-right whitespace-nowrap tabular-nums text-ui-foreground sm:px-3"
-                            >
-                              {value == null || !Number.isFinite(value) ? "—" : format(value)}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <SeriesValuesTable
+                labels={shownLabels}
+                series={shownSeries}
+                xLabel={xLabel}
+                caption={resolvedTableCaption}
+                format={format}
+                className={tableClassName}
+              />
             )
           }
         </Tabs>
@@ -1075,3 +1231,11 @@ export const MultiSeriesLineChart = forwardRef<ChartHandle, MultiSeriesLineChart
     );
   },
 );
+
+export const MultiSeriesLineChart = forwardRef<ChartHandle, SeriesChartProps>(function MultiSeriesLineChart(props, ref) {
+  return <SeriesChart ref={ref} kind="line" {...props} />;
+});
+
+export const StackedBarChart = forwardRef<ChartHandle, SeriesChartProps>(function StackedBarChart(props, ref) {
+  return <SeriesChart ref={ref} kind="stackedBar" {...props} />;
+});

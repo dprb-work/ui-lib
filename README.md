@@ -23,7 +23,7 @@ their dependencies unless they import those components:
 | Entry point | Components | Required peer |
 | --- | --- | --- |
 | `@dprb-work/ui-lib/data-table` | `MatrixDataTable` | `@tanstack/react-table` |
-| `@dprb-work/ui-lib/charts` | `CartesianChart`, `DistributionChart`, `MultiSeriesLineChart`, `MultiSeriesLinePlot` | `chart.js` |
+| `@dprb-work/ui-lib/charts` | `CartesianChart`, `DistributionChart`, `MultiSeriesLineChart`, `MultiSeriesLinePlot`, `StackedBarChart`, `StackedBarPlot` | `chart.js` |
 | `@dprb-work/ui-lib/chat` | Composer, transcript, model controls, Markdown, code, diff and tool renderers | See chat dependencies below |
 
 ## Use
@@ -223,6 +223,13 @@ in order (wrapping modulo 10), pairs them with a neutral-text legend, and switch
 between the `Graph` and `Values` tabs using the shared full-width `Tabs` control.
 Import `MultiSeriesLinePlot` when a consumer needs the legend and canvas without
 the view tabs (for example compact sidebar previews or maximized dialogs).
+`StackedBarChart` and `StackedBarPlot` take the same props and stack the series
+per label as bars, with exact values on hover and in the `Values` tab.
+Pass `timestamps` (epoch milliseconds, one per label) to either tabbed chart to show
+the time-range presets `Last 24 hours`, `Last week` (7 days) and `Last month` (30 days),
+plus `All` when the data reaches further back. Both tabs show the selected range, which is
+anchored at the latest timestamp rather than the wall clock; `defaultTimeRange` picks
+the initial preset (default: the widest). Custom ranges and zoom are out of scope.
 `SERIES_COLOR_TOKENS` exports the ten canonical series custom property names in order.
 Use `StatusMessage` for icon-plus-text status feedback and `MenuItem` for
 icon-plus-text Radix menu entries. `StatusPanel` owns the gap between its

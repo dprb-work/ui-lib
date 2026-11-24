@@ -211,7 +211,7 @@ export function ZoomViewport({ view, viewport, onViewChange, zoomDirection, chil
       ref={viewport}
       data-content-block-viewport="expanded"
       className={cn(
-        "relative min-h-0 flex-1 touch-none select-none overflow-hidden",
+        "relative min-h-0 flex-1 touch-none select-none overflow-hidden bg-ui-background",
         !isFitted(view) && "cursor-grab active:cursor-grabbing",
         zoomDirection === "in" && "cursor-zoom-in",
         zoomDirection === "out" && "cursor-zoom-out",
@@ -223,7 +223,7 @@ export function ZoomViewport({ view, viewport, onViewChange, zoomDirection, chil
       onClick={onClick}
     >
       <div className="size-full origin-top-left" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}>
-        <div className="grid size-full grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] p-4 [place-items:safe_center]">{children}</div>
+        <div className="grid size-full grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] [place-items:safe_center]">{children}</div>
       </div>
     </div>
   );

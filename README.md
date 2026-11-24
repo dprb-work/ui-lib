@@ -338,10 +338,11 @@ icon button with a tooltip; content declares `actions` (`kind: "button"` with
 `icon`, `onSelect`, optional `pressed` and `disabled`, or `kind: "copy"` with
 `text`). Inline, the block is at most 80% of the viewport height and the content
 owns its scrolling; the wheel never zooms. `expansion` adds an Expand control
-that opens the same box as a modal overlay of about 80% by 80% (full screen
+that opens the same box as a modal overlay of 90% by 90% (full screen
 below 640px) with Close in its place; Escape, a click outside, Close, or the
-browser's back action close it, and focus returns to Expand. The backdrop remains
-translucent with increased opacity; the dialog uses a subtle zoom-in/out animation,
+browser's back action close it, and focus returns to Expand. The backdrop is
+90% black; the inner viewport has its own opaque background and no container
+padding. The dialog uses a subtle zoom-in/out animation,
 disabled under reduced motion. With `expansion="zoom"` (charts, images, diagrams),
 Zoom in, Zoom out, and Reset view appear at the left of the footer. Zoom in and
 Zoom out are mutually exclusive toggles: select a direction, then click the
@@ -360,10 +361,13 @@ syntax highlighting, line numbers, and streaming behavior.
 Chat `CodeBlock`, `CodeText`, file excerpts, and tool text always show
 lower-contrast line numbers drawn by CSS, outside selected and copied text.
 `startLine` changes the first number (default `1`); the `lineNumbers` boolean is
-removed. Chart/data toggles retain their inline viewport height. Chat chart tables
-keep their headers above the scrolling body, reserve inset scrollbar space, and
-offer sorting with a chevron only on the sorted column. Zebra stripes and column
-rules distinguish cells without horizontal row rules.
+removed. Chart/data actions retain their inline viewport height and show the
+destination view's icon without a persistent pressed state. Chat chart tables
+keep their headers above the vertically scrolling body; an outer horizontal
+scroller moves the entire table, including its header. Rows and zebra backgrounds
+span the table width, with an inset scrollbar and right padding on the last
+column to protect text. Sorting shows a chevron only on the sorted column;
+column rules distinguish cells without horizontal row rules.
 
 `ColorPicker` is controlled by `value` and `onValueChange` using opaque
 `#rrggbb` strings. It provides RGB sliders, a native color well, and an editable

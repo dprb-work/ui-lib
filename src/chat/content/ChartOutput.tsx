@@ -56,16 +56,15 @@ export function ChartOutput({
         {
           kind: "button",
           label: table ? "Show chart" : "Show table",
-          pressed: table,
-          icon: <Table2 aria-hidden="true" />,
+          icon: table ? chartIcon : <Table2 aria-hidden="true" />,
           onSelect: () => setTable((current) => !current),
         },
       ]}
       expansion={table ? "scroll" : "zoom"}
     >
-      <div className="flex h-[17.5rem] min-h-0 flex-col p-3 in-data-[content-block-viewport=expanded]:h-full">
+      <div className="flex h-[17.5rem] min-h-0 flex-col in-data-[content-block-viewport=expanded]:h-full">
         {table ? (
-          <div className="flex min-h-0 flex-1 overflow-hidden pb-2">
+          <div className="flex min-h-0 flex-1 overflow-x-auto" tabIndex={0}>
             <table className="ui-content-data-table">
               <thead>
                 <tr>
@@ -82,7 +81,6 @@ export function ChartOutput({
               <tbody
                 tabIndex={0} // NOSONAR(S6845): the scrollable table body needs native keyboard scrolling
                 aria-label={`${title} data`}
-                onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}
               >
                 {tablePoints.map((point) => (
                   <tr key={point.label}>

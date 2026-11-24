@@ -11,7 +11,7 @@ export function CodeViewport({ children, className, wrap = false, ...props }: Co
         tabIndex={0}
         {...props}
         className={cn(
-          "m-0 max-h-[calc(10lh+1rem)] overflow-auto scroll-smooth px-3 py-2 font-mono text-xs leading-5 text-ui-foreground [scrollbar-width:thin] motion-reduce:scroll-auto in-data-[content-block-viewport=expanded]:max-h-none",
+          "m-0 max-h-[10lh] overflow-auto scroll-smooth font-mono text-xs leading-5 text-ui-foreground [scrollbar-width:thin] motion-reduce:scroll-auto in-data-[content-block-viewport=expanded]:max-h-none",
           wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre [overflow-wrap:normal]",
           className,
         )}

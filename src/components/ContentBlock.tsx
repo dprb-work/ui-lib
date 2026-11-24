@@ -111,7 +111,7 @@ function ExpandedBody({ expansion, onClose, children, ...caption }: ExpandedBody
         <div
           data-content-block-viewport="expanded"
           tabIndex={0} // NOSONAR(S6845): the expanded scroll area must be keyboard-focusable to scroll without a pointer
-          className="flex min-h-0 flex-1 flex-col overflow-auto outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
+          className="flex min-h-0 flex-1 flex-col overflow-auto bg-ui-background outline-hidden focus-visible:shadow-[inset_0_0_0_2px_var(--color-ui-accent-link)]"
         >
           {children}
         </div>
@@ -189,8 +189,8 @@ export function ContentBlock({
           <Maximize2 aria-hidden="true" />
         </IconButton>
       }
-      overlayClassName="fixed inset-0 z-40 bg-black/80"
-      contentClassName="ui-content-block-motion fixed inset-0 z-50 flex flex-col overflow-hidden bg-ui-background text-sm text-ui-foreground shadow-2xl outline-hidden sm:inset-auto sm:top-[10dvh] sm:left-[10vw] sm:h-[80dvh] sm:w-[80vw] sm:rounded-lg sm:border sm:border-ui-border"
+      overlayClassName="fixed inset-0 z-40 bg-black/90"
+      contentClassName="ui-content-block-motion fixed inset-0 z-50 flex flex-col overflow-hidden bg-ui-background text-sm text-ui-foreground shadow-2xl outline-hidden sm:inset-auto sm:top-[5dvh] sm:left-[5vw] sm:h-[90dvh] sm:w-[90vw] sm:rounded-lg sm:border sm:border-ui-border"
     >
       <ExpandedBody {...caption} expansion={expansion} onClose={() => onExpandedChange(false)}>
         {children}
@@ -209,7 +209,7 @@ export function ContentBlock({
       )}
     >
       {/* A flex column, so content with its own scroller (min-h-0 overflow-auto) shrinks to the cap and owns its scrollbars. */}
-      <div ref={viewport} data-content-block-viewport="inline" className="flex min-h-0 min-w-0 flex-col overflow-auto">
+      <div ref={viewport} data-content-block-viewport="inline" className="flex min-h-0 min-w-0 flex-col overflow-auto bg-ui-background">
         {expanded ? <div style={{ height: expandedFrom }} /> : children}
       </div>
       <CaptionBar {...caption} zoom={null} toggle={expand} />

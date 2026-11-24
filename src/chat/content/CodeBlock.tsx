@@ -29,7 +29,6 @@ export function CodeBlock({
       <CodeViewport
         wrap={wrapText}
         aria-label="Source code"
-        className="pl-1.5"
       >
         <CodeText
           code={code}

@@ -54,13 +54,13 @@ function ChartContent() {
       className="w-full max-w-[32rem]"
       expansion={table ? "scroll" : "zoom"}
       actions={[
-        { kind: "button", label: table ? "Show chart" : "Show table", icon: <Table2 aria-hidden="true" />, pressed: table, onSelect: () => setTable((current) => !current) },
+        { kind: "button", label: table ? "Show chart" : "Show table", icon: table ? <LineChart aria-hidden="true" /> : <Table2 aria-hidden="true" />, onSelect: () => setTable((current) => !current) },
         { kind: "copy", label: "Copy CSV", text: points.map((value, index) => `${index + 1},${value}`).join("\n") },
       ]}
     >
       <div className="flex h-56 min-h-0 flex-col in-data-[content-block-viewport=expanded]:h-full">
       {table ? (
-        <div className="flex min-h-0 flex-1 overflow-hidden p-3">
+        <div className="flex min-h-0 flex-1 overflow-x-auto" tabIndex={0}>
           <table className="ui-content-data-table">
             <thead><tr>{(["week", "value"] as const).map((column) => (
               <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : "none"}>
@@ -70,11 +70,11 @@ function ChartContent() {
                 </Button>
               </th>
             ))}</tr></thead>
-            <tbody tabIndex={0} aria-label="Weekly runs data" onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}>{values.map(({ week, value }) => <tr key={week}><td>Week {week}</td><td>{value}</td></tr>)}</tbody>
+            <tbody tabIndex={0} aria-label="Weekly runs data">{values.map(({ week, value }) => <tr key={week}><td>Week {week}</td><td>{value}</td></tr>)}</tbody>
           </table>
         </div>
       ) : (
-        <svg viewBox="0 0 100 60" role="img" aria-label="Weekly runs chart" className="block h-full w-full p-3">
+        <svg viewBox="0 0 100 60" role="img" aria-label="Weekly runs chart" className="block h-full w-full">
           <polyline fill="none" className="stroke-ui-accent" strokeWidth="1.5" vectorEffect="non-scaling-stroke" points={points.map((value, index) => `${8 + index * 14},${55 - value * 2}`).join(" ")} />
         </svg>
       )}
@@ -104,8 +104,8 @@ function RunsTable() {
     return sort.direction === "descending" ? -order : order;
   });
   return (
-    <div className="flex min-h-0 overflow-hidden p-2" aria-label="Test runs table">
-      <table className="ui-content-data-table [--ui-content-table-min-width:34rem] [--ui-content-table-columns:6rem_6rem_6rem_minmax(16rem,1fr)]">
+    <div className="flex min-h-0 overflow-x-auto" tabIndex={0} aria-label="Test runs table">
+      <table className="ui-content-data-table [--ui-content-table-min-width:34rem] [--ui-content-table-columns:6rem_6rem_6rem_minmax(0,1fr)]">
         <thead><tr>{runColumns.map(({ key, label }) => (
           <th key={key} scope="col" aria-sort={sort?.column === key ? sort.direction : "none"}>
             <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column: key, direction: sort?.column === key && sort.direction === "ascending" ? "descending" : "ascending" })}>
@@ -114,7 +114,7 @@ function RunsTable() {
             </Button>
           </th>
         ))}</tr></thead>
-        <tbody tabIndex={0} aria-label="Test run rows" onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}>{sortedRows.map((row) => <tr key={row.run}>{runColumns.map(({ key }) => <td key={key}>{row[key]}</td>)}</tr>)}</tbody>
+        <tbody tabIndex={0} aria-label="Test run rows">{sortedRows.map((row) => <tr key={row.run}>{runColumns.map(({ key }) => <td key={key}>{row[key]}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );

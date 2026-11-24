@@ -46,7 +46,7 @@ export function FileExcerpt({
       actions={[{ kind: "copy", text: excerpt, label: "Copy file excerpt" }]}
       expansion="scroll"
     >
-      <pre className={`max-h-96 overflow-auto p-3 font-mono text-xs leading-5 in-data-[content-block-viewport=expanded]:max-h-none ${wrapText ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre"}`}>
+      <pre className={`max-h-96 overflow-auto font-mono text-xs leading-5 in-data-[content-block-viewport=expanded]:max-h-none ${wrapText ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre"}`}>
         <CodeText code={excerpt} startLine={startLine ?? 1} />
       </pre>
     </ChatBlock>

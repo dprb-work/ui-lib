@@ -91,7 +91,7 @@ export function AttachmentViewer({
         download={localDownloadHref ? attachment.name : undefined}
         expansion={imageHref ? "zoom" : undefined}
       >
-        <div className="p-3 in-data-[content-block-viewport=expanded]:contents">
+        <div className="in-data-[content-block-viewport=expanded]:contents">
           {imageHref && (
             <Image
               src={imageHref}

@@ -120,6 +120,29 @@ async function expectNumberedCode(container: HTMLElement, expected: string, star
   selection.removeAllRanges();
 }
 
+async function expectAccessibleSource(container: HTMLElement) {
+  // CDP is available only in Vitest's browser runtime.
+  const { cdp } = await import("@vitest/browser/context");
+  const session = cdp();
+  const code = container.querySelector("pre code")!;
+  const ordinal = Array.from(document.querySelectorAll("pre code")).indexOf(code);
+  const snapshot = await session.send("DOMSnapshot.captureSnapshot", { computedStyles: [] });
+  const doc = snapshot.documents.find((entry) => snapshot.strings[entry.documentURL] === document.URL)!;
+  const codeIndices = doc.nodes.nodeName.flatMap((name, index) => snapshot.strings[name] === "CODE" ? [index] : []);
+  const backendId = doc.nodes.backendNodeId[codeIndices[ordinal]!]!;
+  const { nodes } = await session.send("Accessibility.getFullAXTree", { frameId: snapshot.strings[doc.frameId]! });
+  const root = nodes.find((node) => node.backendDOMNodeId === backendId);
+  expect(root, "code is exposed to assistive technology").toBeDefined();
+  const descendants = new Set([root!.nodeId]);
+  let readable = "";
+  for (const node of nodes) {
+    if (!descendants.has(node.nodeId)) continue;
+    for (const child of node.childIds ?? []) descendants.add(child);
+    if (!node.ignored && node.role?.value === "StaticText") readable += `${node.name?.value ?? ""} `;
+  }
+  return readable.replace(/\s+/g, " ").trim();
+}
+
 async function expectCopied(container: HTMLElement, name: string, expected: string) {
   // Vitest browser APIs are unavailable in the ordinary Storybook runtime.
   const { cdp, page } = await import("@vitest/browser/context");
@@ -147,6 +170,8 @@ export const CodeNumbersDefaultAndOffset: Story = {
   play: async ({ canvasElement }) => {
     await viewport();
     const regions = within(canvasElement).getAllByRole("region");
+    const accessibility = await Promise.all(regions.map((region) => expectAccessibleSource(region)));
+    expect(accessibility, "default and shifted numbering stay out of the accessibility tree").toEqual(["alpha beta gamma", "alpha beta gamma"]);
     await expectNumberedCode(regions[0]!, source);
     await expectCopied(regions[0]!, "Copy code", source);
     await expectNumberedCode(regions[1]!, source, 41);
@@ -337,6 +362,22 @@ export const CatalogTableScrollLayout: Story = {
   play: async ({ canvasElement }) => {
     await viewport(narrow);
     await expectTableScrollLayout(within(canvasElement).getByRole("region"));
+    const region = within(canvasElement).getByRole("region");
+    const scroller = Array.from(region.querySelectorAll<HTMLElement>("*")).find((element) => {
+      return /auto|scroll/.test(getComputedStyle(element).overflowX) && element.scrollWidth > element.clientWidth + edgeTolerance;
+    });
+    expect(scroller, "the narrow table can scroll sideways").toBeDefined();
+    const { userEvent: browserUserEvent } = await import("@vitest/browser/context");
+    scroller!.focus();
+    await browserUserEvent.keyboard("{ArrowRight>8/}");
+    await waitFor(() => expect(scroller!.scrollLeft, "native horizontal input scrolls the table").toBeGreaterThan(0));
+    const headers = within(region).getAllByRole("columnheader");
+    const cells = within(scroller!).getAllByRole("row")[0]!;
+    await waitFor(() => {
+      within(cells).getAllByRole("cell").forEach((cell, index) => {
+        expect(Math.abs(cell.getBoundingClientRect().left - headers[index]!.getBoundingClientRect().left), "each header follows its horizontally scrolled column").toBeLessThanOrEqual(edgeTolerance);
+      });
+    });
     const dialog = await expand(canvasElement);
     await expectTableScrollLayout(dialog);
   },

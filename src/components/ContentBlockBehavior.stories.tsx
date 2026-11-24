@@ -197,10 +197,16 @@ export const ControlsBelowContent: Story = {
     await showViewport(desktop);
     const region = within(canvasElement).getByRole("region", { name: "Site plan" });
     const inline = await settledBox(within(region).getByRole("img", { name: "Site plan drawing" }));
-    expect(expectControlsBelow(region, inline).length).toBeGreaterThanOrEqual(3);
+    expectControlsBelow(region, inline);
+    for (const name of ["Pin", "Copy source", "Expand"]) {
+      expect(within(region).getByRole("button", { name })).toBeVisible();
+    }
 
     const { dialog, fitted } = await expandSitePlan(canvasElement);
-    expect(expectControlsBelow(dialog, fitted).length).toBeGreaterThanOrEqual(6);
+    expectControlsBelow(dialog, fitted);
+    for (const name of ["Pin", "Copy source", "Zoom in", "Zoom out", "Reset view", "Close"]) {
+      expect(within(dialog).getByRole("button", { name })).toBeVisible();
+    }
   },
 };
 

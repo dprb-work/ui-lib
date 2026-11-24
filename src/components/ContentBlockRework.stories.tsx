@@ -122,11 +122,19 @@ async function expectNumberedCode(container: HTMLElement, expected: string, star
 
 async function expectCopied(container: HTMLElement, name: string, expected: string) {
   // Vitest browser APIs are unavailable in the ordinary Storybook runtime.
-  const { cdp } = await import("@vitest/browser/context");
-  await cdp().send("Browser.grantPermissions", { origin: location.origin, permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"] });
-  await userEvent.click(within(container).getByRole("button", { name }));
-  await within(container).findByRole("button", { name: "Copied" });
-  expect(await navigator.clipboard.readText(), "copying source excludes line numbers").toBe(expected);
+  const { cdp, page } = await import("@vitest/browser/context");
+  const session = cdp();
+  await session.send("Browser.grantPermissions", { origin: location.origin, permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"] });
+  // Parallel headless tabs must each have a focused document for native clipboard access.
+  await session.send("Emulation.setFocusEmulationEnabled", { enabled: true });
+  try {
+    await page.elementLocator(within(container).getByRole("button", { name })).click();
+    expect(container.ownerDocument.hasFocus(), "native clipboard requires a focused document").toBe(true);
+    await within(container).findByRole("button", { name: "Copied" });
+    expect(await navigator.clipboard.readText(), "copying source excludes line numbers").toBe(expected);
+  } finally {
+    await session.send("Emulation.setFocusEmulationEnabled", { enabled: false });
+  }
 }
 
 export const CodeNumbersDefaultAndOffset: Story = {
@@ -305,8 +313,10 @@ async function expectTableScrollLayout(container: HTMLElement) {
       expect(reservedBottom, "horizontal scrollbar also has reserved space").toBeGreaterThan(0);
     }
     const originalHeader = headers.map((header) => header.getBoundingClientRect().top);
+    // Testing Library events do not invoke native scrolling; use the browser provider.
+    const { userEvent: browserUserEvent } = await import("@vitest/browser/context");
     scroller.focus();
-    await userEvent.keyboard("{End}");
+    await browserUserEvent.keyboard("{End}");
     await waitFor(() => expect(scroller.scrollTop, "the table body can actually scroll").toBeGreaterThan(0));
     headers.forEach((header, index) => expect(Math.abs(header.getBoundingClientRect().top - originalHeader[index]!)).toBeLessThanOrEqual(edgeTolerance));
     const cells = within(scroller).getAllByRole("cell");

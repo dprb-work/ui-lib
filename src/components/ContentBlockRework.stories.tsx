@@ -382,7 +382,7 @@ export const CatalogTableScrollLayout: Story = {
     await browserUserEvent.keyboard("{ArrowRight>8/}");
     await waitFor(() => expect(scroller!.scrollLeft, "native horizontal input scrolls the table").toBeGreaterThan(0));
     const headers = within(region).getAllByRole("columnheader");
-    const cells = within(scroller!).getAllByRole("row")[0]!;
+    const cells = within(scroller!).getAllByRole("row").find((row) => within(row).queryAllByRole("cell").length > 0)!;
     await waitFor(() => {
       within(cells).getAllByRole("cell").forEach((cell, index) => {
         expect(Math.abs(cell.getBoundingClientRect().left - headers[index]!.getBoundingClientRect().left), "each header follows its horizontally scrolled column").toBeLessThanOrEqual(edgeTolerance);

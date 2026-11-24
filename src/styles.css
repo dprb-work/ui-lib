@@ -127,6 +127,7 @@
 .ui-content-data-table {
   display: flex;
   min-height: 0;
+  min-width: 0;
   width: 100%;
   flex: 1;
   flex-direction: column;
@@ -141,18 +142,19 @@
 
 .ui-content-data-table thead {
   flex-shrink: 0;
-  overflow-y: hidden;
+  overflow: hidden;
   background: var(--color-ui-surface);
 }
 
 .ui-content-data-table tbody {
   min-height: 0;
-  overflow-y: auto;
+  overflow: auto;
   padding-bottom: 0.5rem;
 }
 
 .ui-content-data-table tr {
   display: grid;
+  min-width: var(--ui-content-table-min-width, 0);
   grid-template-columns: var(--ui-content-table-columns, repeat(2, minmax(0, 1fr)));
 }
 

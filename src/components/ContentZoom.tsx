@@ -201,8 +201,9 @@ export function ZoomViewport({ view, viewport, onViewChange, zoomDirection, chil
     }
     if (zoomDirection === null || isInteractive(event.target)) return;
     const box = event.currentTarget.getBoundingClientRect();
+    const anchor = { x: event.clientX - box.left, y: event.clientY - box.top };
     const factor = zoomDirection === "out" ? 1 / zoom.clickStep : zoom.clickStep;
-    onViewChange((current) => zoomedAt(current, factor, localPoint(event), box));
+    onViewChange((current) => zoomedAt(current, factor, anchor, box));
   }
 
   return (

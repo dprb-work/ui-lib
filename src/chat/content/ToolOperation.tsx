@@ -95,7 +95,7 @@ export function ToolOperation({
         <ToolOperationText text={operation.input} label="Input" active={active}>
           <CodeText
             code={operation.input || " "}
-            {...(operation.language ? { language: operation.language } : {})}
+            language={operation.language ?? ""}
             streaming={streamingInput}
           />
         </ToolOperationText>

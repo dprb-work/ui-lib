@@ -42,10 +42,10 @@ export const Code: Story = {
 
 function ChartContent() {
   const [table, setTable] = useState(false);
-  const [sort, setSort] = useState<{ column: "week" | "value"; descending: boolean } | null>(null);
+  const [sort, setSort] = useState<{ column: "week" | "value"; direction: "ascending" | "descending" } | null>(null);
   const points = [4, 9, 6, 14, 11, 18, 22];
   const values = points.map((value, index) => ({ week: index + 1, value }));
-  if (sort) values.sort((left, right) => (left[sort.column] - right[sort.column]) * (sort.descending ? -1 : 1));
+  if (sort) values.sort((left, right) => (left[sort.column] - right[sort.column]) * (sort.direction === "descending" ? -1 : 1));
   return (
     <ContentBlock
       label="Weekly runs"
@@ -60,17 +60,17 @@ function ChartContent() {
     >
       <div className="flex h-56 min-h-0 flex-col in-data-[content-block-viewport=expanded]:h-full">
       {table ? (
-        <div className="flex min-h-0 flex-1 overflow-x-auto p-3">
+        <div className="flex min-h-0 flex-1 overflow-hidden p-3">
           <table className="ui-content-data-table">
             <thead><tr>{(["week", "value"] as const).map((column) => (
-              <th key={column} scope="col" aria-sort={sort?.column === column ? (sort.descending ? "descending" : "ascending") : "none"}>
-                <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column, descending: sort?.column === column && !sort.descending })}>
+              <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : "none"}>
+                <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column, direction: sort?.column === column && sort.direction === "ascending" ? "descending" : "ascending" })}>
                   {column === "week" ? "Week" : "Runs"}
-                  {sort?.column === column && (sort.descending ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
+                  {sort?.column === column && (sort.direction === "descending" ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
                 </Button>
               </th>
             ))}</tr></thead>
-            <tbody tabIndex={0} aria-label="Weekly runs data">{values.map(({ week, value }) => <tr key={week}><td>Week {week}</td><td>{value}</td></tr>)}</tbody>
+            <tbody tabIndex={0} aria-label="Weekly runs data" onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}>{values.map(({ week, value }) => <tr key={week}><td>Week {week}</td><td>{value}</td></tr>)}</tbody>
           </table>
         </div>
       ) : (
@@ -98,23 +98,23 @@ export const Image: Story = {
 };
 
 function RunsTable() {
-  const [sort, setSort] = useState<{ column: keyof typeof rows[number]; descending: boolean } | null>(null);
+  const [sort, setSort] = useState<{ column: keyof typeof rows[number]; direction: "ascending" | "descending" } | null>(null);
   const sortedRows = sort === null ? rows : [...rows].sort((left, right) => {
     const order = sort.column === "seconds" ? left.seconds - right.seconds : String(left[sort.column]).localeCompare(String(right[sort.column]), undefined, { numeric: true });
-    return sort.descending ? -order : order;
+    return sort.direction === "descending" ? -order : order;
   });
   return (
-    <div className="flex min-h-0 overflow-x-auto p-2" aria-label="Test runs table">
-      <table className="ui-content-data-table min-w-[34rem] [--ui-content-table-columns:6rem_6rem_6rem_minmax(16rem,1fr)]">
+    <div className="flex min-h-0 overflow-hidden p-2" aria-label="Test runs table">
+      <table className="ui-content-data-table [--ui-content-table-min-width:34rem] [--ui-content-table-columns:6rem_6rem_6rem_minmax(16rem,1fr)]">
         <thead><tr>{runColumns.map(({ key, label }) => (
-          <th key={key} scope="col" aria-sort={sort?.column === key ? (sort.descending ? "descending" : "ascending") : "none"}>
-            <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column: key, descending: sort?.column === key && !sort.descending })}>
+          <th key={key} scope="col" aria-sort={sort?.column === key ? sort.direction : "none"}>
+            <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column: key, direction: sort?.column === key && sort.direction === "ascending" ? "descending" : "ascending" })}>
               {label}
-              {sort?.column === key && (sort.descending ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
+              {sort?.column === key && (sort.direction === "descending" ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
             </Button>
           </th>
         ))}</tr></thead>
-        <tbody tabIndex={0} aria-label="Test run rows">{sortedRows.map((row) => <tr key={row.run}>{runColumns.map(({ key }) => <td key={key}>{row[key]}</td>)}</tr>)}</tbody>
+        <tbody tabIndex={0} aria-label="Test run rows" onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}>{sortedRows.map((row) => <tr key={row.run}>{runColumns.map(({ key }) => <td key={key}>{row[key]}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );

@@ -16,11 +16,11 @@ export function ChartOutput({
   type = "bar",
 }: ChartOutputProps) {
   const [table, setTable] = useState(false);
-  const [sort, setSort] = useState<{ column: "label" | "value"; descending: boolean } | null>(null);
+  const [sort, setSort] = useState<{ column: "label" | "value"; direction: "ascending" | "descending" } | null>(null);
   const valid = points.filter((point) => Number.isFinite(point.value));
   const tablePoints = sort === null ? valid : [...valid].sort((left, right) => {
     const order = sort.column === "value" ? left.value - right.value : left.label.localeCompare(right.label, undefined, { numeric: true });
-    return sort.descending ? -order : order;
+    return sort.direction === "descending" ? -order : order;
   });
   const values = valid.map((point) => point.value);
   const observedMinimum = values.length ? Math.min(...values) : 0;
@@ -65,21 +65,25 @@ export function ChartOutput({
     >
       <div className="flex h-[17.5rem] min-h-0 flex-col p-3 in-data-[content-block-viewport=expanded]:h-full">
         {table ? (
-          <div className="flex min-h-0 flex-1 overflow-x-auto pb-2">
+          <div className="flex min-h-0 flex-1 overflow-hidden pb-2">
             <table className="ui-content-data-table">
               <thead>
                 <tr>
                   {(["label", "value"] as const).map((column) => (
-                    <th key={column} scope="col" aria-sort={sort?.column === column ? (sort.descending ? "descending" : "ascending") : "none"}>
-                      <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column, descending: sort?.column === column && !sort.descending })}>
+                    <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : "none"}>
+                      <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column, direction: sort?.column === column && sort.direction === "ascending" ? "descending" : "ascending" })}>
                         {column === "label" ? "Label" : "Value"}
-                        {sort?.column === column && (sort.descending ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
+                        {sort?.column === column && (sort.direction === "descending" ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
                       </Button>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody tabIndex={0} aria-label={`${title} data`}>
+              <tbody
+                tabIndex={0} // NOSONAR(S6845): the scrollable table body needs native keyboard scrolling
+                aria-label={`${title} data`}
+                onScroll={(event) => event.currentTarget.previousElementSibling?.scrollTo({ left: event.currentTarget.scrollLeft })}
+              >
                 {tablePoints.map((point) => (
                   <tr key={point.label}>
                     <td>{point.label}</td>

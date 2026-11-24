@@ -60,7 +60,7 @@ export function CodeText({
     <code className="grid">
       {lines.map((tokens, index) => (
         <span
-          className="grid min-w-0 gap-2 before:select-none before:text-right before:text-ui-muted-foreground before:opacity-70 before:content-[attr(data-line-number)]"
+          className="grid min-w-0 gap-2 before:select-none before:text-right before:text-ui-muted-foreground before:opacity-70 before:content-[attr(data-line-number)_/_'']"
           style={rowStyle}
           data-line-number={startLine + index}
           key={index}

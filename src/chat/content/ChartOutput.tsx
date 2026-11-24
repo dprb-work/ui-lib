@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ChartColumn, ChartLine, Table2 } from "lucide-react";
+import { ChartColumn, ChartLine, ChevronDown, ChevronUp, Table2 } from "lucide-react";
+import { Button } from "../../components/Button";
 import { ChatBlock } from "./ChatBlock";
 export type ChartPoint = { label: string; value: number };
 export type ChartOutputProps = {
@@ -15,7 +16,12 @@ export function ChartOutput({
   type = "bar",
 }: ChartOutputProps) {
   const [table, setTable] = useState(false);
+  const [sort, setSort] = useState<{ column: "label" | "value"; descending: boolean } | null>(null);
   const valid = points.filter((point) => Number.isFinite(point.value));
+  const tablePoints = sort === null ? valid : [...valid].sort((left, right) => {
+    const order = sort.column === "value" ? left.value - right.value : left.label.localeCompare(right.label, undefined, { numeric: true });
+    return sort.descending ? -order : order;
+  });
   const values = valid.map((point) => point.value);
   const observedMinimum = values.length ? Math.min(...values) : 0;
   const observedMaximum = values.length ? Math.max(...values) : 0;
@@ -51,31 +57,33 @@ export function ChartOutput({
           kind: "button",
           label: table ? "Show chart" : "Show table",
           pressed: table,
-          icon: table ? chartIcon : <Table2 aria-hidden="true" />,
+          icon: <Table2 aria-hidden="true" />,
           onSelect: () => setTable((current) => !current),
         },
       ]}
       expansion={table ? "scroll" : "zoom"}
     >
-      <div className="p-3 in-data-[content-block-viewport=expanded]:size-full">
+      <div className="flex h-[17.5rem] min-h-0 flex-col p-3 in-data-[content-block-viewport=expanded]:h-full">
         {table ? (
-          <div className="overflow-auto">
-            <table className="w-full text-left text-sm">
+          <div className="flex min-h-0 flex-1 overflow-x-auto pb-2">
+            <table className="ui-content-data-table">
               <thead>
                 <tr>
-                  <th className="border-b border-ui-border p-2">Label</th>
-                  <th className="border-b border-ui-border p-2">Value</th>
+                  {(["label", "value"] as const).map((column) => (
+                    <th key={column} scope="col" aria-sort={sort?.column === column ? (sort.descending ? "descending" : "ascending") : "none"}>
+                      <Button variant="ghost" className="h-auto w-full rounded-none border-0 py-2 text-sm text-ui-foreground" onClick={() => setSort({ column, descending: sort?.column === column && !sort.descending })}>
+                        {column === "label" ? "Label" : "Value"}
+                        {sort?.column === column && (sort.descending ? <ChevronDown className="absolute right-1" aria-hidden="true" /> : <ChevronUp className="absolute right-1" aria-hidden="true" />)}
+                      </Button>
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
-                {valid.map((point) => (
+              <tbody tabIndex={0} aria-label={`${title} data`}>
+                {tablePoints.map((point) => (
                   <tr key={point.label}>
-                    <td className="border-b border-ui-border p-2">
-                      {point.label}
-                    </td>
-                    <td className="border-b border-ui-border p-2">
-                      {point.value} {unit}
-                    </td>
+                    <td>{point.label}</td>
+                    <td>{point.value} {unit}</td>
                   </tr>
                 ))}
               </tbody>
@@ -86,12 +94,12 @@ export function ChartOutput({
             No finite values to chart.
           </p>
         ) : (
-          <figure className="in-data-[content-block-viewport=expanded]:h-full">
+          <figure className="min-h-0 flex-1">
             <svg
               viewBox="0 0 100 100"
               role="img"
               aria-label={`${title} chart`}
-              className="h-64 w-full overflow-visible in-data-[content-block-viewport=expanded]:h-full"
+              className="h-full w-full overflow-visible"
             >
               {type === "bar" ? (
                 valid.map((point, index) => {

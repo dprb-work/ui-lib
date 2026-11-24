@@ -41,10 +41,6 @@ type CaptionBarProps = {
   toggle: ReactNode;
 };
 
-function SectionDivider() {
-  return <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0 bg-ui-border" />;
-}
-
 function CaptionBar({ icon, title, metadata, actions, zoom, toggle }: CaptionBarProps) {
   const segments = metadata?.filter((segment) => segment != null && segment !== false) ?? [];
   return (
@@ -52,6 +48,7 @@ function CaptionBar({ icon, title, metadata, actions, zoom, toggle }: CaptionBar
       data-content-block-caption
       className="flex min-h-10 shrink-0 items-center gap-2 border-t border-ui-border bg-ui-surface py-1 pr-2 pl-3 pb-[calc(0.25rem+env(safe-area-inset-bottom))] text-[.8125rem] text-ui-muted-foreground"
     >
+      {zoom && <div className="flex shrink-0 items-center gap-0.5">{zoom}</div>}
       <div className="flex min-w-0 flex-1 items-center gap-ui-icon-text [&>svg]:size-4 [&>svg]:shrink-0">
         {icon}
         <span className="min-w-0 truncate">
@@ -82,9 +79,6 @@ function CaptionBar({ icon, title, metadata, actions, zoom, toggle }: CaptionBar
             </IconButton>
           ),
         )}
-        {actions.length > 0 && (zoom || toggle) && <SectionDivider />}
-        {zoom}
-        {zoom && toggle && <SectionDivider />}
         {toggle}
       </div>
     </div>
@@ -99,7 +93,7 @@ type ExpandedBodyProps = Omit<CaptionBarProps, "zoom" | "toggle"> & {
 
 function ExpandedBody({ expansion, onClose, children, ...caption }: ExpandedBodyProps) {
   const [view, setView] = useState<ZoomView>(fittedView);
-  const [clickToZoom, setClickToZoom] = useState(false);
+  const [zoomDirection, setZoomDirection] = useState<"in" | "out" | null>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const zoomable = expansion === "zoom";
   const close = (
@@ -110,7 +104,7 @@ function ExpandedBody({ expansion, onClose, children, ...caption }: ExpandedBody
   return (
     <>
       {zoomable ? (
-        <ZoomViewport view={view} viewport={viewport} onViewChange={setView} clickToZoom={clickToZoom}>
+        <ZoomViewport view={view} viewport={viewport} onViewChange={setView} zoomDirection={zoomDirection}>
           {children}
         </ZoomViewport>
       ) : (
@@ -127,10 +121,9 @@ function ExpandedBody({ expansion, onClose, children, ...caption }: ExpandedBody
         zoom={zoomable && (
           <ZoomControls
             view={view}
-            viewport={viewport}
             onViewChange={setView}
-            clickToZoom={clickToZoom}
-            onClickToZoomChange={setClickToZoom}
+            zoomDirection={zoomDirection}
+            onZoomDirectionChange={setZoomDirection}
             buttonClassName={controlClassName}
           />
         )}
@@ -196,7 +189,7 @@ export function ContentBlock({
           <Maximize2 aria-hidden="true" />
         </IconButton>
       }
-      overlayClassName="ui-content-block-motion fixed inset-0 z-40 bg-black/50"
+      overlayClassName="fixed inset-0 z-40 bg-black/80"
       contentClassName="ui-content-block-motion fixed inset-0 z-50 flex flex-col overflow-hidden bg-ui-background text-sm text-ui-foreground shadow-2xl outline-hidden sm:inset-auto sm:top-[10dvh] sm:left-[10vw] sm:h-[80dvh] sm:w-[80vw] sm:rounded-lg sm:border sm:border-ui-border"
     >
       <ExpandedBody {...caption} expansion={expansion} onClose={() => onExpandedChange(false)}>

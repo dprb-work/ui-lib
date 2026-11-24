@@ -7,7 +7,6 @@ export type CodeBlockProps = {
   code: string;
   language?: string;
   filename?: string;
-  lineNumbers?: boolean;
   startLine?: number;
   className?: string;
 };
@@ -15,7 +14,6 @@ export function CodeBlock({
   code,
   language,
   filename,
-  lineNumbers = false,
   startLine = 1,
   className,
 }: CodeBlockProps) {
@@ -31,12 +29,11 @@ export function CodeBlock({
       <CodeViewport
         wrap={wrapText}
         aria-label="Source code"
-        className={lineNumbers ? "pl-1.5" : undefined}
+        className="pl-1.5"
       >
         <CodeText
           code={code}
           {...(language ? { language } : {})}
-          lineNumbers={lineNumbers}
           startLine={startLine}
         />
       </CodeViewport>

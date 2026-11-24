@@ -332,7 +332,7 @@ instead when the existing Radix-backed picker and its `onValueChange` API is nee
 `ContentBlock` is the container for charts, images, diagrams, tables, code, logs,
 and embedded pages. It draws a rounded box with the content viewport on top and
 a caption bar at the bottom: the content-type `icon`, the optional `title`, and
-`metadata` on the left, the controls on the right. `label` names the region and
+`metadata` on the left, the content actions and Expand/Close on the right. `label` names the region and
 the expanded dialog. The container owns every control and renders it as an
 icon button with a tooltip; content declares `actions` (`kind: "button"` with
 `icon`, `onSelect`, optional `pressed` and `disabled`, or `kind: "copy"` with
@@ -340,9 +340,13 @@ icon button with a tooltip; content declares `actions` (`kind: "button"` with
 owns its scrolling; the wheel never zooms. `expansion` adds an Expand control
 that opens the same box as a modal overlay of about 80% by 80% (full screen
 below 640px) with Close in its place; Escape, a click outside, Close, or the
-browser's back action close it, and focus returns to Expand. With
-`expansion="zoom"` (charts, images, diagrams) the overlay adds Zoom out, Zoom
-in, Reset view, and a Click to zoom toggle: the wheel zooms around the pointer
+browser's back action close it, and focus returns to Expand. The backdrop remains
+translucent with increased opacity; the dialog uses a subtle zoom-in/out animation,
+disabled under reduced motion. With `expansion="zoom"` (charts, images, diagrams),
+Zoom in, Zoom out, and Reset view appear at the left of the footer. Zoom in and
+Zoom out are mutually exclusive toggles: select a direction, then click the
+content to zoom at that point; select the active toggle again to turn click zoom
+off. Selecting a toggle does not itself zoom. The wheel zooms around the pointer
 from 25% to 800%, drag pans, `0` resets, and `+`/`-` step. With
 `expansion="scroll"` (tables, code, pages) the expanded content scrolls.
 Content may style its expanded layout with the
@@ -352,6 +356,14 @@ remain in the consumer.
 `CodeViewport` accepts native `pre` props, including `ref`, and a `wrap` boolean.
 Its scroll container spans the available width. The consumer owns preferences,
 syntax highlighting, line numbers, and streaming behavior.
+
+Chat `CodeBlock`, `CodeText`, file excerpts, and tool text always show
+lower-contrast line numbers drawn by CSS, outside selected and copied text.
+`startLine` changes the first number (default `1`); the `lineNumbers` boolean is
+removed. Chart/data toggles retain their inline viewport height. Chat chart tables
+keep their headers above the scrolling body, reserve inset scrollbar space, and
+offer sorting with a chevron only on the sorted column. Zebra stripes and column
+rules distinguish cells without horizontal row rules.
 
 `ColorPicker` is controlled by `value` and `onValueChange` using opaque
 `#rrggbb` strings. It provides RGB sliders, a native color well, and an editable

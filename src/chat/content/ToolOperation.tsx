@@ -60,7 +60,7 @@ function ToolOperationText({
         );
       }}
     >
-      {children ?? (text || " ")}
+      {children ?? <CodeText code={text || " "} />}
     </CodeViewport>
   );
 }
@@ -93,23 +93,11 @@ export function ToolOperation({
     >
       {inputContent === undefined ? (
         <ToolOperationText text={operation.input} label="Input" active={active}>
-          {operation.language ? (
-            <CodeText
-              code={operation.input}
-              language={operation.language}
-              streaming={streamingInput}
-            />
-          ) : (
-            <>
-              {operation.input || " "}
-              {streamingInput && (
-                <span
-                  aria-hidden="true"
-                  className="ml-0.5 inline-block h-3 w-1 bg-ui-accent"
-                />
-              )}
-            </>
-          )}
+          <CodeText
+            code={operation.input || " "}
+            {...(operation.language ? { language: operation.language } : {})}
+            streaming={streamingInput}
+          />
         </ToolOperationText>
       ) : (
         <div aria-label="Input">{inputContent}</div>

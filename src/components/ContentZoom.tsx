@@ -1,4 +1,4 @@
-import { MousePointerClick, Scan, ZoomIn, ZoomOut } from "lucide-react";
+import { Scan, ZoomIn, ZoomOut } from "lucide-react";
 import {
   type MouseEvent,
   type PointerEvent,
@@ -12,7 +12,7 @@ import { cn } from "../cn";
 import { IconButton } from "./IconButton";
 
 // Scale 1 is the fitted view. The wheel multiplies the scale by exp(-deltaY * wheelRate),
-// so one 100px notch is about 16 percent; buttons and keys step by keyStep, a click by clickStep.
+// so one 100px notch is about 16 percent; keys step by keyStep, a click by clickStep.
 const zoom = {
   minimum: 0.25,
   maximum: 8,
@@ -62,32 +62,24 @@ type ViewChange = (change: (view: ZoomView) => ZoomView) => void;
 
 export type ZoomControlsProps = {
   view: ZoomView;
-  viewport: RefObject<HTMLDivElement | null>;
   onViewChange: ViewChange;
-  clickToZoom: boolean;
-  onClickToZoomChange: (clickToZoom: boolean) => void;
+  zoomDirection: "in" | "out" | null;
+  onZoomDirectionChange: (direction: "in" | "out" | null) => void;
   buttonClassName: string;
 };
 
-export function ZoomControls({ view, viewport, onViewChange, clickToZoom, onClickToZoomChange, buttonClassName }: ZoomControlsProps) {
-  function step(factor: number) {
-    const element = viewport.current;
-    if (element) onViewChange((current) => zoomedAtCenter(current, factor, element));
-  }
+export function ZoomControls({ view, onViewChange, zoomDirection, onZoomDirectionChange, buttonClassName }: ZoomControlsProps) {
   const fitted = isFitted(view);
   return (
     <>
-      <IconButton label="Zoom out" className={buttonClassName} disabled={view.scale <= zoom.minimum} onClick={() => step(1 / zoom.keyStep)}>
-        <ZoomOut aria-hidden="true" />
-      </IconButton>
-      <IconButton label="Zoom in" className={buttonClassName} disabled={view.scale >= zoom.maximum} onClick={() => step(zoom.keyStep)}>
+      <IconButton label="Zoom in" className={buttonClassName} aria-pressed={zoomDirection === "in"} onClick={() => onZoomDirectionChange(zoomDirection === "in" ? null : "in")}>
         <ZoomIn aria-hidden="true" />
+      </IconButton>
+      <IconButton label="Zoom out" className={buttonClassName} aria-pressed={zoomDirection === "out"} onClick={() => onZoomDirectionChange(zoomDirection === "out" ? null : "out")}>
+        <ZoomOut aria-hidden="true" />
       </IconButton>
       <IconButton label="Reset view" className={buttonClassName} disabled={fitted} onClick={() => onViewChange(() => fittedView)}>
         <Scan aria-hidden="true" />
-      </IconButton>
-      <IconButton label="Click to zoom" className={buttonClassName} aria-pressed={clickToZoom} onClick={() => onClickToZoomChange(!clickToZoom)}>
-        <MousePointerClick aria-hidden="true" />
       </IconButton>
     </>
   );
@@ -117,11 +109,11 @@ export type ZoomViewportProps = {
   view: ZoomView;
   viewport: RefObject<HTMLDivElement | null>;
   onViewChange: ViewChange;
-  clickToZoom: boolean;
+  zoomDirection: "in" | "out" | null;
   children: ReactNode;
 };
 
-export function ZoomViewport({ view, viewport, onViewChange, clickToZoom, children }: ZoomViewportProps) {
+export function ZoomViewport({ view, viewport, onViewChange, zoomDirection, children }: ZoomViewportProps) {
   const pointers = useRef(new Map<number, Point>());
   const gesture = useRef<Gesture | null>(null);
   // A drag that panned must not also count as a click-to-zoom click.
@@ -207,9 +199,9 @@ export function ZoomViewport({ view, viewport, onViewChange, clickToZoom, childr
       suppressClick.current = false;
       return;
     }
-    if (!clickToZoom || isInteractive(event.target)) return;
+    if (zoomDirection === null || isInteractive(event.target)) return;
     const box = event.currentTarget.getBoundingClientRect();
-    const factor = event.shiftKey ? 1 / zoom.clickStep : zoom.clickStep;
+    const factor = zoomDirection === "out" ? 1 / zoom.clickStep : zoom.clickStep;
     onViewChange((current) => zoomedAt(current, factor, localPoint(event), box));
   }
 
@@ -220,7 +212,8 @@ export function ZoomViewport({ view, viewport, onViewChange, clickToZoom, childr
       className={cn(
         "relative min-h-0 flex-1 touch-none select-none overflow-hidden",
         !isFitted(view) && "cursor-grab active:cursor-grabbing",
-        clickToZoom && "cursor-zoom-in",
+        zoomDirection === "in" && "cursor-zoom-in",
+        zoomDirection === "out" && "cursor-zoom-out",
       )}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

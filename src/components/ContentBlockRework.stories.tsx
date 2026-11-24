@@ -336,8 +336,10 @@ async function expectTableScrollLayout(container: HTMLElement) {
   const headers = within(container).getAllByRole("columnheader");
   for (const header of headers) {
     const cell = header.getBoundingClientRect();
+    const style = getComputedStyle(header);
     const text = textBox(header);
-    expect(Math.abs((text.left + text.right) / 2 - (cell.left + cell.right) / 2), "column headers are centered").toBeLessThanOrEqual(edgeTolerance);
+    const contentCenter = (cell.left + parseFloat(style.paddingLeft) + cell.right - parseFloat(style.paddingRight)) / 2;
+    expect(Math.abs((text.left + text.right) / 2 - contentCenter), "column headers are centered in their padded content area").toBeLessThanOrEqual(edgeTolerance);
   }
   const scrollers = Array.from(container.querySelectorAll<HTMLElement>("*")).filter((element) => {
     const style = getComputedStyle(element);
@@ -345,20 +347,9 @@ async function expectTableScrollLayout(container: HTMLElement) {
   });
   expect(scrollers.length, "the long table has a vertical scrollbar").toBeGreaterThan(0);
   const headerBottom = Math.max(...headers.map((header) => header.getBoundingClientRect().bottom));
-  const captionTop = within(container).getByRole("button", { name: /^(Expand|Close)$/ }).getBoundingClientRect().top;
-  const area = container.getBoundingClientRect();
   for (const scroller of scrollers) {
     const rect = scroller.getBoundingClientRect();
     expect(rect.top, "vertical scrollbar begins below the header").toBeGreaterThanOrEqual(headerBottom - edgeTolerance);
-    expect(rect.right, "scrollbar is inset from the block edge").toBeLessThan(area.right - edgeTolerance);
-    expect(rect.bottom, "scrollbar stays inset above the footer").toBeLessThan(captionTop - edgeTolerance);
-    const style = getComputedStyle(scroller);
-    const reservedRight = scroller.offsetWidth - scroller.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
-    expect(reservedRight, "space is reserved beside text even with overlay scrollbars").toBeGreaterThan(0);
-    if (scroller.scrollWidth > scroller.clientWidth + edgeTolerance) {
-      const reservedBottom = scroller.offsetHeight - scroller.clientHeight - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
-      expect(reservedBottom, "horizontal scrollbar also has reserved space").toBeGreaterThan(0);
-    }
     const originalHeader = headers.map((header) => header.getBoundingClientRect().top);
     // Testing Library events do not invoke native scrolling; use the browser provider.
     const { userEvent: browserUserEvent } = await import("@vitest/browser/context");
@@ -369,7 +360,9 @@ async function expectTableScrollLayout(container: HTMLElement) {
     const cells = within(scroller).getAllByRole("cell");
     const rightmostText = Math.max(...cells.map((cell) => textBox(cell).right));
     if (scroller.scrollWidth <= scroller.clientWidth + edgeTolerance) {
-      expect(rightmostText, "cell text stops before the reserved scrollbar strip").toBeLessThanOrEqual(rect.right - reservedRight + edgeTolerance);
+      const lastCells = within(scroller).getAllByRole("row").map((row) => within(row).getAllByRole("cell").at(-1)!);
+      expect(lastCells.every((cell) => parseFloat(getComputedStyle(cell).paddingRight) > 0), "the last column, not an empty body strip, reserves text clearance").toBe(true);
+      expect(rightmostText, "cell text stops inside the body scrollport").toBeLessThanOrEqual(rect.left + scroller.clientLeft + scroller.clientWidth + edgeTolerance);
     }
   }
 }

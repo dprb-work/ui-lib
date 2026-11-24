@@ -232,17 +232,18 @@ export const InlineHeightFollowsContentUpToEightyPercent: Story = {
   },
 };
 
-export const DesktopDialogIsAboutEightyPercent: Story = {
+export const DesktopDialogIsNinetyPercent: Story = {
   render: () => <SitePlanBlock />,
   play: async ({ canvasElement }) => {
     await showViewport(desktop);
     const { dialog } = await expandSitePlan(canvasElement);
     await waitFor(() => {
-      const { width, height } = box(dialog);
-      expect(width / window.innerWidth).toBeGreaterThanOrEqual(0.7);
-      expect(width / window.innerWidth).toBeLessThanOrEqual(0.9);
-      expect(height / window.innerHeight).toBeGreaterThanOrEqual(0.7);
-      expect(height / window.innerHeight).toBeLessThanOrEqual(0.9);
+      const { left, top, width, height } = box(dialog);
+      expectBox(
+        { left, top, width, height },
+        { left: window.innerWidth * 0.05, top: window.innerHeight * 0.05, width: window.innerWidth * 0.9, height: window.innerHeight * 0.9 },
+        layoutTolerance,
+      );
     });
   },
 };

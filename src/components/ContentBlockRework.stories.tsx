@@ -20,6 +20,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+type CodeDOMSnapshot = {
+  strings: string[];
+  documents: {
+    documentURL: number;
+    frameId: number;
+    nodes: { nodeName: number[]; backendNodeId: number[] };
+  }[];
+};
+type AccessibleNode = {
+  nodeId: string;
+  backendDOMNodeId?: number;
+  ignored: boolean;
+  childIds?: string[];
+  role?: { value?: unknown };
+  name?: { value?: unknown };
+};
+
 const desktop = { width: 1440, height: 900 };
 const narrow = { width: 390, height: 844 };
 const edgeTolerance = 1;
@@ -126,11 +143,11 @@ async function expectAccessibleSource(container: HTMLElement) {
   const session = cdp();
   const code = container.querySelector("pre code")!;
   const ordinal = Array.from(document.querySelectorAll("pre code")).indexOf(code);
-  const snapshot = await session.send("DOMSnapshot.captureSnapshot", { computedStyles: [] });
+  const snapshot: CodeDOMSnapshot = await session.send("DOMSnapshot.captureSnapshot", { computedStyles: [] });
   const doc = snapshot.documents.find((entry) => snapshot.strings[entry.documentURL] === document.URL)!;
   const codeIndices = doc.nodes.nodeName.flatMap((name, index) => snapshot.strings[name] === "CODE" ? [index] : []);
   const backendId = doc.nodes.backendNodeId[codeIndices[ordinal]!]!;
-  const { nodes } = await session.send("Accessibility.getFullAXTree", { frameId: snapshot.strings[doc.frameId]! });
+  const { nodes }: { nodes: AccessibleNode[] } = await session.send("Accessibility.getFullAXTree", { frameId: snapshot.strings[doc.frameId]! });
   const root = nodes.find((node) => node.backendDOMNodeId === backendId);
   expect(root, "code is exposed to assistive technology").toBeDefined();
   const descendants = new Set([root!.nodeId]);

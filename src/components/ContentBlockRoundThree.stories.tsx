@@ -71,7 +71,7 @@ async function expectSwitch(container: HTMLElement, contract: "plain" | "icon") 
   const showData = query.getByRole("button", { name: "Show table" });
   const dataIcon = drawing(showData);
   const caption = container.querySelector("[data-content-block-caption]")!;
-  const chartIcon = drawing(caption);
+  const chartIcon = Array.from(caption.querySelectorAll("svg")).find((icon) => !icon.closest("button"))!.innerHTML;
   if (contract === "plain") expect(showData, "changing renderers is an action, not a pressed toggle").not.toHaveAttribute("aria-pressed");
   await userEvent.click(showData);
   expect(query.getByRole("table")).toBeVisible();
@@ -276,5 +276,43 @@ export const OuterHorizontalInnerVerticalScroll: Story = {
     await waitFor(() => expect(vertical!.scrollTop).toBeGreaterThan(0));
     expect(Math.abs(headers[0]!.getBoundingClientRect().top - headerTop), "vertical scrolling keeps the header fixed").toBeLessThanOrEqual(tolerance);
     expect(firstCell.getBoundingClientRect().top, "body rows actually move vertically").toBeLessThan(cellTop - tolerance);
+  },
+};
+
+function sampleDialogOpacity(dialog: HTMLElement) {
+  const animations = dialog.getAnimations();
+  const samples: string[] = [];
+  for (const animation of animations) {
+    const duration = Number(animation.effect?.getTiming().duration);
+    if (!Number.isFinite(duration) || duration <= 0) continue;
+    animation.pause();
+    for (const fraction of [0, 0.5, 1]) {
+      animation.currentTime = duration * fraction;
+      samples.push(getComputedStyle(dialog).opacity);
+    }
+    animation.finish();
+  }
+  if (animations.length === 0) samples.push(getComputedStyle(dialog).opacity);
+  return samples;
+}
+
+export const InnerContentStaysOpaqueDuringOpenAndClose: Story = {
+  render: () => <CatalogChart />,
+  play: async ({ canvasElement }) => {
+    await viewport();
+    // CSS animation must be exercised even if the host requests reduced motion.
+    const { cdp } = await import("@vitest/browser/context");
+    await cdp().send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+    try {
+      await userEvent.click(within(canvasElement).getByRole("button", { name: "Show table" }));
+      await userEvent.click(within(canvasElement).getByRole("button", { name: "Expand" }));
+      const dialog = await within(document.body).findByRole("dialog");
+      const opening = sampleDialogOpacity(dialog);
+      await userEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+      const closing = dialog.isConnected ? sampleDialogOpacity(dialog) : [];
+      expect([...opening, ...closing], "the inner background and its content never fade through to the black backdrop").toEqual([...opening, ...closing].map(() => "1"));
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", { features: [] });
+    }
   },
 };

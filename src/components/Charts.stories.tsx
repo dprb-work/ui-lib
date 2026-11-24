@@ -5,10 +5,12 @@ import {
   CartesianChart,
   DistributionChart,
   MultiSeriesLineChart,
+  StackedBarChart,
   type ChartSeries,
   type DistributionView,
   type PlotRecord,
 } from "../charts";
+import { modelUsageLabels, modelUsageSeries, modelUsageTimestamps } from "../test/fixtures/model-usage";
 
 const meta = {
   title: "Components/Charts",
@@ -166,6 +168,50 @@ export const MultiSeriesLineFiveSeries: Story = {
           tabsAriaLabel="Five-pool usage allowances views"
           tableCaption="Weekly usage allowances across five pools (%)"
           ariaLabel="Weekly usage allowances across five pools from Monday to Sunday"
+        />
+      </section>
+    </main>
+  ),
+};
+
+export const ModelUsageTimeRange: Story = {
+  render: () => (
+    <main className="min-h-screen bg-ui-background p-4 text-ui-foreground sm:p-8">
+      <section className="mx-auto grid max-w-4xl min-w-0 gap-4">
+        <h1 className="text-base font-semibold text-ui-foreground">Daily model usage per account</h1>
+        <MultiSeriesLineChart
+          labels={modelUsageLabels}
+          timestamps={modelUsageTimestamps}
+          series={modelUsageSeries}
+          xLabel="Day"
+          yLabel="Model usage"
+          unit="M tokens"
+          min={0}
+          tabsAriaLabel="Daily model usage views"
+          tableCaption="Daily model usage per account (M tokens)"
+          ariaLabel="Daily model usage per account"
+        />
+      </section>
+    </main>
+  ),
+};
+
+export const StackedBar: Story = {
+  render: () => (
+    <main className="min-h-screen bg-ui-background p-4 text-ui-foreground sm:p-8">
+      <section className="mx-auto grid max-w-4xl min-w-0 gap-4">
+        <h1 className="text-base font-semibold text-ui-foreground">Daily model usage per account, stacked</h1>
+        <StackedBarChart
+          labels={modelUsageLabels}
+          timestamps={modelUsageTimestamps}
+          defaultTimeRange="month"
+          series={modelUsageSeries}
+          xLabel="Day"
+          yLabel="Model usage"
+          unit="M tokens"
+          tabsAriaLabel="Stacked daily model usage views"
+          tableCaption="Stacked daily model usage per account (M tokens)"
+          ariaLabel="Daily model usage per account, stacked by account"
         />
       </section>
     </main>

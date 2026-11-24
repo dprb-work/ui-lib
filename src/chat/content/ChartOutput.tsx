@@ -64,7 +64,10 @@ export function ChartOutput({
     >
       <div className="flex h-[17.5rem] min-h-0 flex-col in-data-[content-block-viewport=expanded]:h-full">
         {table ? (
-          <div className="flex min-h-0 flex-1 overflow-x-auto" tabIndex={0}>
+          <div
+            className="flex min-h-0 flex-1 overflow-x-auto"
+            tabIndex={0} // NOSONAR(S6845): native horizontal scrolling must be keyboard-focusable
+          >
             <table className="ui-content-data-table">
               <thead>
                 <tr>

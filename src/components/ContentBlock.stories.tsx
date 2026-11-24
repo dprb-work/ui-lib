@@ -60,7 +60,10 @@ function ChartContent() {
     >
       <div className="flex h-56 min-h-0 flex-col in-data-[content-block-viewport=expanded]:h-full">
       {table ? (
-        <div className="flex min-h-0 flex-1 overflow-x-auto" tabIndex={0}>
+        <div
+          className="flex min-h-0 flex-1 overflow-x-auto"
+          tabIndex={0} // NOSONAR(S6845): native horizontal scrolling must be keyboard-focusable
+        >
           <table className="ui-content-data-table">
             <thead><tr>{(["week", "value"] as const).map((column) => (
               <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : "none"}>
@@ -104,7 +107,11 @@ function RunsTable() {
     return sort.direction === "descending" ? -order : order;
   });
   return (
-    <div className="flex min-h-0 overflow-x-auto" tabIndex={0} aria-label="Test runs table">
+    <div
+      className="flex min-h-0 overflow-x-auto"
+      tabIndex={0} // NOSONAR(S6845): native horizontal scrolling must be keyboard-focusable
+      aria-label="Test runs table"
+    >
       <table className="ui-content-data-table [--ui-content-table-min-width:34rem] [--ui-content-table-columns:6rem_6rem_6rem_minmax(0,1fr)]">
         <thead><tr>{runColumns.map(({ key, label }) => (
           <th key={key} scope="col" aria-sort={sort?.column === key ? sort.direction : "none"}>

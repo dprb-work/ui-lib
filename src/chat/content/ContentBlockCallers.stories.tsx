@@ -93,7 +93,7 @@ export const ExpandedChartTableScrolls: Story = {
     const lastRow = rows[rows.length - 1]!;
     expect(lastRow).toHaveTextContent(chartPoints[chartPoints.length - 1]!.label);
     // The content area ends where the caption controls begin.
-    const contentBottom = () => Math.min(...within(dialog).getAllByRole("button").map((control) => control.getBoundingClientRect().top));
+    const contentBottom = () => within(dialog).getByRole("button", { name: "Close" }).getBoundingClientRect().top;
     const lastRowShown = () => {
       const row = lastRow.getBoundingClientRect();
       const top = dialog.getBoundingClientRect().top;

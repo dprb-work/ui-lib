@@ -285,7 +285,7 @@ async function expectTableScrollLayout(container: HTMLElement) {
   });
   expect(scrollers.length, "the long table has a vertical scrollbar").toBeGreaterThan(0);
   const headerBottom = Math.max(...headers.map((header) => header.getBoundingClientRect().bottom));
-  const captionTop = Math.min(...within(container).getAllByRole("button").map((button) => button.getBoundingClientRect().top));
+  const captionTop = within(container).getByRole("button", { name: /^(Expand|Close)$/ }).getBoundingClientRect().top;
   const area = container.getBoundingClientRect();
   for (const scroller of scrollers) {
     const rect = scroller.getBoundingClientRect();

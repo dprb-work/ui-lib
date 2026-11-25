@@ -37,7 +37,7 @@ export function ArtifactCard({
         <FileText className="text-ui-accent" aria-hidden="true" size={18} />
       }
     >
-      <div className="pt-5 px-3 pb-3">
+      <div className="p-3">
         <p className="text-sm text-ui-muted-foreground">
           {[kind, size, revision].filter(Boolean).join(" · ")}
         </p>

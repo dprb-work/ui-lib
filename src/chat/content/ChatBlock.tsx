@@ -1,36 +1,31 @@
-import { ContentBlock } from "../../components/ContentBlock";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { ContentBlock, type ContentBlockProps } from "../../components/ContentBlock";
+import type { ReactNode } from "react";
 import { CodeLanguageIcon } from "./CodeLanguageIcon";
 import { safeHref } from "./chat-links";
 import { useChatPresentation } from "./ChatPresentation";
 
-export type ChatBlockProps = Omit<
-  ComponentPropsWithoutRef<"section">,
-  "title"
-> & {
+export type ChatBlockProps = Omit<ContentBlockProps, "label" | "title" | "icon"> & {
   title: string;
+  /** Accessible name when it should say more than the title; defaults to the title. */
+  label?: string;
   href?: string;
   onTitleClick?: () => void;
   download?: string;
-  metadata?: readonly ReactNode[];
   language?: string;
   busy?: boolean;
   icon?: ReactNode;
-  corner?: ReactNode;
-  children: ReactNode;
 };
 const titleLinkClassName =
   "cursor-pointer text-left underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ui-accent";
 export function ChatBlock({
   title,
+  label = title,
   href,
   onTitleClick,
   download,
-  metadata,
   language,
   icon,
   busy = false,
-  corner,
   children,
   className,
   ...props
@@ -44,7 +39,8 @@ export function ChatBlock({
   );
   return (
     <ContentBlock
-      aria-label={title}
+      {...props}
+      label={label}
       aria-busy={busy}
       className={[
         "chat-operation",
@@ -78,9 +74,6 @@ export function ChatBlock({
         )
       }
       icon={icon ?? (language && <CodeLanguageIcon language={language} />)}
-      metadata={metadata}
-      corner={corner}
-      {...props}
     >
       {children}
     </ContentBlock>

@@ -1,7 +1,7 @@
-import { CopyButton } from "../../components/Interactions";
 import { FileCode2 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
 import { useChatPresentation } from "./ChatPresentation";
+import { CodeText } from "./CodeText";
 export type FileExcerptProps = {
   path: string;
   excerpt: string;
@@ -43,31 +43,12 @@ export function FileExcerpt({
               })
           : undefined
       }
-      corner={<CopyButton text={excerpt} label="Copy file excerpt" />}
+      actions={[{ kind: "copy", text: excerpt, label: "Copy file excerpt" }]}
+      expansion="scroll"
     >
-      <div className="pt-2">
-        <pre className="max-h-96 overflow-auto p-3 font-mono text-xs leading-5">
-          <code>
-            {excerpt.split("\n").map((line, index) => (
-              <span
-                className="grid grid-cols-[auto_minmax(0,1fr)] gap-3"
-                key={index}
-              >
-                {startLine && (
-                  <span className="select-none text-right text-ui-muted-foreground">
-                    {startLine + index}
-                  </span>
-                )}
-                <span
-                  className={`min-w-0 ${wrapText ? "whitespace-pre-wrap break-words" : "whitespace-pre"}`}
-                >
-                  {line}
-                </span>
-              </span>
-            ))}
-          </code>
-        </pre>
-      </div>
+      <pre className={`max-h-96 overflow-auto font-mono text-xs leading-5 in-data-[content-block-viewport=expanded]:max-h-none ${wrapText ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre"}`}>
+        <CodeText code={excerpt} startLine={startLine ?? 1} />
+      </pre>
     </ChatBlock>
   );
 }

@@ -13,7 +13,7 @@ The base entry point contains controls and interaction primitives:
 - `TextInput`, `TextareaInput`, `NumberInput`, `SelectInput`, `NativeSelect`, `ColorPicker`, `ColorSelector`
 - `Image`, `Breadcrumbs`
 - `Badge`, `StatusPanel`, `StatusMessage`, `MenuItem`, `ContentBlock`, `CodeViewport`
-- `Calendar`, `Fullscreen`
+- `Calendar`
 - `Dialog`, `Tabs`, `Tooltip`, `TooltipProvider`, `PortalProvider`
 - `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverArrow`, `PopoverClose`
 
@@ -336,14 +336,45 @@ keeps a 44px control height and uses 0.875rem selected text near the underline.
 layout. Consumers own labels, options, and selection policy. Use `SelectInput`
 instead when the existing Radix-backed picker and its `onValueChange` API is needed.
 
-`ContentBlock` renders a bordered container with an inset title and an absolutely
-positioned `corner` action. It does not reserve a column for the action.
-Consumers supply the title, icon, metadata, accessible name, content segments,
-and surrounding spacing. Links and domain behavior remain in the consumer.
+`ContentBlock` is the container for charts, images, diagrams, tables, code, logs,
+and embedded pages. It draws a rounded box with the content viewport on top and
+a caption bar at the bottom: the content-type `icon`, the optional `title`, and
+`metadata` on the left, the content actions and Expand/Close on the right. `label` names the region and
+the expanded dialog. The container owns every control and renders it as an
+icon button with a tooltip; content declares `actions` (`kind: "button"` with
+`icon`, `onSelect`, optional `pressed` and `disabled`, or `kind: "copy"` with
+`text`). Inline, the block is at most 80% of the viewport height and the content
+owns its scrolling; the wheel never zooms. `expansion` adds an Expand control
+that opens the same box as a modal overlay of 90% by 90% (full screen
+below 640px) with Close in its place; Escape, a click outside, Close, or the
+browser's back action close it, and focus returns to Expand. The backdrop is
+90% black; the inner viewport has its own opaque background and no container
+padding. The dialog uses a subtle zoom-in/out animation,
+disabled under reduced motion. With `expansion="zoom"` (charts, images, diagrams),
+Zoom in, Zoom out, and Reset view appear at the left of the footer. Zoom in and
+Zoom out are mutually exclusive toggles: select a direction, then click the
+content to zoom at that point; select the active toggle again to turn click zoom
+off. Selecting a toggle does not itself zoom. The wheel zooms around the pointer
+from 25% to 800%, drag pans, `0` resets, and `+`/`-` step. With
+`expansion="scroll"` (tables, code, pages) the expanded content scrolls.
+Content may style its expanded layout with the
+`in-data-[content-block-viewport=expanded]:` variant. Links and domain behavior
+remain in the consumer.
 
 `CodeViewport` accepts native `pre` props, including `ref`, and a `wrap` boolean.
 Its scroll container spans the available width. The consumer owns preferences,
 syntax highlighting, line numbers, and streaming behavior.
+
+Chat `CodeBlock`, `CodeText`, file excerpts, and tool text always show
+lower-contrast line numbers drawn by CSS, outside selected and copied text.
+`startLine` changes the first number (default `1`); the `lineNumbers` boolean is
+removed. Chart/data actions retain their inline viewport height and show the
+destination view's icon without a persistent pressed state. Chat chart tables
+keep their headers above the vertically scrolling body; an outer horizontal
+scroller moves the entire table, including its header. Rows and zebra backgrounds
+span the table width, with an inset scrollbar and right padding on the last
+column to protect text. Sorting shows a chevron only on the sorted column;
+column rules distinguish cells without horizontal row rules.
 
 `ColorPicker` is controlled by `value` and `onValueChange` using opaque
 `#rrggbb` strings. It provides RGB sliders, a native color well, and an editable
@@ -375,13 +406,6 @@ weekday order and labels from `locale`, unless `weekStartsOn` overrides the
 locale's first weekday. `min`, `max`, and `disabled` disable dates. Arrow keys
 move by day or week, Home and End move within a week, Page Up and Page Down move
 by month, and Shift plus Page Up or Page Down moves by year.
-
-`Fullscreen` is a controlled `Dialog` wrapper. Pass its required `trigger`,
-`open`, `onOpenChange`, and `closeLabel`; `onOpenChange(false)` closes it. The
-component provides its own stationary close button, modal overlay, focus trap,
-Escape handling, scroll lock, and focus return. Set `zoomable` for content that
-remains usable when its width grows from 100% to 300% in 25% steps. The content
-area scrolls in that mode.
 
 `PortalProvider` redirects `Dialog`, `Tooltip`, and `PopoverContent` portals to
 its required `HTMLElement` or `DocumentFragment` container. Put it around a

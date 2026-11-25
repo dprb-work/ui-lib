@@ -1,6 +1,11 @@
 import "./styles.css";
 
-export { ContentBlock, type ContentBlockProps } from "./components/ContentBlock";
+export {
+  ContentBlock,
+  type ContentBlockAction,
+  type ContentBlockExpansion,
+  type ContentBlockProps,
+} from "./components/ContentBlock";
 export {
   Breadcrumbs,
   type BreadcrumbItem,
@@ -26,7 +31,6 @@ export { CopyableText, type CopyableTextProps } from "./components/CopyableText"
 export { Calendar, type CalendarProps } from "./components/Calendar";
 export { IconButton, type IconButtonProps } from "./components/IconButton";
 export { Image, type ImageProps } from "./components/Image";
-export { Fullscreen, type FullscreenProps } from "./components/Fullscreen";
 export {
   NumberInput,
   type NumberInputProps,

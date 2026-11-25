@@ -44,7 +44,7 @@ function ApprovalForm({
       }
       className="min-w-0 text-ui-foreground"
     >
-      <div className="space-y-3 pt-6 px-4 pb-4">
+      <div className="space-y-3 p-4">
         <p className="break-words font-medium">{action}</p>
         <p className="break-all text-xs text-ui-muted-foreground">{scope}</p>
         {description && (

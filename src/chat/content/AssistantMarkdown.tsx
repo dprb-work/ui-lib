@@ -120,7 +120,7 @@ function MdcBlock({
       return (
         <ChatBlock title={a.title ?? "Details"}>
           <details className="min-w-0">
-            <summary className="cursor-pointer pt-5 px-3 pb-3 text-sm font-medium">
+            <summary className="cursor-pointer p-3 text-sm font-medium">
               {a.summary ?? "Show details"}
             </summary>
             <div className="space-y-3 border-t border-ui-border p-3">

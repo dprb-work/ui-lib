@@ -12,7 +12,7 @@ export function IrcMessages({ messages }: IrcMessagesProps) {
         role="log"
         aria-label="Messages between agents"
         aria-relevant="additions text"
-        className="space-y-3 pt-5 px-3 pb-3"
+        className="space-y-3 p-3"
       >
         {messages.map((message) => (
           <div key={message.id}>

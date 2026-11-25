@@ -1,6 +1,4 @@
 import { useMemo, useState } from "react";
-import { CopyButton } from "../../components/Interactions";
-import { IconButton } from "../../components/IconButton";
 import { Columns2, Rows2 } from "lucide-react";
 import { ChatBlock } from "./ChatBlock";
 import { useChatPresentation } from "./ChatPresentation";
@@ -135,29 +133,23 @@ export function DiffViewer({ patch, path, href, onNavigate }: DiffViewerProps) {
           <span className="text-ui-danger">-{removals}</span>
         </span>,
       ]}
-      corner={
-        <div className="flex items-center gap-1">
-          <CopyButton text={patch} label="Copy patch" />
-          <IconButton
-            label={split ? "Show unified diff" : "Show side-by-side diff"}
-            aria-pressed={split}
-            onClick={() => setSplit((value) => !value)}
-          >
-            {split ? (
-              <Rows2 aria-hidden="true" />
-            ) : (
-              <Columns2 aria-hidden="true" />
-            )}
-          </IconButton>
-        </div>
-      }
+      actions={[
+        { kind: "copy", text: patch, label: "Copy patch" },
+        {
+          kind: "button",
+          label: split ? "Show unified diff" : "Show side-by-side diff",
+          icon: split ? <Rows2 aria-hidden="true" /> : <Columns2 aria-hidden="true" />,
+          pressed: split,
+          onSelect: () => setSplit((value) => !value),
+        },
+      ]}
+      expansion="scroll"
     >
-      <div className="pt-2">
-        <div
-          tabIndex={0}
-          aria-label="Patch content"
-          className="max-h-128 overflow-auto font-mono text-xs leading-5"
-        >
+      <div
+        tabIndex={0} // NOSONAR(S6845): a scrollable region must be keyboard-focusable to scroll
+        aria-label="Patch content"
+        className="max-h-128 overflow-auto font-mono text-xs leading-5 in-data-[content-block-viewport=expanded]:max-h-none"
+      >
           {split ? (
             <div className="min-w-[40rem]" aria-label="Side-by-side diff">
               {splitPatchLines(lines).map((row) => {
@@ -229,7 +221,6 @@ export function DiffViewer({ patch, path, href, onNavigate }: DiffViewerProps) {
             )
           )}
         </div>
-      </div>
     </ChatBlock>
   );
 }

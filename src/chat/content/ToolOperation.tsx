@@ -60,7 +60,7 @@ function ToolOperationText({
         );
       }}
     >
-      {children ?? (text || " ")}
+      {children ?? <CodeText code={text || " "} />}
     </CodeViewport>
   );
 }
@@ -76,39 +76,28 @@ export function ToolOperation({
   return (
     <ChatBlock
       title={operation.name}
-      aria-label={
+      label={
         operation.path
           ? `${operation.name} · ${operation.path}`
           : operation.name
       }
-      metadata={operation.path ? [operation.path] : undefined}
+      metadata={[
+        operation.path,
+        operation.state !== "completed" && (
+          <ActivityStatus key="status" state={operation.state} />
+        ),
+      ]}
       language={operation.language}
       busy={active}
-      corner={
-        operation.state !== "completed" && (
-          <ActivityStatus state={operation.state} />
-        )
-      }
+      expansion="scroll"
     >
       {inputContent === undefined ? (
         <ToolOperationText text={operation.input} label="Input" active={active}>
-          {operation.language ? (
-            <CodeText
-              code={operation.input}
-              language={operation.language}
-              streaming={streamingInput}
-            />
-          ) : (
-            <>
-              {operation.input || " "}
-              {streamingInput && (
-                <span
-                  aria-hidden="true"
-                  className="ml-0.5 inline-block h-3 w-1 bg-ui-accent"
-                />
-              )}
-            </>
-          )}
+          <CodeText
+            code={operation.input || " "}
+            language={operation.language ?? ""}
+            streaming={streamingInput}
+          />
         </ToolOperationText>
       ) : (
         <div aria-label="Input">{inputContent}</div>

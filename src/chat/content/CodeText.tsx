@@ -40,14 +40,12 @@ function highlightedLines(code: string, language?: string): Token[][] {
 export type CodeTextProps = {
   code: string;
   language?: string;
-  lineNumbers?: boolean;
   startLine?: number;
   streaming?: boolean;
 };
 export function CodeText({
   code,
   language,
-  lineNumbers = false,
   startLine = 1,
   streaming = false,
 }: CodeTextProps) {
@@ -55,27 +53,18 @@ export function CodeText({
     () => highlightedLines(code, language),
     [code, language],
   );
-  const rowStyle = lineNumbers
-    ? {
-        gridTemplateColumns: `${Math.max(3, String(startLine).length, String(startLine + lines.length - 1).length)}ch minmax(0,1fr)`,
-      }
-    : undefined;
+  const rowStyle = {
+    gridTemplateColumns: `${Math.max(3, String(startLine).length, String(startLine + lines.length - 1).length)}ch minmax(0,1fr)`,
+  };
   return (
     <code className="grid">
       {lines.map((tokens, index) => (
         <span
-          className="grid min-w-0 grid-cols-1 gap-2"
+          className="grid min-w-0 gap-2 before:select-none before:text-right before:text-ui-muted-foreground before:opacity-70 before:content-[attr(data-line-number)_/_'']"
           style={rowStyle}
+          data-line-number={startLine + index}
           key={index}
         >
-          {lineNumbers && (
-            <span
-              aria-hidden="true"
-              className="select-none text-right text-ui-muted-foreground"
-            >
-              {startLine + index}
-            </span>
-          )}
           <span className="min-w-0">
             {tokens.map((token, tokenIndex) => (
               <span className={token.className} key={tokenIndex}>

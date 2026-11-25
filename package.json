@@ -14,7 +14,8 @@
   ],
   "sideEffects": [
     "./dist/*.css",
-    "./src/*.css"
+    "./src/*.css",
+    "./scripts/test-scratch.mjs"
   ],
   "exports": {
     ".": {
@@ -47,9 +48,9 @@
     "test:storybook": "vitest run --project=storybook",
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
-    "check:base-deps": "python3 scripts/check_base_deps.py && node --test scripts/check-base-deps.node-test.mjs",
+    "check:base-deps": "python3 scripts/check_base_deps.py && node --import ./scripts/test-scratch.mjs --test scripts/check-base-deps.node-test.mjs",
     "verify:fast": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && pnpm run build",
-    "verify": "pnpm run verify:fast && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && node --test tests/storybook-dev-server.test.mjs"
+    "verify": "pnpm run verify:fast && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && node --import ./scripts/test-scratch.mjs --test tests/storybook-dev-server.test.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

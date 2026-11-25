@@ -1,3 +1,4 @@
+import "./scripts/test-scratch.mjs";
 import tailwindcss from "@tailwindcss/vite";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import react from "@vitejs/plugin-react";
@@ -92,6 +93,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: "playwright",
+            screenshotDirectory: fileURLToPath(new URL(".scratch/playwright", import.meta.url)),
             instances: [{ browser: "chromium" }],
           },
         },

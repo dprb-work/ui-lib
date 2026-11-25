@@ -474,3 +474,11 @@ the library build and browser-backed Storybook tests. `verify:fast` omits the
 Storybook tests; it is the hosted check for ready pull requests. The routed
 pre-push hook runs `verify` for non-prose changes; [CI checks](docs/ci.md)
 owns the routing.
+
+Vitest and the configured Node test commands create the worktree's `.scratch/tmp`
+and set its absolute path as `TMPDIR` before starting workers or child processes.
+For standalone Node test runs, use
+`node --import ./scripts/test-scratch.mjs --test <test-file>`.
+Vitest browser screenshots go to `.scratch/playwright`; this repository uses
+Vitest's Playwright provider, not the Playwright Test runner's `outputDir`.
+Neither setup clears unrelated `.scratch` content or moves build caches.

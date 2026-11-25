@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 0
       - name: Test CI classifier
         if: steps.routing.outputs.metadata_only != 'true'
-        run: node --test scripts/ci-plan.node-test.mjs scripts/ci-local.node-test.mjs
+        run: node --import ./scripts/test-scratch.mjs --test scripts/ci-plan.node-test.mjs scripts/ci-local.node-test.mjs
       - name: Check base dependency alignment
         if: steps.routing.outputs.metadata_only != 'true'
         run: python3 scripts/check_base_deps.py

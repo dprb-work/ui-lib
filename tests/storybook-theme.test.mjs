@@ -165,3 +165,83 @@ test("Storybook follows system theme and explicit toolbar choices", async (t) =>
     }
   });
 });
+
+test("Tooltip stories load in static Storybook and retain reduced-motion keyboard help", async (t) => {
+  const storybook = await serveStorybook();
+  const browser = await chromium.launch({ headless: true });
+  t.after(async () => {
+    await browser.close();
+    await storybook.close();
+  });
+
+  const stories = [
+    ["default", "Inspect"],
+    ["custom-arrow", "With arrow"],
+    ["optional", "Save"],
+    ["accessible-label-fallback", "Search"],
+    ["provider-defaults", "Provider style"],
+    ["near-bottom-collision", "Near bottom edge"],
+    ["reduced-motion-keyboard-focus", "Save"],
+  ];
+  for (const colorScheme of ["light", "dark"]) {
+    for (const [story, buttonName] of stories) {
+      await t.test(`${story} renders in ${colorScheme}`, async () => {
+        const context = await browser.newContext({ colorScheme, reducedMotion: "reduce" });
+        try {
+          const page = await context.newPage();
+          const pageErrors = [];
+          page.on("pageerror", (error) => pageErrors.push(error.message));
+          // Embed mode leaves story interactions to this independent browser check.
+          const url = new URL("/iframe.html", storybook.url);
+          url.search = new URLSearchParams({
+            id: `components-tooltip--${story}`,
+            viewMode: "story",
+            embed: "true",
+          }).toString();
+          await page.goto(url.href);
+          await page.waitForFunction(() =>
+            document.querySelector("#storybook-root")?.childElementCount > 0
+            || document.body.classList.contains("sb-show-errordisplay")
+            || document.body.classList.contains("sb-show-nopreview"),
+          );
+          assert.equal(
+            await page.locator("body").evaluate((body) => body.classList.contains("sb-show-errordisplay")),
+            false,
+            await page.locator("#error-message").textContent(),
+          );
+          assert.equal(await page.getByRole("button", { name: buttonName, exact: true }).isVisible(), true);
+          assert.deepEqual(pageErrors, []);
+
+          if (story === "reduced-motion-keyboard-focus") {
+            await page.keyboard.press("Tab");
+            // Sample immediately after Tab, without polling for delayed help.
+            const state = await page.evaluate(() => {
+              const tooltip = document.querySelector('[role="tooltip"]');
+              const style = tooltip && getComputedStyle(tooltip);
+              return {
+                reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+                focusedLabel: document.activeElement?.textContent,
+                help: tooltip?.textContent,
+                visible: !!tooltip?.getClientRects().length && style?.visibility === "visible",
+                opacity: style?.opacity,
+                animationName: style?.animationName,
+                animations: tooltip?.getAnimations({ subtree: true }).length,
+              };
+            });
+            assert.deepEqual(state, {
+              reducedMotion: true,
+              focusedLabel: "Save",
+              help: "Save the current draft",
+              visible: true,
+              opacity: "1",
+              animationName: "none",
+              animations: 0,
+            });
+          }
+        } finally {
+          await context.close();
+        }
+      });
+    }
+  }
+});

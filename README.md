@@ -441,6 +441,9 @@ corepack pnpm run dev
 
 Storybook is the component catalog and browser verification surface.
 
+The Tooltip reduced-motion story loads Vitest's browser context only when its
+hidden play function runs. The static catalog does not require a Vitest runner.
+
 ### Input, select and tab defaults
 
 `TextInput`, `NativeSelect` and `Tabs` own these defaults; consumers do not need a stylesheet override.

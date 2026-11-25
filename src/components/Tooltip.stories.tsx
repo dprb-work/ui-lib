@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cdp } from "@vitest/browser/context";
 import type {} from "@vitest/browser/providers/playwright";
 import { Copy, Search } from "lucide-react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
@@ -122,6 +121,8 @@ export const ReducedMotionKeyboardFocus: Story = {
   // Browser-runner media emulation is not a catalog example.
   tags: ["!dev", "!autodocs"],
   play: async ({ canvasElement }) => {
+    // Browser-runner APIs must not load with the static catalog.
+    const { cdp } = await import("@vitest/browser/context");
     const session = cdp();
     await session.send("Emulation.setEmulatedMedia", {
       features: [{ name: "prefers-reduced-motion", value: "reduce" }],

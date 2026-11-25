@@ -1,0 +1,35 @@
+{
+  "vulture": {
+    "paths": ["scripts"],
+    "ignore_names": [
+      "FILES",
+      "EXPORTS",
+      "TYPES",
+      "NAMESPACE_EXPORTS",
+      "NAMESPACE_TYPES",
+      "ENUM_MEMBERS",
+      "NAMESPACE_MEMBERS",
+      "DEPENDENCIES",
+      "DEV_DEPENDENCIES"
+    ],
+    "ignore_decorators": []
+  },
+  "knip": {
+    "entry": [
+      "src/index.ts",
+      "src/chat.ts",
+      "src/charts.ts",
+      "src/data-table.tsx",
+      "scripts/ci-local.mjs",
+      "src/test/fixtures/status-panel-public-api.tsx"
+    ],
+    "project": [
+      "src/**/*.{ts,tsx}",
+      "scripts/**/*.{js,mjs,mts,ts}",
+      "tests/**/*.{js,mjs,mts,ts}",
+      "*.config.{js,ts}",
+      ".storybook/**/*.{ts,tsx}"
+    ],
+    "ignoreDependencies": ["knip", "tailwindcss"]
+  }
+}

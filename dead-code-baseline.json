@@ -1,0 +1,14 @@
+[
+  {
+    "tool": "knip",
+    "path": ".storybook/storybook-theme-state.ts",
+    "kind": "exports",
+    "name": "storybookThemes"
+  },
+  {
+    "tool": "knip",
+    "path": "package.json",
+    "kind": "devDependencies",
+    "name": "@types/katex"
+  }
+]

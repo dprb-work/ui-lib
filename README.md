@@ -435,6 +435,7 @@ of the library or of one another.
 ## Develop
 
 ```bash
+uv sync --locked
 corepack pnpm install
 corepack pnpm run dev
 ```
@@ -469,8 +470,13 @@ corepack pnpm run build
 git config core.hooksPath .githooks
 ```
 
-`verify` runs the base dependency check, ESLint, strict TypeScript, unit tests,
+`verify` runs the base dependency and dead-code checks, ESLint, strict TypeScript, unit tests,
 the library build and browser-backed Storybook tests. `verify:fast` omits the
 Storybook tests; it is the hosted check for ready pull requests. The routed
 pre-push hook runs `verify` for non-prose changes; [CI checks](docs/ci.md)
 owns the routing.
+
+The dead-code check needs uv and Python 3.12 or later; `uv sync --locked`
+prepares its locked Vulture environment. The pnpm install prepares locked Knip.
+Checks do not install dependencies. [Dead-code checks](docs/ci.md#dead-code-checks)
+describes the allow list, baseline and explicit inventory command.

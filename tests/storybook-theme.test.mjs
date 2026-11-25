@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createReadStream } from "node:fs";
 import { access, stat } from "node:fs/promises";
 import { createServer } from "node:http";
-import { URL, fileURLToPath } from "node:url";
+import { URL, URLSearchParams, fileURLToPath } from "node:url";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import process from "node:process";
 import { test } from "node:test";
@@ -200,9 +200,9 @@ test("Tooltip stories load in static Storybook and retain reduced-motion keyboar
           }).toString();
           await page.goto(url.href);
           await page.waitForFunction(() =>
-            document.querySelector("#storybook-root")?.childElementCount > 0
-            || document.body.classList.contains("sb-show-errordisplay")
-            || document.body.classList.contains("sb-show-nopreview"),
+            globalThis.document.querySelector("#storybook-root")?.childElementCount > 0
+            || globalThis.document.body.classList.contains("sb-show-errordisplay")
+            || globalThis.document.body.classList.contains("sb-show-nopreview"),
           );
           assert.equal(
             await page.locator("body").evaluate((body) => body.classList.contains("sb-show-errordisplay")),
@@ -216,11 +216,11 @@ test("Tooltip stories load in static Storybook and retain reduced-motion keyboar
             await page.keyboard.press("Tab");
             // Sample immediately after Tab, without polling for delayed help.
             const state = await page.evaluate(() => {
-              const tooltip = document.querySelector('[role="tooltip"]');
-              const style = tooltip && getComputedStyle(tooltip);
+              const tooltip = globalThis.document.querySelector('[role="tooltip"]');
+              const style = tooltip && globalThis.getComputedStyle(tooltip);
               return {
-                reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
-                focusedLabel: document.activeElement?.textContent,
+                reducedMotion: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches,
+                focusedLabel: globalThis.document.activeElement?.textContent,
                 help: tooltip?.textContent,
                 visible: !!tooltip?.getClientRects().length && style?.visibility === "visible",
                 opacity: style?.opacity,

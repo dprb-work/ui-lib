@@ -48,7 +48,8 @@
     "prepare": "pnpm run build",
     "typecheck": "tsc -b",
     "check:base-deps": "python3 scripts/check_base_deps.py && node --test scripts/check-base-deps.node-test.mjs",
-    "verify:fast": "pnpm run check:base-deps && eslint . && tsc -b && vitest run --project=unit && pnpm run build",
+    "check:dead-code": "uv run --locked --no-sync python scripts/check_dead_code.py",
+    "verify:fast": "pnpm run check:base-deps && pnpm run check:dead-code && eslint . && tsc -b && vitest run --project=unit && pnpm run build",
     "verify": "pnpm run verify:fast && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --project=storybook && node --test tests/storybook-dev-server.test.mjs"
   },
   "dependencies": {
@@ -98,6 +99,7 @@
     "@types/hast": "^3.0.5",
     "@types/katex": "^0.16.8",
     "@types/mdast": "^4.0.4",
+    "knip": "6.48.0",
     "katex": "^0.18.7",
     "lowlight": "^3.3.0",
     "mdast-util-directive": "^3.1.0",

@@ -4,4 +4,5 @@ storybook-static/
 coverage/
 *.tsbuildinfo
 .scratch/
+.venv/
 .DS_Store

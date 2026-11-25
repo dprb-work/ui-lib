@@ -113,8 +113,18 @@ jobs:
     needs: plan
     if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'fast')
     runs-on: ubuntu-latest
+    env:
+      DEAD_CODE_BASE: ${{ needs.plan.outputs.base }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.7"
+      - name: Install Python tooling
+        run: uv sync --locked
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
@@ -129,8 +139,18 @@ jobs:
     needs: plan
     if: needs.plan.result == 'success' && needs.plan.outputs.metadata_only != 'true' && contains(fromJSON(needs.plan.outputs.checks || '[]'), 'verify')
     runs-on: ubuntu-latest
+    env:
+      DEAD_CODE_BASE: ${{ needs.plan.outputs.base }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.7"
+      - name: Install Python tooling
+        run: uv sync --locked
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version

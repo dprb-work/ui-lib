@@ -50,6 +50,3 @@ The routed pre-push hook is the local gate: it runs `verify`, including the Stor
 ## Evidence
 
 - Unit tests cover behavior and accessibility contracts.
-- For UI changes, the pull request must show applicable hover, focus, selected, expanded, press feedback/toggle, disabled, busy and invalid states. Identify inapplicable states rather than inventing them.
-- Storybook examples and browser evidence must cover light and dark themes, wrapped content at 390px and desktop at 1440px. Compare label/control grouping and section gaps after text wraps. Check keyboard operation, including focus return for disclosed content where applicable.
-- Run the real Storybook in Chromium for visual changes; builds alone do not prove appearance. Documentation-only pull requests need wording and link checks, not new visual claims.
